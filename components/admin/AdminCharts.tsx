@@ -33,7 +33,7 @@ export function ConditionChart({ data }: { data: any[] }) {
       <ResponsiveContainer width="100%" height={200}>
         <PieChart>
           <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}
-               label={({ name, percent }) => percent ? `${name.slice(0, 8)}: ${(percent * 100).toFixed(0)}%` : name}>
+               label={({ name, percent }) => percent ? `${name?.slice(0, 8) ?? ''}: ${(percent * 100).toFixed(0)}%` : name}>
             {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
           </Pie>
           <Tooltip contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8 }} />

@@ -46,7 +46,7 @@ export async function exportDataset(
   const headers = Object.keys(rows[0])
   const csvLines = [
     headers.join(','),
-    ...rows.map((row) =>
+    ...rows.map((row: any) =>
       headers.map((h) => {
         const val = (row as Record<string, unknown>)[h]
         if (val === null || val === undefined) return ''
@@ -79,7 +79,7 @@ export async function exportUsers(
   const headers = Object.keys(rows[0])
   const csvLines = [
     headers.join(','),
-    ...rows.map((row) =>
+    ...rows.map((row: any) =>
       headers.map((h) => `"${String((row as Record<string, unknown>)[h] ?? '').replace(/"/g, '""')}"`).join(',')
     ),
   ]

@@ -12,7 +12,8 @@ import {
   Layers,
   Lock,
   ArrowUpRight,
-  Info
+  Info,
+  Plus
 } from 'lucide-react'
 
 export const metadata: Metadata = {

@@ -8,7 +8,7 @@ function getClient() {
 }
 
 export async function getUserStats() {
-  const supabase = createServiceClient()
+  const supabase = getClient()
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
   const [

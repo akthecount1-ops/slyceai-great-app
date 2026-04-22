@@ -214,8 +214,8 @@ export default function ProfilePage() {
                   <label className="text-[13px] font-semibold text-slate-600 ml-1">Allergies & Conditions (Optional)</label>
                   <textarea 
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all placeholder:text-slate-400 resize-none" 
-                    value={form.allergies ?? ''} 
-                    onChange={(e) => setForm((p) => ({ ...p, allergies: e.target.value }))} 
+                    value={form.allergies?.join(', ') ?? ''} 
+                    onChange={(e) => setForm((p) => ({ ...p, allergies: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))} 
                     placeholder="E.g., Penicillin allergy, Asthma"
                     rows={3}
                   />

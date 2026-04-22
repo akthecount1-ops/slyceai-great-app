@@ -468,7 +468,7 @@ export default function AddActionModal({ onClose, defaultTab }: { onClose: () =>
               { key: 'energy_level', label: 'Energy Level', emoji: '⚡' },
               { key: 'mood_level',   label: 'Mood',         emoji: '😊' },
             ].map((s) => {
-              const val = (journal as Record<string, number>)[s.key]
+              const val = journal[s.key as keyof typeof journal] as number
               return (
                 <div key={s.key}>
                   <div className="flex items-center justify-between mb-3">

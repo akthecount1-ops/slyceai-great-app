@@ -154,7 +154,7 @@ export default function DietPage() {
                   </div>
                </div>
 
-               {plan.meals?.map((meal, i) => (
+               {plan?.meals?.map((meal, i) => (
                 <div key={i} className="glass-card rounded-2xl border border-slate-100 hover:border-medical-teal/30 hover:shadow-xl hover:shadow-medical-teal/5 transition-all group overflow-hidden flex flex-col sm:flex-row">
                   <div className="w-full sm:w-48 bg-slate-50/50 border-r border-slate-100 p-6 flex flex-col justify-center">
                     <div className="flex items-center gap-1.5 text-medical-teal mb-1">
@@ -183,7 +183,7 @@ export default function DietPage() {
               ))}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {plan.hydration && (
+                {plan?.hydration && (
                    <div className="glass-card rounded-2xl p-6 border border-slate-100 bg-white flex items-start gap-4 shadow-sm relative overflow-hidden">
                       <div className="absolute right-0 top-0 opacity-[0.03] -mr-4 -mt-4">
                          <Droplets size={120} className="text-medical-teal" />
@@ -198,7 +198,7 @@ export default function DietPage() {
                    </div>
                 )}
 
-                {plan.tips && plan.tips.length > 0 && (
+                {plan?.tips && plan.tips.length > 0 && (
                   <div className="glass-card rounded-2xl p-6 border border-slate-100 bg-white flex items-start gap-4 shadow-sm relative overflow-hidden">
                      <div className="absolute right-0 top-0 opacity-[0.03] -mr-4 -mt-4">
                         <Lightbulb size={120} className="text-medical-navy" />
@@ -209,7 +209,7 @@ export default function DietPage() {
                      <div className="relative z-10">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-medical-navy mb-3">Clinical Directives</h4>
                         <ul className="space-y-3">
-                          {plan.tips.map((tip, i) => (
+                          {plan?.tips?.map((tip, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs font-medium text-slate-500">
                                <ChevronRight size={14} className="text-medical-teal shrink-0 mt-0.5" />
                                {tip}
