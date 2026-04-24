@@ -111,13 +111,13 @@ export default function AppHeader({ children }: { children?: React.ReactNode }) 
       {/* Divider */}
       <div className="w-px h-6 bg-slate-200 shrink-0 mx-1 md:mx-2" />
 
-      {/* ── Vitals Chips ── */}
+      {/* ── Vitals Chips — show all on desktop, first 2 on mobile ── */}
       <div className="flex items-center gap-2 flex-1 overflow-x-auto no-scrollbar">
-        {vitalsChips.map((chip) => (
+        {vitalsChips.map((chip, idx) => (
           <Link
             key={chip.key}
             href="/vitals"
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border shrink-0 hover:border-teal-300 transition-all group"
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl border shrink-0 hover:border-teal-300 transition-all group ${idx >= 2 ? 'hidden md:flex' : ''}`}
             style={{
               background: chip.bg,
               borderColor: chip.alert ? '#ef4444' : chip.border,
@@ -125,13 +125,7 @@ export default function AppHeader({ children }: { children?: React.ReactNode }) 
             }}
           >
             <span className="group-hover:scale-110 transition-transform" style={{ color: chip.alert ? '#ef4444' : chip.color }}>{chip.icon}</span>
-            <span
-              className="hidden xl:inline"
-              style={{ fontSize: '12px', fontWeight: 700, color: chip.alert ? '#b91c1c' : chip.color }}
-            >
-              {chip.label}
-            </span>
-            <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--medical-navy)' }}>
+            <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--medical-navy)' }}>
               {chip.value}
             </span>
             {chip.alert && <span className="animate-pulse">⚠️</span>}

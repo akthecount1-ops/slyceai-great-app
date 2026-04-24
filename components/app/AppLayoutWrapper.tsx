@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import AppSidebar from './AppSidebar'
 import AppHeader from './AppHeader'
+import MobileBottomNav from './MobileBottomNav'
 import { Menu, X } from 'lucide-react'
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -15,10 +16,11 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
   }, [])
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      {/* Sidebar */}
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)', overflow: 'hidden' }}>
+
+      {/* Sidebar — desktop sticky, mobile overlay */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 transform transition-shadow duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} md:sticky md:top-0 md:h-screen md:block`}
+        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} md:sticky md:top-0 md:h-screen md:block`}
         style={{ width: '260px', flexShrink: 0 }}
       >
         <AppSidebar onMobileClose={() => setIsSidebarOpen(false)} />
@@ -28,26 +30,28 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-40 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(2px)' }}
+          style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      {/* Main column */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
+
         {/* Fixed header */}
         <div
-          className="fixed top-0 right-0 z-30 left-0 md:left-[260px] flex items-center transition-all duration-300"
+          className="fixed top-0 right-0 z-30 left-0 md:left-[260px]"
           style={{ height: 'var(--header-height)' }}
         >
           <AppHeader>
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="md:hidden mr-2 flex items-center justify-center"
+              className="md:hidden flex items-center justify-center mr-2"
               style={{
-                width: '36px', height: '36px', borderRadius: '9px',
-                border: '1px solid rgba(0,0,0,0.12)', background: 'rgba(255,255,255,0.7)',
-                color: '#5a5652', cursor: 'pointer',
+                width: 36, height: 36, borderRadius: 9,
+                border: '1px solid rgba(0,0,0,0.12)',
+                background: 'rgba(255,255,255,0.7)',
+                color: '#5a5652', cursor: 'pointer', flexShrink: 0,
               }}
             >
               {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
@@ -55,19 +59,23 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
           </AppHeader>
         </div>
 
-        {/* Page content — full height for chat */}
-        <main style={{
-          flex: 1, paddingTop: 'var(--header-height)',
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        }}>
-          <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            padding: '0 24px', maxWidth: '1200px', margin: '0 auto',
-            width: '100%', overflow: 'hidden',
-          }}>
+        {/* Scrollable page content */}
+        <main
+          style={{
+            flex: 1,
+            paddingTop: 'var(--header-height)',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'],
+          } as React.CSSProperties}
+        >
+          <div style={{ width: '100%', maxWidth: 1200, margin: '0 auto' }}>
             {children}
           </div>
         </main>
+
+        <MobileBottomNav />
       </div>
     </div>
   )

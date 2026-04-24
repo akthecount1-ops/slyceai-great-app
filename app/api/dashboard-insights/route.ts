@@ -135,15 +135,15 @@ Structure:
 
     return NextResponse.json(data, {
       headers: {
-        // Cache for 6 hours at the edge — same user gets the same plan without re-calling AI
-        'Cache-Control': 'private, max-age=21600, stale-while-revalidate=3600',
+        // No caching — every patient visit generates fresh, personalised AI insights
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
     })
   } catch (err) {
     console.error('[Dashboard Insights] Error:', err instanceof Error ? err.message : err)
     // Always return fallback so the dashboard renders
     return NextResponse.json(FALLBACK, {
-      headers: { 'Cache-Control': 'private, max-age=300' }, // cache fallback for 5 min
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
     })
   }
 }

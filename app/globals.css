@@ -292,3 +292,44 @@ body {
 /* Hide scrollbar but keep scrollable */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── MOBILE LAYOUT ── */
+@media (max-width: 768px) {
+  :root {
+    --header-height: 56px;
+  }
+
+  /* Pages that manage their own padding */
+  main > div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* Safe area bottom inset for iPhone home bar */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Carousel snap container */
+.carousel-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 12px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
+}
+.carousel-track > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* Touch-friendly minimum tap target */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
