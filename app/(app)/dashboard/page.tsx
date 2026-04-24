@@ -383,17 +383,18 @@ export default function DashboardPage() {
               <div key={i} style={card({ padding: '14px 16px', display: 'flex', gap: 14, alignItems: 'flex-start' })}>
                 <span style={{ fontSize: 28, flexShrink: 0, lineHeight: 1 }}>{h.emoji}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a' }}>{h.herb}</span>
-                    <span style={{
-                      flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#047857',
-                      background: '#f0fdf9', border: '1px solid #a7f3d0',
-                      padding: '2px 9px', borderRadius: 20, whiteSpace: 'nowrap',
-                    }}>
-                      {h.how}
-                    </span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: 12, color: '#3d3d3d', lineHeight: 1.55 }}>{h.benefit}</p>
+                  <p style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 700, color: '#1a1a1a' }}>{h.herb}</p>
+                  <p style={{ margin: '0 0 8px', fontSize: 12, color: '#3d3d3d', lineHeight: 1.55 }}>{h.benefit}</p>
+                  <span style={{
+                    display: 'inline-block',
+                    fontSize: 11, fontWeight: 600, color: '#047857',
+                    background: '#f0fdf9', border: '1px solid #a7f3d0',
+                    padding: '3px 10px', borderRadius: 20,
+                    maxWidth: '100%', overflow: 'hidden',
+                    textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    🌿 {h.how}
+                  </span>
                 </div>
               </div>
             ))}

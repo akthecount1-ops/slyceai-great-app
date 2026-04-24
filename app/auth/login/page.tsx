@@ -38,10 +38,10 @@ export default function LoginPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '24px',
+      padding: '24px 16px',
       background: 'var(--bg-primary)',
       position: 'relative',
-      overflow: 'hidden'
+      overflowX: 'hidden'
     }}>
       {/* Soft warm gradient orbs */}
       <div style={{
@@ -85,10 +85,11 @@ export default function LoginPage() {
         <div style={{
           background: '#ffffff',
           borderRadius: '24px',
-          padding: '40px 32px',
+          padding: '32px 20px',
           border: '1px solid #d9d5ce',
           boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
-          position: 'relative'
+          position: 'relative',
+          boxSizing: 'border-box',
         }}>
           <div style={{
             position: 'absolute', top: '16px', right: '16px',
@@ -100,6 +101,7 @@ export default function LoginPage() {
              <span style={{ fontSize: '11px', fontWeight: 600, color: '#5a5652' }}>Secure</span>
           </div>
 
+          <style>{`* { box-sizing: border-box; }`}</style>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label htmlFor="email" style={{ fontSize: '13.5px', fontWeight: 500, color: '#3d3d3d', marginLeft: '4px' }}>
