@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import AppSidebar from './AppSidebar'
 import AppHeader from './AppHeader'
-import MobileBottomNav from './MobileBottomNav'
 import { Menu, X } from 'lucide-react'
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -75,7 +74,6 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
           </div>
         </main>
 
-        <MobileBottomNav />
       </div>
     </div>
   )

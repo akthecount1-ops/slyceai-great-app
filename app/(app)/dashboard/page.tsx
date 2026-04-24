@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -9,95 +9,12 @@ import {
 } from 'lucide-react'
 
 /* ─── Types ─────────────────────────────────────────────── */
-interface Meal       { time: string; suggestion: string; benefit: string }
-interface LifeTip    { title: string; tip: string; emoji: string }
-interface AyurHerb   { herb: string; benefit: string; how: string; emoji: string }
-interface YogaPose   { pose: string; duration: string; benefit: string; emoji: string }
-interface Insights   { feeling: string; health_tip: string; diet: { title: string; meals: Meal[] }; lifestyle: LifeTip[]; ayurveda: AyurHerb[]; yoga: YogaPose[] }
-interface Stats      { vitalsCount: number; medicinesCount: number; journalsCount: number; medicineAdherence: string; takenCount: number; status: string }
-
-/* ─── Tiny snap-carousel (no vw units, sized via cardWidth px) ─── */
-function Carousel({ items, cardWidth, gap = 12, renderCard }: {
-  items: unknown[]
-  cardWidth: number | string
-  gap?: number
-  renderCard: (item: unknown, i: number) => React.ReactNode
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [active, setActive] = useState(0)
-
-  const scrollTo = (i: number) => {
-    const el = ref.current
-    if (!el) return
-    const child = el.children[i] as HTMLElement
-    if (child) el.scrollTo({ left: child.offsetLeft - 16, behavior: 'smooth' })
-    setActive(i)
-  }
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    // Observe only real card children (not the spacer)
-    const obs = new IntersectionObserver(
-      (entries) => entries.forEach(e => {
-        if (e.isIntersecting) {
-          const idx = Array.from(el.children).indexOf(e.target as HTMLElement)
-          // last child is spacer — ignore it
-          if (idx >= 0 && idx < items.length) setActive(idx)
-        }
-      }),
-      { root: el, threshold: 0.6 }
-    )
-    // observe only card divs (skip spacer)
-    Array.from(el.children).slice(0, items.length).forEach(c => obs.observe(c))
-    return () => obs.disconnect()
-  }, [items.length])
-
-  return (
-    <div>
-      <div
-        ref={ref}
-        className="no-scrollbar"
-        style={{
-          display: 'flex',
-          gap,
-          overflowX: 'auto',
-          scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch',
-          // NOTE: paddingRight is IGNORED by browsers on overflow containers.
-          // We use a phantom spacer div below instead.
-          paddingLeft: 16,
-          paddingBottom: 6,
-        }}
-      >
-        {items.map((item, i) => (
-          <div key={i} style={{ width: cardWidth, minWidth: cardWidth, flexShrink: 0, scrollSnapAlign: 'start' }}>
-            {renderCard(item, i)}
-          </div>
-        ))}
-        {/* Phantom spacer — creates the right-edge breathing room that paddingRight can't */}
-        <div style={{ width: 16, minWidth: 16, flexShrink: 0 }} aria-hidden="true" />
-      </div>
-      {items.length > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginTop: 10 }}>
-          {items.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => scrollTo(i)}
-              style={{
-                width: i === active ? 18 : 6, height: 6,
-                borderRadius: 100,
-                background: i === active ? '#0d9488' : '#d9d5ce',
-                border: 'none', padding: 0, cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
+interface Meal     { time: string; suggestion: string; benefit: string }
+interface LifeTip  { title: string; tip: string; emoji: string }
+interface AyurHerb { herb: string; benefit: string; how: string; emoji: string }
+interface YogaPose { pose: string; duration: string; benefit: string; emoji: string }
+interface Insights { feeling: string; health_tip: string; diet: { title: string; meals: Meal[] }; lifestyle: LifeTip[]; ayurveda: AyurHerb[]; yoga: YogaPose[] }
+interface Stats    { vitalsCount: number; medicinesCount: number; journalsCount: number; medicineAdherence: string; takenCount: number; status: string }
 
 /* ─── Skeleton block ─────────────────────────────────────── */
 function Skel({ w = '100%', h = 16, r = 8, mb = 0 }: { w?: string | number; h?: number; r?: number; mb?: number }) {
@@ -112,18 +29,88 @@ function Skel({ w = '100%', h = 16, r = 8, mb = 0 }: { w?: string | number; h?: 
   )
 }
 
+/* ─── Meal Tab Switcher ──────────────────────────────────── */
+function MealTabs({ meals }: { meals: Meal[] }) {
+  const [active, setActive] = useState(0)
+  if (!meals.length) return null
+  const meal = meals[active]
+  const timeColors: Record<string, { bg: string; accent: string; pill: string }> = {
+    default:   { bg: '#f5f1eb', accent: '#5a5652', pill: '#e8e4dd' },
+    breakfast: { bg: '#fff8f0', accent: '#d97706', pill: '#fef3c7' },
+    lunch:     { bg: '#f0fdf9', accent: '#0d9488', pill: '#ccfbf1' },
+    dinner:    { bg: '#f5f3ff', accent: '#7c3aed', pill: '#ede9fe' },
+    snack:     { bg: '#fdf4ff', accent: '#a21caf', pill: '#fae8ff' },
+  }
+  const getColors = (t: string) => timeColors[t.toLowerCase()] ?? timeColors.default
+
+  return (
+    <div style={{ padding: '0 16px' }}>
+      {/* Pill tabs */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        {meals.map((m, i) => {
+          const c = getColors(m.time)
+          const isActive = i === active
+          return (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              style={{
+                padding: '6px 14px', borderRadius: 100,
+                border: isActive ? `1.5px solid ${c.accent}` : '1.5px solid #e8e4dd',
+                background: isActive ? c.pill : '#fff',
+                fontSize: 12, fontWeight: isActive ? 700 : 500,
+                color: isActive ? c.accent : '#9a9690',
+                cursor: 'pointer', transition: 'all 0.18s ease',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {m.time}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Full-width meal card */}
+      {(() => {
+        const c = getColors(meal.time)
+        return (
+          <div style={{
+            background: '#fff', border: '1px solid #e8e4dd',
+            borderRadius: 18, boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+            overflow: 'hidden',
+          }}>
+            {/* Coloured header band */}
+            <div style={{ background: c.bg, padding: '14px 18px 12px', borderBottom: '1px solid #e8e4dd' }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: c.accent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {meal.time}
+              </span>
+            </div>
+            <div style={{ padding: '16px 18px' }}>
+              <p style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.4 }}>
+                {meal.suggestion}
+              </p>
+              <p style={{ margin: 0, fontSize: 13, color: '#059669', fontWeight: 500, lineHeight: 1.55 }}>
+                {meal.benefit}
+              </p>
+            </div>
+          </div>
+        )
+      })()}
+    </div>
+  )
+}
+
 /* ─── Page ───────────────────────────────────────────────── */
 export default function DashboardPage() {
   const supabase = createClient()
-  const [profile, setProfile] = useState<{ name: string | null } | null>(null)
-  const [stats, setStats]     = useState<Stats | null>(null)
+  const [profile, setProfile]   = useState<{ name: string | null } | null>(null)
+  const [stats, setStats]       = useState<Stats | null>(null)
   const [insights, setInsights] = useState<Insights | null>(null)
-  const [loading, setLoading]  = useState(true)
-  const pageRef = useRef<HTMLDivElement>(null)
+  const [loading, setLoading]   = useState(true)
 
-  const hour = new Date().getHours()
+  const hour     = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
-  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
+  const today    = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
 
   /* fetch stats */
   useEffect(() => {
@@ -158,7 +145,7 @@ export default function DashboardPage() {
     run()
   }, [supabase])
 
-  /* fetch fresh AI insights — no caching */
+  /* fetch fresh AI insights */
   const fetchInsights = useCallback(async () => {
     setLoading(true)
     try {
@@ -170,26 +157,16 @@ export default function DashboardPage() {
   useEffect(() => { fetchInsights() }, [fetchInsights])
 
   /* computed */
-  const firstName    = profile?.name?.split(' ')[0] ?? 'there'
-  const status       = stats?.status ?? 'Stable'
-  const statusColor  = status === 'Needs Attention' ? '#e11d48' : status === 'Elevated' ? '#d97706' : '#059669'
-  const healthScore  = Math.min(
+  const firstName   = profile?.name?.split(' ')[0] ?? 'there'
+  const status      = stats?.status ?? 'Stable'
+  const statusColor = status === 'Needs Attention' ? '#e11d48' : status === 'Elevated' ? '#d97706' : '#059669'
+  const healthScore = Math.min(
     (stats && stats.medicinesCount > 0 ? Math.round((stats.takenCount / stats.medicinesCount) * 40) : 20) +
     Math.min((stats?.vitalsCount ?? 0) * 5, 30) +
     Math.min((stats?.journalsCount ?? 0) * 2, 20) +
     (status === 'Stable' ? 10 : status === 'Elevated' ? 5 : 0),
     100
   ) || 72
-
-  /* Pure CSS card widths 
-   *  100% resolves to the Carousel container width. 
-   *  We subtract the left padding (16px), gap (10px), and desired peek amount.
-   *  Diet peek: 50px -> 16+10+50 = 76px
-   *  Yoga peek: 80px -> 16+10+80 = 106px
-   */
-  const gap   = 10
-  const dietW = "calc(100% - 76px)"
-  const yogaW = "calc(100% - 106px)"
 
   /* style helpers */
   const card = (extra: React.CSSProperties = {}): React.CSSProperties => ({
@@ -198,8 +175,8 @@ export default function DashboardPage() {
     ...extra,
   })
 
-  const sectionTitle = (icon: React.ReactNode, label: string) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0 16px 10px' }}>
+  const sectionHeader = (icon: React.ReactNode, label: string) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0 16px 12px' }}>
       {icon}
       <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>{label}</span>
     </div>
@@ -207,35 +184,31 @@ export default function DashboardPage() {
 
   const STATS = [
     { label: 'Health Score', value: `${healthScore}`, unit: '/100', icon: TrendingUp, color: '#059669', href: '/vitals' },
-    { label: 'Meds Today',   value: stats?.medicineAdherence ?? '—', unit: '', icon: Pill, color: '#0d9488', href: '/medicines' },
-    { label: 'Vitals',       value: `${stats?.vitalsCount ?? 0}`, unit: '', icon: Heart, color: '#d97706', href: '/vitals' },
-    { label: 'Journals',     value: `${stats?.journalsCount ?? 0}`, unit: '', icon: Activity, color: '#7c3aed', href: '/journal' },
+    { label: 'Meds Today',   value: stats?.medicineAdherence ?? '—', unit: '', icon: Pill,        color: '#0d9488', href: '/medicines' },
+    { label: 'Vitals',       value: `${stats?.vitalsCount ?? 0}`,    unit: '', icon: Heart,       color: '#d97706', href: '/vitals' },
+    { label: 'Journals',     value: `${stats?.journalsCount ?? 0}`,  unit: '', icon: Activity,    color: '#7c3aed', href: '/journal' },
   ]
 
   const ACTIONS = [
-    { label: 'Log Vitals',     href: '/vitals',    icon: Heart,    color: '#d97706', bg: '#fffbeb' },
-    { label: 'Add Medicine',   href: '/medicines', icon: Pill,     color: '#0d9488', bg: '#f0fdf9' },
-    { label: 'Journal Entry',  href: '/journal',   icon: Activity, color: '#7c3aed', bg: '#f5f3ff' },
-    { label: 'Diet Plan',      href: '/diet',      icon: Utensils, color: '#059669', bg: '#f0fdf4' },
+    { label: 'Log Vitals',    href: '/vitals',    icon: Heart,    color: '#d97706', bg: '#fffbeb' },
+    { label: 'Add Medicine',  href: '/medicines', icon: Pill,     color: '#0d9488', bg: '#f0fdf9' },
+    { label: 'Journal Entry', href: '/journal',   icon: Activity, color: '#7c3aed', bg: '#f5f3ff' },
+    { label: 'Diet Plan',     href: '/diet',      icon: Utensils, color: '#059669', bg: '#f0fdf4' },
   ]
 
   return (
-    <div
-      ref={pageRef}
-      style={{ width: '100%', maxWidth: 600, margin: '0 auto', paddingBottom: 96 }}
-    >
+    <div style={{ width: '100%', maxWidth: 600, margin: '0 auto', paddingBottom: 32 }}>
       <style>{`
-        @keyframes spin     { to { transform: rotate(360deg); } }
-        @keyframes shimmer  { 0%,100% { background-position: 200% 0; } 50% { background-position: 0% 0; } }
+        @keyframes spin    { to { transform: rotate(360deg); } }
+        @keyframes shimmer { 0%,100% { background-position: 200% 0; } 50% { background-position: 0% 0; } }
+        @keyframes fadeUp  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      {/* ── 1. Greeting row ──────────────────────────── */}
+      {/* ── 1. Greeting ───────────────────────────────── */}
       <div style={{ padding: '20px 16px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
           <div style={{ width: 7, height: 7, borderRadius: '50%', background: statusColor }} />
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#9a9690' }}>
-            {today} · {status}
-          </span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#9a9690' }}>{today} · {status}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
@@ -259,7 +232,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── 2. AI Insight card ───────────────────────── */}
+      {/* ── 2. AI Insight card ────────────────────────── */}
       <div style={{ padding: '14px 16px 0' }}>
         <div style={card({ padding: '20px 18px' })}>
           {loading ? (
@@ -274,14 +247,13 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div>
+            <div style={{ animation: 'fadeUp 0.3s ease' }}>
               <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Your Daily Insight ✨
               </p>
-              <p style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 400, color: '#1a1a1a', lineHeight: 1.65, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+              <p style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 400, color: '#1a1a1a', lineHeight: 1.65, wordBreak: 'break-word' }}>
                 {insights?.feeling ?? 'Your health data is being analyzed…'}
               </p>
-              {/* CTA row — stacked on very small screens */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Link href="/chat" style={{
                   display: 'inline-flex', alignItems: 'center', gap: 7, alignSelf: 'flex-start',
@@ -296,8 +268,7 @@ export default function DashboardPage() {
                   <div style={{
                     padding: '10px 14px', borderRadius: 11,
                     background: '#f0fdf9', border: '1px solid #a7f3d0',
-                    fontSize: 13, fontWeight: 500, color: '#047857',
-                    lineHeight: 1.5, wordBreak: 'break-word',
+                    fontSize: 13, fontWeight: 500, color: '#047857', lineHeight: 1.5, wordBreak: 'break-word',
                   }}>
                     💡 {insights.health_tip.split('.')[0]}
                   </div>
@@ -308,7 +279,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── 3. Stats — 2×2 grid (no carousel, always fits) ── */}
+      {/* ── 3. Stats 2×2 grid ─────────────────────────── */}
       <div style={{ padding: '16px 16px 0' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {STATS.map((s, i) => {
@@ -331,7 +302,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── 4. Quick Actions — 2×2 grid ─────────────── */}
+      {/* ── 4. Quick Actions 2×2 grid ─────────────────── */}
       <div style={{ padding: '16px 16px 0' }}>
         <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#9a9690', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Quick Actions
@@ -354,100 +325,85 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── 5. Diet Plan carousel ────────────────────── */}
-      <div style={{ marginTop: 24 }}>
-        {sectionTitle(<Utensils size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, insights?.diet?.title ?? "Today's Nutrition")}
+      {/* ── 5. Diet Plan — pill tab switcher ──────────── */}
+      <div style={{ marginTop: 26 }}>
+        {sectionHeader(<Utensils size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, insights?.diet?.title ?? "Today's Diet Plan")}
         {loading ? (
-          <div style={{ display: 'flex', gap: 10, paddingLeft: 16, overflow: 'hidden' }}>
-            {[1,2].map(i => <Skel key={i} w={260} h={130} r={18} />)}
+          <div style={{ padding: '0 16px' }}>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+              {[80, 60, 64, 52].map((w, i) => <Skel key={i} w={w} h={30} r={100} />)}
+            </div>
+            <Skel w="100%" h={130} r={18} />
           </div>
         ) : (
-          <Carousel
-            items={insights?.diet?.meals ?? []}
-            cardWidth={dietW}
-            gap={10}
-            renderCard={(item) => {
-              const meal = item as Meal
-              return (
-                <div style={card({ padding: '18px 16px' })}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f5f1eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <span style={{ fontSize: 10, fontWeight: 800, color: '#5a5652', textTransform: 'uppercase' }}>{meal.time.slice(0,3)}</span>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{meal.time}</span>
-                  </div>
-                  <p style={{ margin: '0 0 5px', fontSize: 14, fontWeight: 600, color: '#1a1a1a', lineHeight: 1.4, wordBreak: 'break-word' }}>{meal.suggestion}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: '#059669', fontWeight: 500 }}>{meal.benefit}</p>
-                </div>
-              )
-            }}
-          />
+          <div style={{ animation: 'fadeUp 0.3s ease' }}>
+            <MealTabs meals={insights?.diet?.meals ?? []} />
+          </div>
         )}
       </div>
 
-      {/* ── 6. Yoga / Movement carousel ──────────────── */}
-      <div style={{ marginTop: 24 }}>
-        {sectionTitle(<Zap size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, 'Movement & Yoga')}
+      {/* ── 6. Yoga — 2-column grid ───────────────────── */}
+      <div style={{ marginTop: 26 }}>
+        {sectionHeader(<Zap size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, 'Movement & Yoga')}
         {loading ? (
-          <div style={{ display: 'flex', gap: 10, paddingLeft: 16, overflow: 'hidden' }}>
-            {[1,2].map(i => <Skel key={i} w={240} h={140} r={18} />)}
+          <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {[1, 2, 3, 4].map(i => <Skel key={i} w="100%" h={140} r={18} />)}
           </div>
         ) : (
-          <Carousel
-            items={insights?.yoga ?? []}
-            cardWidth={yogaW}
-            gap={10}
-            renderCard={(item) => {
-              const y = item as YogaPose
-              return (
-                <div style={card({ padding: '16px' })}>
-                  <div style={{ fontSize: 26, marginBottom: 10 }}>{y.emoji}</div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.3, flex: 1, minWidth: 0 }}>{y.pose}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', flexShrink: 0, background: '#f0fdf9', padding: '3px 8px', borderRadius: 20, border: '1px solid #a7f3d0', whiteSpace: 'nowrap' }}>{y.duration}</span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: 12, color: '#6b6b6b', lineHeight: 1.45, wordBreak: 'break-word' }}>{y.benefit}</p>
-                </div>
-              )
-            }}
-          />
+          <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, animation: 'fadeUp 0.3s ease' }}>
+            {(insights?.yoga ?? []).map((y, i) => (
+              <div key={i} style={card({ padding: '14px 12px' })}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>{y.emoji}</div>
+                <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.35 }}>{y.pose}</p>
+                <span style={{
+                  display: 'inline-block', marginBottom: 6,
+                  fontSize: 10, fontWeight: 700, color: '#0d9488',
+                  background: '#f0fdf9', padding: '2px 8px', borderRadius: 20,
+                  border: '1px solid #a7f3d0', whiteSpace: 'nowrap',
+                }}>
+                  {y.duration}
+                </span>
+                <p style={{ margin: 0, fontSize: 11, color: '#6b6b6b', lineHeight: 1.45 }}>{y.benefit}</p>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* ── 7. Ayurveda carousel ─────────────────────── */}
-      <div style={{ marginTop: 24 }}>
-        {sectionTitle(<Leaf size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, 'Ayurvedic Support')}
+      {/* ── 7. Ayurveda — stacked full-width rows ─────── */}
+      <div style={{ marginTop: 26 }}>
+        {sectionHeader(<Leaf size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, 'Ayurvedic Support')}
         {loading ? (
-          <div style={{ display: 'flex', gap: 10, paddingLeft: 16, overflow: 'hidden' }}>
-            {[1,2].map(i => <Skel key={i} w={260} h={140} r={18} />)}
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[1, 2, 3].map(i => <Skel key={i} w="100%" h={80} r={18} />)}
           </div>
         ) : (
-          <Carousel
-            items={insights?.ayurveda ?? []}
-            cardWidth={dietW}
-            gap={10}
-            renderCard={(item) => {
-              const h = item as AyurHerb
-              return (
-                <div style={card({ padding: '16px' })}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <span style={{ fontSize: 26, flexShrink: 0 }}>{h.emoji}</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.3 }}>{h.herb}</span>
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10, animation: 'fadeUp 0.3s ease' }}>
+            {(insights?.ayurveda ?? []).map((h, i) => (
+              <div key={i} style={card({ padding: '14px 16px', display: 'flex', gap: 14, alignItems: 'flex-start' })}>
+                <span style={{ fontSize: 28, flexShrink: 0, lineHeight: 1 }}>{h.emoji}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a' }}>{h.herb}</span>
+                    <span style={{
+                      flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#047857',
+                      background: '#f0fdf9', border: '1px solid #a7f3d0',
+                      padding: '2px 9px', borderRadius: 20, whiteSpace: 'nowrap',
+                    }}>
+                      {h.how}
+                    </span>
                   </div>
-                  <p style={{ margin: '0 0 10px', fontSize: 13, color: '#3d3d3d', lineHeight: 1.5, wordBreak: 'break-word' }}>{h.benefit}</p>
-                  <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: 7, background: '#f0fdf9', border: '1px solid #a7f3d0', fontSize: 11, color: '#047857', fontWeight: 600 }}>
-                    {h.how}
-                  </span>
+                  <p style={{ margin: 0, fontSize: 12, color: '#3d3d3d', lineHeight: 1.55 }}>{h.benefit}</p>
                 </div>
-              )
-            }}
-          />
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* ── 8. Lifestyle Tips grid ───────────────────── */}
+      {/* ── 8. Lifestyle Tips grid ────────────────────── */}
       {insights?.lifestyle && insights.lifestyle.length > 0 && (
-        <div style={{ padding: '24px 16px 0' }}>
+        <div style={{ padding: '26px 16px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
             <Sun size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>Today&apos;s Lifestyle Tips</span>
