@@ -8,42 +8,44 @@ import type { NextRequest } from 'next/server'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const db = require('@/server/db')
 
-type MedRow = { medicine_name: string; dose: string | null; frequency: string | null }
+type MedRow = { medicine_name: string; dose: string | null; frequency: string | null; slug?: string }
 
-function buildSystemPrompt(
-  profile: ReturnType<typeof db.getPatientFullProfile>,
+async function buildSystemPrompt(
+  profile: any,
   supaProfile: { name?: string; gender?: string; food_preference?: string; allergies?: string[]; state?: string; region?: string } | null
-): string {
+): Promise<string> {
   if (!profile) {
     return `You are Slyceai, a compassionate AI health assistant for Indian users. Be warm, empathetic, and culturally aware. Never diagnose definitively. Always recommend consulting a doctor for serious symptoms.`
   }
 
-  const mh   = profile.medical_history
+  const mh   = profile.medical_history || {}
   const v    = profile.latest_vitals
   const meds = (profile.active_medications ?? []) as MedRow[]
+  const journal = profile.recent_symptoms ?? []
 
-  // Pull current and past symptoms from DB
-  const sqliteDb = db.getDb()
-  const allSx = sqliteDb.prepare(
-    'SELECT symptom_id, symptom_label, type, severity, duration FROM patient_symptoms WHERE patient_id = ? AND resolved_at IS NULL ORDER BY recorded_at DESC'
-  ).all(profile.patient_id) as Array<{ symptom_id: string | null; symptom_label: string; type: string; severity: string | null; duration: string | null }>
-
-  const currSx  = allSx.filter(s => s.type === 'current')
-  const pastSx  = allSx.filter(s => s.type === 'past')
+  // Extract all recent symptoms from journal
+  const allSxLabels = new Set<string>()
+  for (const entry of journal) {
+    if (entry.symptoms && Array.isArray(entry.symptoms)) {
+      entry.symptoms.forEach((s: string) => allSxLabels.add(s))
+    }
+  }
+  const currSxLabels = Array.from(allSxLabels)
 
   const vitalsStr = v
-    ? `BP ${v.blood_pressure ?? '—'}, Pulse ${v.pulse ?? '—'} bpm, SpO₂ ${v.spo2 ?? '—'}%, Blood Sugar ${v.blood_sugar ?? '—'} mg/dL`
+    ? `BP ${v.bp_systolic ?? '—'}/${v.bp_diastolic ?? '—'}, Pulse ${v.pulse ?? '—'} bpm, SpO₂ ${v.oxygen ?? '—'}%, Blood Sugar ${v.blood_sugar ?? '—'} mg/dL`
     : 'Not recorded'
 
   // Enrich medications from Knowledge Base
   let kbContext = ''
   if (meds.length > 0) {
-    const medSlugs = meds.map((m: any) => m.medicine_slug).filter(Boolean)
-    const activeMedDetails = medSlugs.map(slug => db.getMedicineBySlug(slug)).filter(Boolean)
+    const medSlugs = meds.map(m => m.medicine_name.toLowerCase().replace(/\s+/g, '_')) // Approximation since we don't store slug yet
+    const activeMedDetails = await Promise.all(meds.map(m => db.searchMedicines(m.medicine_name)))
+    const foundMeds = activeMedDetails.flat().filter(Boolean)
     
     // Check drug interactions from KB
-    const interactions = db.getMedicineInteractions(medSlugs)
-    if (interactions.length > 0) {
+    const interactions = await db.getMedicineInteractions(foundMeds.map((m:any) => m.slug).filter(Boolean))
+    if (interactions && interactions.length > 0) {
       kbContext += `\n[WARNING] Potential Drug Interactions detected in patient's active meds:\n`
       interactions.forEach((i: any) => {
         kbContext += `- Between ${i.medicine_a} and ${i.medicine_b}: ${i.interactions.join('; ')}\n`
@@ -51,7 +53,7 @@ function buildSystemPrompt(
     }
     
     // Add known side effects of their drugs
-    activeMedDetails.forEach((m: any) => {
+    foundMeds.forEach((m: any) => {
       kbContext += `\nMedicine KB for ${m.name}:\n`
       if (m.side_effects_common?.length) kbContext += `- Common side ex: ${m.side_effects_common.join(', ')}\n`
       if (m.food_interactions?.length) kbContext += `- Food to avoid: ${m.food_interactions.join(', ')}\n`
@@ -59,8 +61,10 @@ function buildSystemPrompt(
   }
 
   // Enrich symptoms from Knowledge Base
-  if (currSx.length > 0) {
-    const activeSxDetails = currSx.map(s => s.symptom_id ? db.getSymptomById(s.symptom_id) : null).filter(Boolean)
+  if (currSxLabels.length > 0) {
+    const sxSearches = await Promise.all(currSxLabels.map(label => db.searchSymptoms(label)))
+    const activeSxDetails = sxSearches.map(res => res && res[0]).filter(Boolean)
+
     activeSxDetails.forEach((sx: any) => {
       kbContext += `\nSymptom KB for ${sx.label}:\n`
       if (sx.red_flag) kbContext += `- [RED FLAG WARNING] This is marked as a critical symptom. Always advise medical attention.\n`
@@ -75,8 +79,8 @@ function buildSystemPrompt(
 
   const diseases   = (mh?.known_diseases ?? []).join(', ') || 'None reported'
   const allergies  = (mh?.allergies ?? []).join(', ') || supaProfile?.allergies?.join(', ') || 'None known'
-  const currSxStr  = currSx.length ? currSx.map(s => `${s.symptom_label}${s.severity ? ` (${s.severity})` : ''}${s.duration ? ` for ${s.duration}` : ''}`).join(', ') : 'None reported'
-  const pastSxStr  = pastSx.length ? pastSx.map(s => s.symptom_label).join(', ') : 'None reported'
+  const currSxStr  = currSxLabels.length ? currSxLabels.join(', ') : 'None reported'
+  const pastSxStr  = 'None reported'
 
   return `You are Slyceai, an empathetic AI health assistant on the Arogya platform.
 
@@ -124,10 +128,10 @@ export async function POST(request: NextRequest) {
     .select('name, gender, food_preference, allergies, state, region')
     .eq('id', user.id).single()
 
-  // Load full SQLite profile
-  const arogyaProfile = db.getPatientFullProfile(user.id)
+  // Load full profile from Supabase
+  const arogyaProfile = await db.getPatientFullProfile(user.id)
 
-  const systemPrompt = buildSystemPrompt(arogyaProfile, supaProfile)
+  const systemPrompt = await buildSystemPrompt(arogyaProfile, supaProfile)
 
   const messages = [
     ...(history ?? []).reverse().map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
@@ -145,6 +149,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ content: response.content, usage: response.usage })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'AI error'
+    console.error('Chat error:', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
