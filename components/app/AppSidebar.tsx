@@ -348,12 +348,12 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
                 </div>
               ) : (
                 <div 
+                  data-group-header="true"
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '6px 12px', borderRadius: '8px',
                     background: isCurrentSession ? 'var(--bg-page)' : 'transparent',
                     cursor: 'pointer', transition: 'all 0.15s',
-                    groupHeader: 'true' // marker
                   }}
                   onMouseEnter={e => { 
                     if (!isCurrentSession) e.currentTarget.style.background = 'rgba(0,0,0,0.035)'
