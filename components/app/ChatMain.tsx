@@ -188,7 +188,7 @@ export default function ChatMain() {
   const isEmpty = !loadingHistory && messages.length === 0
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'calc(100vh - var(--header-height))', width:'100%' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'calc(100dvh - var(--header-height))', width:'100%' }}>
       <style>{`
         .chat-scroll-area { scrollbar-width:none; }
         .chat-scroll-area::-webkit-scrollbar { display:none; }
@@ -205,7 +205,7 @@ export default function ChatMain() {
           </div>
         )}
         {isEmpty && (
-          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'0 20px 60px', animation:'greetIn 0.45s ease' }}>
+          <div className="chat-greeting-area" style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'0 20px 60px', animation:'greetIn 0.45s ease' }}>
             <input ref={reportInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv,.doc,.docx" style={{ display:'none' }} onChange={e => { const f=e.target.files?.[0]; if(f) handleFileSelect(f); e.target.value='' }} />
             <div style={{ textAlign:'center', marginBottom:32 }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginBottom:8 }}>
@@ -269,7 +269,7 @@ export default function ChatMain() {
           </div>
         )}
         {!loadingHistory && messages.length>0 && (
-          <div style={{ flex:1, width:'100%', maxWidth:760, margin:'0 auto', padding:'40px 28px 24px', display:'flex', flexDirection:'column' }}>
+          <div className="chat-messages-area" style={{ flex:1, width:'100%', maxWidth:760, margin:'0 auto', padding:'40px 28px 24px', display:'flex', flexDirection:'column' }}>
             <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:24 }}>
               <button onClick={clearChat} disabled={loading} style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 10px', borderRadius:8, border:'none', background:'transparent', color:'#c4bfb7', fontSize:12, fontWeight:500, cursor:'pointer', fontFamily:'inherit' }}
                 onMouseEnter={e=>{e.currentTarget.style.color='#dc2626';e.currentTarget.style.background='rgba(220,38,38,0.06)'}}
@@ -281,7 +281,7 @@ export default function ChatMain() {
               <div key={msg.id} style={{ animation:'msgIn 0.22s ease', marginBottom:32 }}>
                 {msg.role==='user'?(
                   <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                    <div style={{ maxWidth:'72%', padding:'12px 18px', borderRadius:'20px 4px 20px 20px', background:'var(--text-primary)', color:'#f0eeeb', fontSize:15, lineHeight:1.7 }}>
+                    <div className="chat-bubble-user" style={{ maxWidth:'72%', padding:'12px 18px', borderRadius:'20px 4px 20px 20px', background:'var(--text-primary)', color:'#f0eeeb', fontSize:15, lineHeight:1.7 }}>
                       {msg.imagePreview && <img src={msg.imagePreview} alt="attachment" style={{ width:'100%', maxWidth:260, borderRadius:10, marginBottom:8, objectFit:'cover', display:'block' }}/>}
                       {msg.content.split('\n').map((l,i)=><p key={i} style={{ margin:i>0?'4px 0 0':0 }}>{l}</p>)}
                       <div style={{ fontSize:10.5, marginTop:6, opacity:0.4, textAlign:'right' }}>{new Date(msg.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
@@ -313,7 +313,7 @@ export default function ChatMain() {
         )}
       </div>
       {/* Input zone */}
-      <div style={{ flexShrink:0, padding:'8px 28px 20px', display:'flex', flexDirection:'column', alignItems:'center' }}>
+      <div className="chat-input-wrapper" style={{ flexShrink:0, padding:'8px 28px 20px', display:'flex', flexDirection:'column', alignItems:'center' }}>
         <div style={{ width:'100%', maxWidth:760 }}>
           {attachedFile&&(
             <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 12px', borderRadius:8, marginBottom:8, background:'#e6faf8', border:'1px solid #99d6d0', fontSize:12.5, fontWeight:500, color:'#0d7a72', maxWidth:'100%' }}>

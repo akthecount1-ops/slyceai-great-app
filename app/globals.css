@@ -354,6 +354,38 @@ body {
 
 @media (max-width: 768px) {
   .dash-content {
+    padding: 0 16px 24px !important;
+  }
+}
+
+/* Chat Mobile Adjustments */
+@media (max-width: 768px) {
+  .chat-input-wrapper {
+    padding: 8px 16px 12px !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    background: var(--bg-page) !important;
+    z-index: 10 !important;
+    width: 100% !important;
+  }
+  
+  .chat-messages-area {
+    padding: 24px 16px 24px !important;
+  }
+  
+  .chat-bubble-user {
+    max-width: 88% !important;
+    padding: 10px 14px !important;
+    border-radius: 18px 4px 18px 18px !important;
+  }
+  
+  .chat-greeting-area {
+    padding: 0 16px 40px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dash-content {
     padding: 12px 12px;
   }
 
