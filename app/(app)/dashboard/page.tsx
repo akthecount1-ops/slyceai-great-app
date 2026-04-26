@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MessageSquare, X } from 'lucide-react'
+import { MessageSquare, X, FileText } from 'lucide-react'
 import LogVitalsModal from '@/components/app/LogVitalsModal'
 import AddMedicineModal from '@/components/app/AddMedicineModal'
 import AddSymptomModal from '@/components/app/AddSymptomModal'
 import HealthJournalModal from '@/components/app/HealthJournalModal'
+import UploadReportModal from '@/components/app/UploadReportModal'
 
 /* ─── Types ─────────────────────────────────────────────── */
 interface DashVitals {
@@ -372,6 +373,7 @@ export default function DashboardPage() {
   const [showMedicineModal, setShowMedicineModal] = useState(false)
   const [showSymptomModal, setShowSymptomModal] = useState(false)
   const [showJournalModal, setShowJournalModal] = useState(false)
+  const [showUploadReportModal, setShowUploadReportModal] = useState(false)
 
   /* ── Load all dashboard data ─────────────────────── */
   const loadData = useCallback(async () => {
@@ -825,6 +827,18 @@ export default function DashboardPage() {
               <MessageSquare size={14} />
               Talk to Slyceai
             </button>
+            <button
+              onClick={() => setShowUploadReportModal(true)}
+              style={{
+                width: '100%', background: 'transparent', color: 'var(--text-primary)',
+                border: '1px dashed var(--border)', padding: '11px', borderRadius: '6px', 
+                fontSize: '13px', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', gap: '7px',
+                fontFamily: 'inherit', marginTop: '8px'
+              }}>
+              <FileText size={14} style={{ color: 'var(--text-muted)' }} />
+              Upload report
+            </button>
           </div>
         </div>
 
@@ -872,7 +886,11 @@ export default function DashboardPage() {
           onSuccess={() => { setShowJournalModal(false); loadData(); }} 
         />
       )}
+      {showUploadReportModal && (
+        <UploadReportModal onClose={() => setShowUploadReportModal(false)} />
+      )}
 
     </div>
   )
 }
+

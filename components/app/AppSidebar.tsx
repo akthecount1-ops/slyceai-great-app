@@ -279,32 +279,6 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
         </Link>
       </nav>
 
-      {/* ── Quick Links ──────────────────────────────── */}
-      <div style={{ padding: '24px 16px 8px' }}>
-        <p style={{
-          fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)',
-          textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 10px',
-        }}>
-          Quick Links
-        </p>
-        <button onClick={() => go('/vitals')} style={{
-          display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0',
-          background: 'transparent', border: 'none', cursor: 'pointer',
-          color: 'var(--text-primary)', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit'
-        }}>
-          <Plus size={16} strokeWidth={1.5} style={{ color: 'var(--text-muted)' }} />
-          Log vitals
-        </button>
-        <button onClick={() => go('/reports')} style={{
-          display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0', marginTop: '8px',
-          background: 'transparent', border: 'none', cursor: 'pointer',
-          color: 'var(--text-primary)', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit'
-        }}>
-          <FileText size={16} strokeWidth={1.5} style={{ color: 'var(--text-muted)' }} />
-          Upload report
-        </button>
-      </div>
-
       {/* ── Divider ──────────────────────────────── */}
       <div style={{ height: '0.5px', background: 'var(--border)', margin: '8px 16px' }} />
 
