@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "alendronate",
+  "name": "Fosamax / Osteofos",
+  "generic_name": "Alendronate Sodium",
+  "manufacturer": "MSD / Cipla",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Postmenopausal osteoporosis",
+    "Male osteoporosis",
+    "Glucocorticoid-induced osteoporosis",
+    "Paget's disease of bone"
+  ],
+  "how_it_works": "Nitrogen-containing bisphosphonate that is incorporated into bone matrix and inhibits osteoclast-mediated bone resorption by inhibiting farnesyl pyrophosphate synthase.",
+  "dosage_forms": [
+    "Tablet 10mg (daily)",
+    "Tablet 70mg (weekly)"
+  ],
+  "side_effects": {
+    "common": [
+      "Esophageal irritation",
+      "Heartburn",
+      "Abdominal pain",
+      "Musculoskeletal pain",
+      "Headache"
+    ],
+    "serious": [
+      "Esophageal ulceration and perforation",
+      "Osteonecrosis of the jaw",
+      "Atypical femur fracture",
+      "Hypocalcemia",
+      "Severe esophageal reactions"
+    ]
+  },
+  "drug_interactions": [
+    "NSAIDs (GI irritation)",
+    "Calcium/antacids reduce absorption (take 30min apart)",
+    "Aspirin"
+  ],
+  "food_interactions": [
+    "Take with plain water only — other beverages reduce absorption",
+    "Must remain upright for 30 minutes after taking"
+  ],
+  "contraindications": [
+    "Esophageal abnormalities",
+    "Inability to sit upright for 30 minutes",
+    "Hypocalcemia",
+    "Severe kidney disease (eGFR<35)"
+  ],
+  "what_to_avoid": [
+    "Take first thing in morning with plain water — do NOT lie down for 30 minutes",
+    "Do not eat for 30 minutes after",
+    "Never crush or chew",
+    "Weekly dosing preferred (once weekly tablet)",
+    "Dental check-up before starting — risk of jaw osteonecrosis"
+  ],
+  "storage": "Store below 25°C"
+}

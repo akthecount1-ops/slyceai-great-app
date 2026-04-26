@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "hydroxychloroquine",
+  "name": "HCQS / Plaquenil",
+  "generic_name": "Hydroxychloroquine Sulfate",
+  "manufacturer": "Ipca / Sanofi",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Rheumatoid arthritis",
+    "Systemic lupus erythematosus (SLE)",
+    "Malaria prevention and treatment",
+    "Sjögren's syndrome",
+    "Discoid lupus"
+  ],
+  "how_it_works": "Accumulates in lysosomes and raises intralysosomal pH, impairing antigen processing and pro-inflammatory cytokine production. Also has antimalarial activity.",
+  "dosage_forms": [
+    "Tablet 200mg",
+    "Tablet 400mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Diarrhea",
+      "Headache",
+      "Skin pigmentation",
+      "Mood changes"
+    ],
+    "serious": [
+      "Macular retinopathy and irreversible vision loss (dose-and duration-dependent)",
+      "QT prolongation",
+      "Hypoglycemia (severe)",
+      "Blood disorders"
+    ]
+  },
+  "drug_interactions": [
+    "Antacids reduce absorption",
+    "Digoxin",
+    "Drugs that prolong QT",
+    "Metformin (hypoglycemia)",
+    "Praziquantel"
+  ],
+  "food_interactions": [
+    "Take with food or milk to reduce GI upset"
+  ],
+  "contraindications": [
+    "Retinal or visual field changes",
+    "G6PD deficiency",
+    "QT prolongation",
+    "Porphyria",
+    "Allergy to 4-aminoquinolines"
+  ],
+  "what_to_avoid": [
+    "Annual ophthalmology exam after 5 years of use",
+    "Baseline retinal exam before starting",
+    "Do not skip follow-up",
+    "Takes months to show full effect in autoimmune disease"
+  ],
+  "storage": "Store below 25°C"
+}

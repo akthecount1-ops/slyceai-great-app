@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "ranitidine_replacement",
+  "name": "Famotidine 20mg",
+  "generic_name": "Famotidine",
+  "manufacturer": "Johnson & Johnson / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "GERD",
+    "Peptic ulcer",
+    "Heartburn",
+    "Zollinger-Ellison syndrome",
+    "Prevention of stress ulcers"
+  ],
+  "how_it_works": "H2 receptor antagonist that competitively inhibits histamine at gastric parietal cell H2 receptors, reducing gastric acid secretion.",
+  "dosage_forms": [
+    "Tablet 20mg",
+    "Tablet 40mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Headache",
+      "Dizziness",
+      "Constipation",
+      "Diarrhea",
+      "Nausea"
+    ],
+    "serious": [
+      "QT prolongation (high doses)",
+      "Thrombocytopenia (rare)",
+      "Confusion (elderly patients)"
+    ]
+  },
+  "drug_interactions": [
+    "Ketoconazole",
+    "Atazanavir",
+    "Antacids reduce absorption"
+  ],
+  "food_interactions": [
+    "Alcohol increases GI irritation",
+    "Smoking reduces efficacy"
+  ],
+  "contraindications": [
+    "Severe kidney disease (reduce dose)",
+    "Allergy to H2 blockers"
+  ],
+  "what_to_avoid": [
+    "Antacids should be taken separately (2h apart)",
+    "Suitable for pregnancy (unlike omeprazole — consult doctor)"
+  ],
+  "storage": "Store below 25°C"
+}

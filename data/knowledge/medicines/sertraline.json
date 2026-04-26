@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "sertraline",
+  "name": "Zoloft / Serta",
+  "generic_name": "Sertraline Hydrochloride",
+  "manufacturer": "Pfizer / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Major depressive disorder",
+    "Panic disorder",
+    "Obsessive-compulsive disorder (OCD)",
+    "PTSD",
+    "Social anxiety disorder",
+    "Premenstrual dysphoric disorder (PMDD)"
+  ],
+  "how_it_works": "Selective serotonin reuptake inhibitor (SSRI) that blocks the serotonin transporter (SERT), increasing synaptic serotonin concentration.",
+  "dosage_forms": [
+    "Tablet 25mg",
+    "Tablet 50mg",
+    "Tablet 100mg",
+    "Oral concentrate solution"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Diarrhea",
+      "Insomnia or somnolence",
+      "Dry mouth",
+      "Sweating",
+      "Sexual dysfunction",
+      "Headache"
+    ],
+    "serious": [
+      "Suicidal ideation (especially under 25 — monitor)",
+      "Serotonin syndrome",
+      "Bleeding (platelet function)",
+      "Hyponatremia",
+      "Mania activation"
+    ]
+  },
+  "drug_interactions": [
+    "MAOIs (life-threatening — 14-day washout)",
+    "Tramadol and triptans (serotonin syndrome)",
+    "NSAIDs and aspirin (bleeding)",
+    "Warfarin",
+    "Pimozide (QT)",
+    "Linezolid"
+  ],
+  "food_interactions": [
+    "Alcohol worsens depression and CNS effects",
+    "Avoid grapefruit (minor)"
+  ],
+  "contraindications": [
+    "MAOI use within 14 days",
+    "Pimozide use",
+    "Allergy to sertraline"
+  ],
+  "what_to_avoid": [
+    "Full effect takes 4–6 weeks",
+    "Never stop suddenly — taper over weeks",
+    "Tell doctor if thoughts of self-harm increase",
+    "Not addictive but has discontinuation syndrome",
+    "Can be taken with food to reduce nausea"
+  ],
+  "storage": "Store below 25°C"
+}

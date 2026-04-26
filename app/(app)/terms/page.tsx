@@ -88,10 +88,10 @@ export default function TermsPage() {
       {/* Intro notice */}
       <div
         className="rounded-2xl p-4 mb-6 flex gap-3"
-        style={{ background: '#fffbeb', border: '1.5px solid #fde68a' }}
+        style={{ background: 'var(--bg-card)beb', border: '1.5px solid #fde68a' }}
       >
         <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
-        <p style={{ fontSize: '13.5px', color: '#92400e', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: '13.5px', color: 'var(--badge-amber-text)', margin: 0, lineHeight: 1.6 }}>
           Please read these Terms and Conditions carefully before using the Arogya Health platform. By creating an account or using our services, you acknowledge that you have read, understood, and agree to be bound by these terms.
         </p>
       </div>
@@ -103,7 +103,7 @@ export default function TermsPage() {
             key={i}
             className="rounded-2xl p-5 border"
             style={{
-              background: '#ffffff',
+              background: 'var(--bg-card)fff',
               borderColor: 'var(--border)',
             }}
           >

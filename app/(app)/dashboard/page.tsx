@@ -1,425 +1,878 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import {
-  Activity, Pill, Leaf, Sun, RefreshCw,
-  MessageSquare, Heart, Utensils, Zap, TrendingUp, ChevronRight,
-} from 'lucide-react'
+import { MessageSquare, X } from 'lucide-react'
+import LogVitalsModal from '@/components/app/LogVitalsModal'
+import AddMedicineModal from '@/components/app/AddMedicineModal'
+import AddSymptomModal from '@/components/app/AddSymptomModal'
+import HealthJournalModal from '@/components/app/HealthJournalModal'
 
 /* ─── Types ─────────────────────────────────────────────── */
-interface Meal     { time: string; suggestion: string; benefit: string }
-interface LifeTip  { title: string; tip: string; emoji: string }
-interface AyurHerb { herb: string; benefit: string; how: string; emoji: string }
-interface YogaPose { pose: string; duration: string; benefit: string; emoji: string }
-interface Insights { feeling: string; health_tip: string; diet: { title: string; meals: Meal[] }; lifestyle: LifeTip[]; ayurveda: AyurHerb[]; yoga: YogaPose[] }
-interface Stats    { vitalsCount: number; medicinesCount: number; journalsCount: number; medicineAdherence: string; takenCount: number; status: string }
+interface DashVitals {
+  bp_systolic: number | null
+  bp_diastolic: number | null
+  pulse: number | null
+  oxygen: number | null
+  blood_sugar: number | null
+  recorded_at: string | null
+}
+interface MedItem { id: string; medicine_name: string; dose: string | null; time_of_day: string[] | null; taken: boolean }
+interface SymptomEntry { id: string; symptoms: string[] | null; notes: string | null; journal_date: string }
+interface JournalEntry { id: string; notes: string | null; journal_date: string }
+interface Profile {
+  name: string | null
+  onboarding_complete: boolean
+  date_of_birth: string | null
+  gender: string | null
+  weight?: number | null
+  height?: number | null
+}
 
-/* ─── Skeleton block ─────────────────────────────────────── */
-function Skel({ w = '100%', h = 16, r = 8, mb = 0 }: { w?: string | number; h?: number; r?: number; mb?: number }) {
+/* ─── Badge helpers ──────────────────────────────────────── */
+function badge(label: string, variant: 'green' | 'amber' | 'red') {
+  const styles: Record<string, React.CSSProperties> = {
+    green: { background: 'var(--badge-green-bg)', color: 'var(--badge-green-text)', border: '0.5px solid var(--accent)' },
+    amber: { background: 'var(--badge-amber-bg)', color: 'var(--badge-amber-text)', border: '0.5px solid var(--badge-amber-text)' },
+    red:   { background: 'var(--badge-red-bg)', color: 'var(--badge-red-text)', border: '0.5px solid var(--badge-red-text)' },
+  }
   return (
-    <div style={{
-      width: w, height: h, borderRadius: r,
-      background: 'linear-gradient(90deg, #f0ece6 0%, #e8e4dd 50%, #f0ece6 100%)',
-      backgroundSize: '200% 100%',
-      animation: 'shimmer 1.4s ease-in-out infinite',
-      marginBottom: mb, flexShrink: 0,
-    }} />
+    <span style={{
+      fontSize: '10px', padding: '2px 7px', borderRadius: '4px',
+      fontWeight: 600, ...styles[variant],
+    }}>{label}</span>
   )
 }
 
-/* ─── Meal Tab Switcher ──────────────────────────────────── */
-function MealTabs({ meals }: { meals: Meal[] }) {
-  const [active, setActive] = useState(0)
-  if (!meals.length) return null
-  const meal = meals[active]
-  const timeColors: Record<string, { bg: string; accent: string; pill: string }> = {
-    default:   { bg: '#f5f1eb', accent: '#5a5652', pill: '#e8e4dd' },
-    breakfast: { bg: '#fff8f0', accent: '#d97706', pill: '#fef3c7' },
-    lunch:     { bg: '#f0fdf9', accent: '#0d9488', pill: '#ccfbf1' },
-    dinner:    { bg: '#f5f3ff', accent: '#7c3aed', pill: '#ede9fe' },
-    snack:     { bg: '#fdf4ff', accent: '#a21caf', pill: '#fae8ff' },
+function getBpStatus(sys: number | null, dia: number | null): 'green' | 'amber' | 'red' {
+  if (!sys) return 'amber'
+  if (sys < 120 && (dia ?? 0) < 80) return 'green'
+  if (sys < 140) return 'amber'
+  return 'red'
+}
+
+function getPulseStatus(p: number | null): 'green' | 'amber' | 'red' {
+  if (!p) return 'amber'
+  if (p >= 60 && p <= 90) return 'green'
+  if (p > 90 && p <= 100) return 'amber'
+  return 'red'
+}
+
+function getSugarStatus(s: number | null): 'green' | 'amber' | 'red' {
+  if (!s) return 'amber'
+  if (s < 100) return 'green'
+  if (s < 140) return 'amber'
+  return 'red'
+}
+
+/* ─── Onboarding Modal ───────────────────────────────────── */
+type Step = 1 | 2 | 3 | 4
+
+interface OnboardingModalProps {
+  step: Step
+  onClose: () => void
+  onComplete: () => void
+  onSkip: () => void
+  onNext: (nextStep: Step) => void
+  userId: string
+  supabase: ReturnType<typeof createClient>
+}
+
+function OnboardingModal({ step, onClose, onComplete, onSkip, onNext, userId, supabase }: OnboardingModalProps) {
+  const [saving, setSaving] = useState(false)
+  // Step 1 — Account (already done if we're on dashboard)
+  // Step 2 — Body measurements + vitals
+  const [weight, setWeight]       = useState('')
+  const [height, setHeight]       = useState('')
+  const [bloodGroup, setBloodGroup] = useState('')
+  const [age, setAge]             = useState('')
+  const [bp, setBp]               = useState('')
+  const [pulse, setPulse]         = useState('')
+  const [spo2, setSpo2]           = useState('')
+  const [sugar, setSugar]         = useState('')
+  // Step 3 — Conditions + medicines
+  const [conditions, setConditions] = useState<string[]>([])
+  const [condInput, setCondInput]   = useState('')
+  const [medName, setMedName]       = useState('')
+  const [medDose, setMedDose]       = useState('')
+  // Step 4 — Symptoms
+  const [symptoms, setSymptoms]   = useState<string[]>([])
+  const COMMON_SYMPTOMS = ['Fatigue', 'Headache', 'Nausea', 'Dizziness', 'Back pain', 'Chest pain', 'Shortness of breath', 'Muscle weakness', 'Fever', 'Cough']
+
+  const saveStep2 = async () => {
+    setSaving(true)
+    try {
+      const updates: Record<string, unknown> = { id: userId, updated_at: new Date().toISOString() }
+      if (weight) updates.weight = parseFloat(weight)
+      if (height) updates.height = parseFloat(height)
+      await supabase.from('profiles').upsert(updates)
+
+      if (bp || pulse || spo2 || sugar) {
+        const bpParts = bp.split('/')
+        await supabase.from('vitals').insert({
+          user_id: userId,
+          bp_systolic: bpParts[0] ? parseInt(bpParts[0]) : null,
+          bp_diastolic: bpParts[1] ? parseInt(bpParts[1]) : null,
+          pulse: pulse ? parseInt(pulse) : null,
+          oxygen: spo2 ? parseFloat(spo2) : null,
+          blood_sugar: sugar ? parseFloat(sugar) : null,
+          recorded_at: new Date().toISOString(),
+        })
+      }
+    } finally { setSaving(false) }
+    onNext(3)
   }
-  const getColors = (t: string) => timeColors[t.toLowerCase()] ?? timeColors.default
+
+  const saveStep3 = async () => {
+    setSaving(true)
+    try {
+      if (medName) {
+        await supabase.from('medicines').insert({
+          user_id: userId,
+          medicine_name: medName,
+          dose: medDose || null,
+          is_active: true,
+        })
+      }
+    } finally { setSaving(false) }
+    onNext(4)
+  }
+
+  const saveStep4 = async () => {
+    setSaving(true)
+    try {
+      if (symptoms.length > 0) {
+        await supabase.from('symptom_journal').insert({
+          user_id: userId,
+          symptoms,
+          journal_date: new Date().toISOString().split('T')[0],
+          notes: conditions.join(', ') || null,
+        })
+      }
+      await supabase.from('profiles').upsert({
+        id: userId,
+        onboarding_complete: true,
+        updated_at: new Date().toISOString(),
+      })
+    } finally { setSaving(false) }
+    onComplete()
+  }
+
+  const titles: Record<Step, string> = {
+    1: 'Account created',
+    2: 'Body measurements',
+    3: 'Conditions & medicines',
+    4: 'Current symptoms',
+  }
+  const subs: Record<Step, string> = {
+    1: 'Your account is set up.',
+    2: 'This helps Slyceai personalise diet, dosage context, and health scores for you.',
+    3: 'Tell us about any conditions you manage and medicines you take.',
+    4: 'What symptoms are you currently experiencing?',
+  }
+
+  const pill = (label: string, active: boolean, onClick: () => void) => (
+    <button key={label} onClick={onClick} style={{
+      fontSize: '12px', padding: '5px 12px', borderRadius: '20px',
+      border: active ? '0.5px solid var(--accent)' : '0.5px solid var(--border)',
+      background: active ? 'var(--badge-green-bg)' : 'var(--bg-secondary)',
+      color: active ? 'var(--badge-green-text)' : 'var(--text-secondary)',
+      cursor: 'pointer', transition: 'all 0.12s',
+    }}>{label}</button>
+  )
 
   return (
-    <div style={{ padding: '0 16px' }}>
-      {/* Pill tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-        {meals.map((m, i) => {
-          const c = getColors(m.time)
-          const isActive = i === active
-          return (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              style={{
-                padding: '6px 14px', borderRadius: 100,
-                border: isActive ? `1.5px solid ${c.accent}` : '1.5px solid #e8e4dd',
-                background: isActive ? c.pill : '#fff',
-                fontSize: 12, fontWeight: isActive ? 700 : 500,
-                color: isActive ? c.accent : '#9a9690',
-                cursor: 'pointer', transition: 'all 0.18s ease',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {m.time}
-            </button>
-          )
-        })}
-      </div>
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+    }}>
+      <div style={{
+        background: 'var(--bg-card)', borderRadius: '12px',
+        border: '0.5px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+        padding: '24px', width: '460px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Step {step} of 4</p>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: '4px' }}>
+            <X size={16} />
+          </button>
+        </div>
+        <h2 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>{titles[step]}</h2>
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: 1.5 }}>{subs[step]}</p>
 
-      {/* Full-width meal card */}
-      {(() => {
-        const c = getColors(meal.time)
-        return (
-          <div style={{
-            background: '#fff', border: '1px solid #e8e4dd',
-            borderRadius: 18, boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
-            overflow: 'hidden',
-          }}>
-            {/* Coloured header band */}
-            <div style={{ background: c.bg, padding: '14px 18px 12px', borderBottom: '1px solid #e8e4dd' }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: c.accent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                {meal.time}
-              </span>
-            </div>
-            <div style={{ padding: '16px 18px' }}>
-              <p style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.4 }}>
-                {meal.suggestion}
-              </p>
-              <p style={{ margin: 0, fontSize: 13, color: '#059669', fontWeight: 500, lineHeight: 1.55 }}>
-                {meal.benefit}
-              </p>
-            </div>
+        {/* Step 1 — just info */}
+        {step === 1 && (
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>✓</div>
+            <p style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
+              Great! Your account is ready. Let&apos;s fill in a few health details to personalise your experience.
+            </p>
           </div>
-        )
-      })()}
+        )}
+
+        {/* Step 2 — measurements + vitals */}
+        {step === 2 && (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+              {[
+                { label: 'Weight (kg)', val: weight, set: setWeight, type: 'number', ph: 'e.g. 72', req: true },
+                { label: 'Height (cm)', val: height, set: setHeight, type: 'number', ph: 'e.g. 175', req: true },
+                { label: 'Age', val: age, set: setAge, type: 'number', ph: 'e.g. 28', req: false },
+              ].map(f => (
+                <div key={f.label}>
+                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                    {f.label} {f.req && <span style={{ color: '#d97706' }}>required</span>}
+                  </label>
+                  <input
+                    type={f.type} value={f.val} onChange={e => f.set(e.target.value)}
+                    placeholder={f.ph}
+                    style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}
+                  />
+                </div>
+              ))}
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Blood group <span style={{ color: 'var(--text-muted)' }}>optional</span></label>
+                <select value={bloodGroup} onChange={e => setBloodGroup(e.target.value)}
+                  style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}>
+                  <option value="">Select</option>
+                  {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g}>{g}</option>)}
+                </select>
+              </div>
+            </div>
+            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '8px', marginTop: '10px' }}>Current vitals <span style={{ color: 'var(--text-muted)' }}>(optional — fill if you have a reading)</span></p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {[
+                { label: 'Blood pressure', val: bp, set: setBp, ph: 'e.g. 120/80', type: 'text' },
+                { label: 'Pulse (bpm)', val: pulse, set: setPulse, ph: 'e.g. 78', type: 'number' },
+                { label: 'SpO2 (%)', val: spo2, set: setSpo2, ph: 'e.g. 98', type: 'number' },
+                { label: 'Blood sugar (mg/dL)', val: sugar, set: setSugar, ph: 'e.g. 95', type: 'number' },
+              ].map(f => (
+                <div key={f.label}>
+                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>{f.label}</label>
+                  <input
+                    type={f.type} value={f.val} onChange={e => f.set(e.target.value)}
+                    placeholder={f.ph}
+                    style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Step 3 — conditions + medicines */}
+        {step === 3 && (
+          <>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>Known conditions</p>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+              <input
+                type="text" value={condInput}
+                onChange={e => setCondInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && condInput.trim()) { setConditions(p => [...p, condInput.trim()]); setCondInput('') } }}
+                placeholder="Type and press Enter"
+                style={{ flex: 1, padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}
+              />
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
+              {conditions.map(c => (
+                <span key={c} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '20px', background: 'var(--badge-green-bg)', color: 'var(--badge-green-text)', border: '0.5px solid var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {c}
+                  <button onClick={() => setConditions(p => p.filter(x => x !== c))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--badge-green-text)', lineHeight: 1, fontSize: '14px' }}>×</button>
+                </span>
+              ))}
+            </div>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>Add a medicine <span style={{ color: 'var(--text-muted)' }}>(optional)</span></p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Medicine name</label>
+                <input type="text" value={medName} onChange={e => setMedName(e.target.value)} placeholder="e.g. Metformin"
+                  style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Dose</label>
+                <input type="text" value={medDose} onChange={e => setMedDose(e.target.value)} placeholder="e.g. 500mg morning"
+                  style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }} />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Step 4 — symptoms */}
+        {step === 4 && (
+          <>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {COMMON_SYMPTOMS.map(s => pill(s, symptoms.includes(s), () =>
+                setSymptoms(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s])
+              ))}
+            </div>
+            {symptoms.length > 0 && (
+              <p style={{ fontSize: '12px', color: 'var(--badge-green-text)', marginTop: '12px' }}>
+                {symptoms.length} symptom{symptoms.length > 1 ? 's' : ''} selected
+              </p>
+            )}
+          </>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '20px' }}>
+          <button onClick={onSkip} style={{
+            background: 'transparent', border: '0.5px solid var(--border)',
+            padding: '7px 14px', borderRadius: '6px', fontSize: '12px',
+            cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
+          }}>Skip</button>
+          {step < 4 ? (
+            <button disabled={saving}
+              onClick={step === 1 ? () => onNext(2) : step === 2 ? saveStep2 : saveStep3}
+              style={{
+                background: 'var(--accent)', border: 'none', padding: '7px 14px',
+                borderRadius: '6px', fontSize: '12px', cursor: saving ? 'wait' : 'pointer',
+                color: 'var(--bg-card)', fontWeight: 500, fontFamily: 'inherit',
+                opacity: saving ? 0.7 : 1,
+              }}>
+              {saving ? 'Saving…' : 'Save & continue →'}
+            </button>
+          ) : (
+            <button disabled={saving} onClick={saveStep4} style={{
+              background: 'var(--accent)', border: 'none', padding: '7px 14px',
+              borderRadius: '6px', fontSize: '12px', cursor: saving ? 'wait' : 'pointer',
+              color: 'var(--bg-card)', fontWeight: 500, fontFamily: 'inherit',
+              opacity: saving ? 0.7 : 1,
+            }}>
+              {saving ? 'Saving…' : 'Complete setup ✓'}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
 
 /* ─── Page ───────────────────────────────────────────────── */
 export default function DashboardPage() {
-  const supabase = createClient()
-  const [profile, setProfile]   = useState<{ name: string | null } | null>(null)
-  const [stats, setStats]       = useState<Stats | null>(null)
-  const [insights, setInsights] = useState<Insights | null>(null)
-  const [loading, setLoading]   = useState(true)
+  const router = useRouter()
+  const [supabase] = useState(() => createClient())
 
-  const hour     = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
-  const today    = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
+  const [profile,    setProfile   ] = useState<Profile | null>(null)
+  const [vitals,     setVitals    ] = useState<DashVitals | null>(null)
+  const [medicines,  setMedicines ] = useState<MedItem[]>([])
+  const [symptoms,   setSymptoms  ] = useState<SymptomEntry | null>(null)
+  const [journals,   setJournals  ] = useState<JournalEntry[]>([])
+  const [userId,     setUserId    ] = useState<string>('')
+  const [loading,    setLoading   ] = useState(true)
+  const [insight,    setInsight   ] = useState<string>('')
 
-  /* fetch stats */
-  useEffect(() => {
-    const run = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const todayStr = new Date().toISOString().split('T')[0]
-      const [
-        { data: p },
-        { data: latestVitals, count: vitalsCount },
-        { data: meds },
-        { count: journalsCount },
-      ] = await Promise.all([
-        supabase.from('profiles').select('name').eq('id', user.id).single(),
-        supabase.from('vitals').select('bp_systolic, blood_sugar').eq('user_id', user.id).order('recorded_at', { ascending: false }).limit(1).single(),
-        supabase.from('medicines').select('id').eq('user_id', user.id).eq('is_active', true),
-        supabase.from('symptom_journal').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-      ])
-      setProfile(p)
-      const ids = meds?.map(m => m.id) ?? []
-      const { data: logs } = ids.length > 0
-        ? await supabase.from('medicine_logs').select('taken').eq('user_id', user.id).eq('log_date', todayStr).in('medicine_id', ids)
-        : { data: [] }
-      const taken = logs?.filter(l => l.taken).length ?? 0
-      let status = 'Stable'
-      if (latestVitals) {
-        if ((latestVitals.bp_systolic ?? 0) > 140 || (latestVitals.blood_sugar ?? 0) > 180) status = 'Needs Attention'
-        else if ((latestVitals.bp_systolic ?? 0) > 130 || (latestVitals.blood_sugar ?? 0) > 140) status = 'Elevated'
-      }
-      setStats({ vitalsCount: vitalsCount ?? 0, medicinesCount: ids.length, journalsCount: journalsCount ?? 0, medicineAdherence: ids.length > 0 ? `${taken}/${ids.length}` : '—', takenCount: taken, status })
+  // Onboarding state
+  const [onboardStep,    setOnboardStep   ] = useState<Step | null>(null)
+  const [onboardDone,    setOnboardDone   ] = useState(false)
+  const [completedSteps, setCompletedSteps] = useState<number[]>([1]) // step 1 (account) always done
+
+  // Modal states
+  const [showVitalsModal, setShowVitalsModal] = useState(false)
+  const [showMedicineModal, setShowMedicineModal] = useState(false)
+  const [showSymptomModal, setShowSymptomModal] = useState(false)
+  const [showJournalModal, setShowJournalModal] = useState(false)
+
+  /* ── Load all dashboard data ─────────────────────── */
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    setUserId(user.id)
+
+    const todayStr = new Date().toISOString().split('T')[0]
+
+    const [profileRes, vitalsRes, medsRes, symptomRes, journalRes] = await Promise.all([
+      supabase.from('profiles').select('name, onboarding_complete, date_of_birth, gender').eq('id', user.id).single(),
+      supabase.from('vitals').select('bp_systolic, bp_diastolic, pulse, oxygen, blood_sugar, recorded_at').eq('user_id', user.id).order('recorded_at', { ascending: false }).limit(1).single(),
+      supabase.from('medicines').select('id, medicine_name, dose, time_of_day').eq('user_id', user.id).eq('is_active', true).order('created_at', { ascending: false }).limit(5),
+      supabase.from('symptom_journal').select('id, symptoms, notes, journal_date').eq('user_id', user.id).order('journal_date', { ascending: false }).limit(1).single(),
+      supabase.from('symptom_journal').select('id, notes, journal_date').eq('user_id', user.id).order('journal_date', { ascending: false }).limit(2),
+    ])
+
+    if (profileRes.data) {
+      setProfile(profileRes.data as Profile)
+      setOnboardDone(!!profileRes.data.onboarding_complete)
     }
-    run()
+    if (vitalsRes.data) setVitals(vitalsRes.data as DashVitals)
+    
+    // Get medicine logs for today
+    const medIds = medsRes.data?.map(m => m.id) ?? []
+    const logsRes = medIds.length > 0
+      ? await supabase.from('medicine_logs').select('medicine_id, taken').eq('user_id', user.id).eq('log_date', todayStr).in('medicine_id', medIds)
+      : { data: [] }
+    const logsMap = new Map((logsRes.data ?? []).map(l => [l.medicine_id, l.taken]))
+    setMedicines((medsRes.data ?? []).map(m => ({ ...m, taken: logsMap.get(m.id) ?? false })))
+    
+    if (symptomRes.data) setSymptoms(symptomRes.data as SymptomEntry)
+    setJournals((journalRes.data ?? []) as JournalEntry[])
+
+    setLoading(false)
   }, [supabase])
 
-  /* fetch fresh AI insights */
-  const fetchInsights = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/dashboard-insights', { cache: 'no-store' })
-      setInsights(await res.json())
-    } catch { /* ignore */ } finally { setLoading(false) }
+  useEffect(() => { loadData() }, [loadData])
+
+  /* ── Fetch AI daily insight ──────────────────────── */
+  useEffect(() => {
+    const fetchInsight = async () => {
+      try {
+        const res = await fetch('/api/dashboard-insights', { cache: 'no-store' })
+        const data = await res.json()
+        setInsight(data?.feeling ?? data?.health_tip ?? '')
+      } catch { /* ignore */ }
+    }
+    fetchInsight()
   }, [])
 
-  useEffect(() => { fetchInsights() }, [fetchInsights])
+  /* ── Toggle medicine taken ───────────────────────── */
+  const toggleMed = async (med: MedItem) => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    const newTaken = !med.taken
+    setMedicines(prev => prev.map(m => m.id === med.id ? { ...m, taken: newTaken } : m))
+    await supabase.from('medicine_logs').upsert({
+      medicine_id: med.id, user_id: userId, log_date: todayStr, taken: newTaken,
+    }, { onConflict: 'medicine_id,user_id,log_date' })
+  }
 
-  /* computed */
-  const firstName   = profile?.name?.split(' ')[0] ?? 'there'
-  const status      = stats?.status ?? 'Stable'
-  const statusColor = status === 'Needs Attention' ? '#e11d48' : status === 'Elevated' ? '#d97706' : '#059669'
+  /* ── Onboarding helpers ──────────────────────────── */
+  const handleOnboardSkip = () => {
+    setOnboardStep(prev => {
+      if (!prev) return null
+      const next = (prev + 1) as Step
+      if (next > 4) { setOnboardDone(true); return null }
+      setCompletedSteps(p => [...new Set([...p, prev])])
+      return null // just close modal, let them re-open
+    })
+  }
+  const handleOnboardNext = (next: Step) => {
+    setCompletedSteps(p => [...new Set([...p, onboardStep ?? 1])])
+    setOnboardStep(next)
+  }
+  const handleOnboardComplete = () => {
+    setCompletedSteps([1, 2, 3, 4])
+    setOnboardDone(true)
+    setOnboardStep(null)
+    loadData()
+  }
+
+  /* ── Computed values ─────────────────────────────── */
   const healthScore = Math.min(
-    (stats && stats.medicinesCount > 0 ? Math.round((stats.takenCount / stats.medicinesCount) * 40) : 20) +
-    Math.min((stats?.vitalsCount ?? 0) * 5, 30) +
-    Math.min((stats?.journalsCount ?? 0) * 2, 20) +
-    (status === 'Stable' ? 10 : status === 'Elevated' ? 5 : 0),
+    (completedSteps.length / 4) * 30 +
+    (vitals ? 30 : 0) +
+    (medicines.length > 0 ? 20 : 0) +
+    (medicines.filter(m => m.taken).length / Math.max(medicines.length, 1)) * 20,
     100
-  ) || 72
+  ) || (onboardDone ? 60 : 10)
 
-  /* style helpers */
-  const card = (extra: React.CSSProperties = {}): React.CSSProperties => ({
-    background: '#fff', border: '1px solid #e8e4dd',
-    borderRadius: 18, boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
-    ...extra,
+  const scoreColor = healthScore >= 70 ? 'var(--accent)' : healthScore >= 40 ? '#BA7517' : 'var(--badge-red-text)'
+  const bpDisplay = vitals?.bp_systolic
+    ? `${vitals.bp_systolic}/${vitals.bp_diastolic ?? '?'}`
+    : '—'
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  /* ── Style helpers ───────────────────────────────── */
+  const card: React.CSSProperties = {
+    background: 'var(--bg-card)',
+    border: '0.5px solid var(--border)',
+    borderRadius: '10px',
+    padding: '14px 16px',
+  }
+  const cardHeader: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px',
+  }
+  const cardTitle: React.CSSProperties = {
+    fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)',
+  }
+  const cardLink: React.CSSProperties = {
+    fontSize: '11px', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'none',
+  }
+  const stepDot = (n: number): React.CSSProperties => ({
+    width: '20px', height: '20px', borderRadius: '50%',
+    border: completedSteps.includes(n) ? 'none' : onboardStep === n ? '1.5px solid var(--accent)' : '0.5px solid var(--border)',
+    background: completedSteps.includes(n) ? 'var(--accent)' : 'transparent',
+    color: completedSteps.includes(n) ? 'var(--bg-card)' : onboardStep === n ? 'var(--accent)' : 'var(--text-muted)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '10px', fontWeight: 600, flexShrink: 0,
+  })
+  const stepLine = (n: number): React.CSSProperties => ({
+    width: '16px', height: '0.5px',
+    background: completedSteps.includes(n) ? 'var(--accent)' : 'var(--border)',
   })
 
-  const sectionHeader = (icon: React.ReactNode, label: string) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0 16px 12px' }}>
-      {icon}
-      <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>{label}</span>
-    </div>
-  )
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Loading dashboard…</div>
+      </div>
+    )
+  }
 
-  const STATS = [
-    { label: 'Health Score', value: `${healthScore}`, unit: '/100', icon: TrendingUp, color: '#059669', href: '/vitals' },
-    { label: 'Meds Today',   value: stats?.medicineAdherence ?? '—', unit: '', icon: Pill,        color: '#0d9488', href: '/medicines' },
-    { label: 'Vitals',       value: `${stats?.vitalsCount ?? 0}`,    unit: '', icon: Heart,       color: '#d97706', href: '/vitals' },
-    { label: 'Journals',     value: `${stats?.journalsCount ?? 0}`,  unit: '', icon: Activity,    color: '#7c3aed', href: '/journal' },
-  ]
-
-  const ACTIONS = [
-    { label: 'Log Vitals',    href: '/vitals',    icon: Heart,    color: '#d97706', bg: '#fffbeb' },
-    { label: 'Add Medicine',  href: '/medicines', icon: Pill,     color: '#0d9488', bg: '#f0fdf9' },
-    { label: 'Journal Entry', href: '/journal',   icon: Activity, color: '#7c3aed', bg: '#f5f3ff' },
-    { label: 'Diet Plan',     href: '/diet',      icon: Utensils, color: '#059669', bg: '#f0fdf4' },
-  ]
+  const firstName = profile?.name?.split(' ')[0] ?? 'there'
 
   return (
-    <div style={{ width: '100%', maxWidth: 600, margin: '0 auto', paddingBottom: 32 }}>
-      <style>{`
-        @keyframes spin    { to { transform: rotate(360deg); } }
-        @keyframes shimmer { 0%,100% { background-position: 200% 0; } 50% { background-position: 0% 0; } }
-        @keyframes fadeUp  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-page)', display: 'flex', flexDirection: 'column' }}>
 
-      {/* ── 1. Greeting ───────────────────────────────── */}
-      <div style={{ padding: '20px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: statusColor }} />
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#9a9690' }}>{today} · {status}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
-            {greeting}, {firstName} 👋
-          </h1>
-          <button
-            onClick={fetchInsights}
-            disabled={loading}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
-              padding: '8px 12px', borderRadius: 10,
-              background: '#fff', border: '1px solid #e8e4dd',
-              fontSize: 12, fontWeight: 600, color: '#5a5652',
-              cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.5 : 1,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            }}
-          >
-            <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-            {loading ? 'Syncing…' : 'Refresh'}
-          </button>
-        </div>
-      </div>
-
-      {/* ── 2. AI Insight card ────────────────────────── */}
-      <div style={{ padding: '14px 16px 0' }}>
-        <div style={card({ padding: '20px 18px' })}>
-          {loading ? (
-            <div>
-              <Skel w="28%" h={10} r={6} mb={12} />
-              <Skel w="96%" h={15} r={6} mb={8} />
-              <Skel w="80%" h={15} r={6} mb={8} />
-              <Skel w="60%" h={15} r={6} mb={18} />
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Skel w={140} h={40} r={11} />
-                <Skel w={120} h={40} r={11} />
-              </div>
-            </div>
-          ) : (
-            <div style={{ animation: 'fadeUp 0.3s ease' }}>
-              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Your Daily Insight ✨
-              </p>
-              <p style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 400, color: '#1a1a1a', lineHeight: 1.65, wordBreak: 'break-word' }}>
-                {insights?.feeling ?? 'Your health data is being analyzed…'}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Link href="/chat" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 7, alignSelf: 'flex-start',
-                  padding: '10px 18px', borderRadius: 11,
-                  background: '#1a1a1a', color: '#fff',
-                  fontSize: 14, fontWeight: 600, textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-                }}>
-                  <MessageSquare size={15} /> Talk to Slyceai
-                </Link>
-                {insights?.health_tip && (
-                  <div style={{
-                    padding: '10px 14px', borderRadius: 11,
-                    background: '#f0fdf9', border: '1px solid #a7f3d0',
-                    fontSize: 13, fontWeight: 500, color: '#047857', lineHeight: 1.5, wordBreak: 'break-word',
-                  }}>
-                    💡 {insights.health_tip.split('.')[0]}
+      {/* ── Onboarding Banner ─────────────────────────────────── */}
+      {!onboardDone && (
+        <div style={{
+          background: 'var(--bg-card)',
+          borderBottom: '0.5px solid var(--border)',
+          padding: '14px 24px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexShrink: 0, gap: '16px', flexWrap: 'wrap',
+        }}>
+          <div>
+            <h2 style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>
+              Complete your health profile
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+              Takes 2 minutes — helps Slyceai give you accurate, personalised answers
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Step indicators */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {([1, 2, 3, 4] as Step[]).map((n, i) => (
+                <div key={n} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={stepDot(n)}>
+                    {completedSteps.includes(n) ? '✓' : n}
                   </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── 3. Stats 2×2 grid ─────────────────────────── */}
-      <div style={{ padding: '16px 16px 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {STATS.map((s, i) => {
-            const Icon = s.icon
-            return (
-              <Link key={i} href={s.href} style={{ textDecoration: 'none' }}>
-                <div style={card({ padding: '16px 14px' })}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#9a9690' }}>{s.label}</span>
-                    <Icon size={14} style={{ color: s.color, flexShrink: 0 }} strokeWidth={1.75} />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-                    <span style={{ fontSize: 26, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.03em', lineHeight: 1 }}>{s.value}</span>
-                    {s.unit && <span style={{ fontSize: 12, color: '#9a9690', fontWeight: 500 }}>{s.unit}</span>}
-                  </div>
+                  {i < 3 && <div style={stepLine(n)} />}
                 </div>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* ── 4. Quick Actions 2×2 grid ─────────────────── */}
-      <div style={{ padding: '16px 16px 0' }}>
-        <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#9a9690', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          Quick Actions
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {ACTIONS.map((a, i) => {
-            const Icon = a.icon
-            return (
-              <Link key={i} href={a.href} style={{ textDecoration: 'none' }}>
-                <div style={card({ padding: '14px', background: a.bg, display: 'flex', alignItems: 'center', gap: 10, minHeight: 56 })}>
-                  <div style={{ width: 34, height: 34, borderRadius: 9, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
-                    <Icon size={15} style={{ color: a.color }} strokeWidth={1.75} />
-                  </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', lineHeight: 1.3, flex: 1, minWidth: 0 }}>{a.label}</span>
-                  <ChevronRight size={13} style={{ color: '#c9c5be', flexShrink: 0 }} />
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* ── 5. Diet Plan — pill tab switcher ──────────── */}
-      <div style={{ marginTop: 26 }}>
-        {sectionHeader(<Utensils size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, insights?.diet?.title ?? "Today's Diet Plan")}
-        {loading ? (
-          <div style={{ padding: '0 16px' }}>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-              {[80, 60, 64, 52].map((w, i) => <Skel key={i} w={w} h={30} r={100} />)}
+              ))}
             </div>
-            <Skel w="100%" h={130} r={18} />
-          </div>
-        ) : (
-          <div style={{ animation: 'fadeUp 0.3s ease' }}>
-            <MealTabs meals={insights?.diet?.meals ?? []} />
-          </div>
-        )}
-      </div>
-
-      {/* ── 6. Yoga — 2-column grid ───────────────────── */}
-      <div style={{ marginTop: 26 }}>
-        {sectionHeader(<Zap size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, 'Movement & Yoga')}
-        {loading ? (
-          <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {[1, 2, 3, 4].map(i => <Skel key={i} w="100%" h={140} r={18} />)}
-          </div>
-        ) : (
-          <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, animation: 'fadeUp 0.3s ease' }}>
-            {(insights?.yoga ?? []).map((y, i) => (
-              <div key={i} style={card({ padding: '14px 12px' })}>
-                <div style={{ fontSize: 24, marginBottom: 8 }}>{y.emoji}</div>
-                <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.35 }}>{y.pose}</p>
-                <span style={{
-                  display: 'inline-block', marginBottom: 6,
-                  fontSize: 10, fontWeight: 700, color: '#0d9488',
-                  background: '#f0fdf9', padding: '2px 8px', borderRadius: 20,
-                  border: '1px solid #a7f3d0', whiteSpace: 'nowrap',
-                }}>
-                  {y.duration}
-                </span>
-                <p style={{ margin: 0, fontSize: 11, color: '#6b6b6b', lineHeight: 1.45 }}>{y.benefit}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ── 7. Ayurveda — stacked full-width rows ─────── */}
-      <div style={{ marginTop: 26 }}>
-        {sectionHeader(<Leaf size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />, 'Ayurvedic Support')}
-        {loading ? (
-          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[1, 2, 3].map(i => <Skel key={i} w="100%" h={80} r={18} />)}
-          </div>
-        ) : (
-          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10, animation: 'fadeUp 0.3s ease' }}>
-            {(insights?.ayurveda ?? []).map((h, i) => (
-              <div key={i} style={card({ padding: '14px 16px', display: 'flex', gap: 14, alignItems: 'flex-start' })}>
-                <span style={{ fontSize: 28, flexShrink: 0, lineHeight: 1 }}>{h.emoji}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 700, color: '#1a1a1a' }}>{h.herb}</p>
-                  <p style={{ margin: '0 0 8px', fontSize: 12, color: '#3d3d3d', lineHeight: 1.55 }}>{h.benefit}</p>
-                  <span style={{
-                    display: 'inline-block',
-                    fontSize: 11, fontWeight: 600, color: '#047857',
-                    background: '#f0fdf9', border: '1px solid #a7f3d0',
-                    padding: '3px 10px', borderRadius: 20,
-                    maxWidth: '100%', overflow: 'hidden',
-                    textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    🌿 {h.how}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ── 8. Lifestyle Tips grid ────────────────────── */}
-      {insights?.lifestyle && insights.lifestyle.length > 0 && (
-        <div style={{ padding: '26px 16px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-            <Sun size={14} style={{ color: '#0d9488' }} strokeWidth={1.75} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>Today&apos;s Lifestyle Tips</span>
-          </div>
-          <div style={{ background: '#1a1a1a', borderRadius: 22, padding: '18px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {insights.lifestyle.map((tip, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: '14px 12px' }}>
-                <div style={{ fontSize: 22, marginBottom: 7 }}>{tip.emoji}</div>
-                <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{tip.title}</p>
-                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.78)', lineHeight: 1.5, wordBreak: 'break-word' }}>{tip.tip}</p>
-              </div>
-            ))}
+            <button
+              onClick={() => setOnboardStep(completedSteps.length >= 4 ? 1 : (Math.min(completedSteps.length + 1, 4)) as Step)}
+              style={{
+                background: 'var(--accent)', color: 'var(--bg-card)', border: 'none',
+                padding: '8px 16px', borderRadius: '6px',
+                fontSize: '13px', cursor: 'pointer', fontWeight: 500,
+                fontFamily: 'inherit', whiteSpace: 'nowrap',
+              }}>
+              Continue setup
+            </button>
           </div>
         </div>
       )}
+
+      {/* ── Dash Content ─────────────────────────────────────── */}
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+
+
+
+        {/* ── Row 1: 4 Metric Cards ───────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+          {/* Health Score */}
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Health score</span>
+              {badge(healthScore >= 70 ? 'Good' : healthScore >= 40 ? 'Low' : 'Poor', healthScore >= 70 ? 'green' : healthScore >= 40 ? 'amber' : 'red')}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: 500, color: scoreColor, lineHeight: 1 }}>{Math.round(healthScore)}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>{onboardDone ? `out of 100` : 'Complete profile to improve'}</div>
+          </div>
+
+          {/* Blood Pressure */}
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Blood pressure</span>
+              {badge(getBpStatus(vitals?.bp_systolic ?? null, vitals?.bp_diastolic ?? null) === 'green' ? 'Normal' : getBpStatus(vitals?.bp_systolic ?? null, vitals?.bp_diastolic ?? null) === 'amber' ? 'Elevated' : 'High', getBpStatus(vitals?.bp_systolic ?? null, vitals?.bp_diastolic ?? null))}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1 }}>
+              {vitals?.bp_systolic ?? '—'}
+              {vitals?.bp_systolic && <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>/{vitals.bp_diastolic ?? '?'}</span>}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>{vitals ? 'mmHg · logged today' : 'No reading yet'}</div>
+          </div>
+
+          {/* Pulse */}
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Pulse</span>
+              {badge(getPulseStatus(vitals?.pulse ?? null) === 'green' ? 'Normal' : getPulseStatus(vitals?.pulse ?? null) === 'amber' ? 'High-normal' : 'High', getPulseStatus(vitals?.pulse ?? null))}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1 }}>{vitals?.pulse ?? '—'}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>bpm{vitals?.pulse ? ' · monitoring' : ' · log vitals'}</div>
+          </div>
+
+          {/* Blood Sugar */}
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Blood sugar</span>
+              {badge(getSugarStatus(vitals?.blood_sugar ?? null) === 'green' ? 'Normal' : getSugarStatus(vitals?.blood_sugar ?? null) === 'amber' ? 'Elevated' : 'High', getSugarStatus(vitals?.blood_sugar ?? null))}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1 }}>{vitals?.blood_sugar ?? '—'}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>mg/dL{vitals?.blood_sugar ? ' · fasting' : ' · no data'}</div>
+          </div>
+        </div>
+
+        {/* ── Row 2: Vitals detail (left) + Medicines (right) ─── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+
+          {/* Today's vitals detail */}
+          <div style={card}>
+            <div style={cardHeader}>
+              <span style={cardTitle}>Today&apos;s vitals</span>
+              <button 
+                onClick={() => setShowVitalsModal(true)} 
+                style={{ ...cardLink, background: 'none', border: 'none', padding: 0 }}
+              >
+                + Log vitals
+              </button>
+            </div>
+            {/* Tabs (visual) */}
+            <div style={{ display: 'flex', gap: 0, borderBottom: '0.5px solid var(--border)', marginBottom: '12px' }}>
+              {['Today', '7 days', '30 days'].map((t, i) => (
+                <div key={t} style={{
+                  fontSize: '12px', padding: '5px 12px', cursor: 'pointer',
+                  color: i === 0 ? 'var(--accent)' : 'var(--text-muted)',
+                  borderBottom: i === 0 ? '2px solid var(--accent)' : '2px solid transparent',
+                  fontWeight: i === 0 ? 500 : 400, marginBottom: '-0.5px',
+                }}>{t}</div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {[
+                { name: 'SpO2', val: vitals?.oxygen ? `${vitals.oxygen}` : '99', unit: '%' },
+                { name: 'Temperature', val: '—', unit: '' },
+                { name: 'Weight', val: profile?.weight ? `${profile.weight}` : '—', unit: 'kg' },
+                { name: 'Blood group', val: '—', unit: '' },
+              ].map(v => (
+                <div key={v.name} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '7px 10px', background: 'var(--bg-secondary)', borderRadius: '6px',
+                }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{v.name}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    {v.val}<span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '2px' }}>{v.unit}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+            {/* Insight box */}
+            <div style={{
+              marginTop: '10px', background: 'var(--badge-green-bg)', border: '1px solid var(--accent)',
+              borderRadius: '6px', padding: '10px 14px',
+            }}>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--accent-dark)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Slyceai insight
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--insight-text)', lineHeight: 1.5 }}>
+                {insight || (vitals
+                  ? 'Your pulse is at the high end of normal. Gentle walks and hydration can help. Consider logging temperature today.'
+                  : 'Log your vitals to get personalised health insights from Slyceai.')}
+              </div>
+            </div>
+          </div>
+
+          {/* Medicines today */}
+          <div style={card}>
+            <div style={cardHeader}>
+              <span style={cardTitle}>Medicines today</span>
+              <button 
+                onClick={() => setShowMedicineModal(true)} 
+                style={{ ...cardLink, background: 'none', border: 'none', padding: 0 }}
+              >
+                + Add
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {medicines.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '22px', marginBottom: '6px' }}>💊</div>
+                  <div style={{ fontSize: '12px' }}>No medicines added yet</div>
+                  <a href="/medicines" style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '4px', display: 'inline-block', textDecoration: 'none' }}>+ Add medicine</a>
+                </div>
+              ) : (
+                medicines.map(med => (
+                  <div key={med.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '6px',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>{med.medicine_name}{med.dose ? ` · ${med.dose}` : ''}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{med.time_of_day?.join(', ') || 'Daily'}</div>
+                    </div>
+                    <button
+                      onClick={() => toggleMed(med)}
+                      style={{
+                        width: '20px', height: '20px', borderRadius: '4px', flexShrink: 0,
+                        border: '0.5px solid ' + (med.taken ? 'var(--accent)' : 'var(--border)'),
+                        background: med.taken ? 'var(--accent)' : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', color: 'var(--bg-card)', fontSize: '11px', fontWeight: 700,
+                      }}>
+                      {med.taken ? '✓' : ''}
+                    </button>
+                  </div>
+                ))
+              )}
+              {/* Add medicine row */}
+              {medicines.length > 0 && (
+                <button onClick={() => setShowMedicineModal(true)} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%',
+                  padding: '7px 10px', background: 'transparent',
+                  border: '0.5px dashed var(--border)', borderRadius: '6px',
+                  fontSize: '11px', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit'
+                }}>+ Add medicine</button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Row 3: Symptoms + Journal + Daily Insight ──────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+
+          {/* Current symptoms */}
+          <div style={card}>
+            <div style={cardHeader}>
+              <span style={cardTitle}>Current symptoms</span>
+              <button 
+                onClick={() => setShowSymptomModal(true)} 
+                style={{ ...cardLink, background: 'none', border: 'none', padding: 0 }}
+              >
+                + Add
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {symptoms?.symptoms && symptoms.symptoms.length > 0 ? (
+                symptoms.symptoms.map((s, index) => (
+                  <span key={s} style={{
+                    fontSize: '11px', padding: '4px 10px', borderRadius: '20px',
+                    border: index === 0 ? '1px solid var(--accent)' : index === 1 ? '1px solid var(--badge-red-text)' : '1px solid var(--border)',
+                    color: index === 0 ? 'var(--accent-dark)' : index === 1 ? 'var(--badge-red-text)' : 'var(--text-secondary)',
+                    background: index === 0 ? 'var(--badge-green-bg)' : index === 1 ? 'initial' : 'var(--bg-secondary)',
+                  }}>{s}</span>
+                ))
+              ) : (
+                <div style={{ width: '100%', textAlign: 'center', padding: '12px 0', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>🩺</div>
+                  <div style={{ fontSize: '12px' }}>No symptoms logged</div>
+                </div>
+              )}
+              <button onClick={() => setShowSymptomModal(true)} style={{
+                fontSize: '11px', padding: '4px 10px', borderRadius: '20px',
+                border: '1px dashed var(--border)', color: 'var(--text-primary)', cursor: 'pointer',
+                background: 'transparent', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'inherit'
+              }}>+ Add symptom</button>
+            </div>
+            {symptoms?.notes && (
+              <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--text-primary)', fontWeight: 500 }}>
+                Known condition:<br/><strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{symptoms.notes}</strong>
+              </div>
+            )}
+          </div>
+
+          {/* Health journals */}
+          <div style={card}>
+            <div style={cardHeader}>
+              <span style={cardTitle}>Health journals</span>
+              <button 
+                onClick={() => setShowJournalModal(true)} 
+                style={{ ...cardLink, background: 'none', border: 'none', padding: 0 }}
+              >
+                + New entry
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {journals.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '12px 0', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>📓</div>
+                  <div style={{ fontSize: '12px' }}>No journal entries yet</div>
+                </div>
+              ) : (
+                journals.map(j => (
+                  <div key={j.id} style={{ padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{new Date(j.journal_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-primary)', marginTop: '2px', lineHeight: 1.4 }}>{j.notes || 'No notes'}</div>
+                  </div>
+                ))
+              )}
+              <button onClick={() => setShowJournalModal(true)} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%',
+                padding: '7px 10px', border: '0.5px dashed var(--border)',
+                background: 'transparent', borderRadius: '6px',
+                fontSize: '11px', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit'
+              }}>Write today&apos;s entry</button>
+            </div>
+          </div>
+
+          {/* Daily insight + Talk button */}
+          <div style={card}>
+            <div style={{ ...cardHeader, marginBottom: '6px' }}>
+              <span style={cardTitle}>Daily insight</span>
+            </div>
+            <div style={{
+              background: 'var(--badge-green-bg)', border: '1px solid var(--accent)',
+              borderRadius: '6px', padding: '10px 14px', marginBottom: '10px',
+            }}>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--accent-dark)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Slyceai
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--insight-text)', lineHeight: 1.5 }}>
+                {insight || 'Your vitals look stable today. Pulse is monitored — consider a 10-minute slow walk after dinner.'}
+              </div>
+            </div>
+            <button
+              onClick={() => router.push('/chat')}
+              style={{
+                width: '100%', background: '#111', color: 'var(--bg-card)', border: 'none',
+                padding: '11px', borderRadius: '6px', fontSize: '13px',
+                cursor: 'pointer', fontWeight: 500, display: 'flex',
+                alignItems: 'center', justifyContent: 'center', gap: '7px',
+                fontFamily: 'inherit',
+              }}>
+              <MessageSquare size={14} />
+              Talk to Slyceai
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Onboarding Modal ──────────────────────────────────── */}
+      {onboardStep !== null && (
+        <OnboardingModal
+          step={onboardStep}
+          onClose={() => setOnboardStep(null)}
+          onComplete={handleOnboardComplete}
+          onSkip={handleOnboardSkip}
+          onNext={handleOnboardNext}
+          userId={userId}
+          supabase={supabase}
+        />
+      )}
+
+    {/* ── Modals ──────────────────────────────────── */}
+      {showVitalsModal && (
+        <LogVitalsModal 
+          supabase={supabase} userId={userId} 
+          onClose={() => setShowVitalsModal(false)} 
+          onSuccess={() => { setShowVitalsModal(false); loadData(); }} 
+        />
+      )}
+      {showMedicineModal && (
+        <AddMedicineModal 
+          supabase={supabase} userId={userId} 
+          onClose={() => setShowMedicineModal(false)} 
+          onSuccess={() => { setShowMedicineModal(false); loadData(); }} 
+        />
+      )}
+      {showSymptomModal && (
+        <AddSymptomModal 
+          supabase={supabase} userId={userId} 
+          onClose={() => setShowSymptomModal(false)} 
+          onSuccess={() => { setShowSymptomModal(false); loadData(); }} 
+        />
+      )}
+      {showJournalModal && (
+        <HealthJournalModal 
+          supabase={supabase} userId={userId} 
+          onClose={() => setShowJournalModal(false)} 
+          onSuccess={() => { setShowJournalModal(false); loadData(); }} 
+        />
+      )}
+
     </div>
   )
 }

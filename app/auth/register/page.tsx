@@ -60,7 +60,7 @@ export default function RegisterPage() {
       {/* Soft warm gradient orbs */}
       <div style={{
         position: 'absolute', top: '-10%', left: '-10%', width: '50vw', height: '50vw',
-        background: 'radial-gradient(circle, rgba(13,148,136,0.04), transparent 70%)',
+        background: 'radial-gradient(circle, rgba(29,158,117,0.04), transparent 70%)',
         borderRadius: '50%', filter: 'blur(60px)', pointerEvents: 'none'
       }} />
 
@@ -73,29 +73,29 @@ export default function RegisterPage() {
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{
             width: '64px', height: '64px', borderRadius: '16px',
-            background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)'
           }}>
-             <UserPlus size={32} strokeWidth={1.5} style={{ color: '#0d9488' }} />
+             <UserPlus size={32} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
           </div>
           <h1 style={{
-            fontSize: '28px', fontWeight: 600, color: '#1a1a1a',
+            fontSize: '28px', fontWeight: 600, color: 'var(--text-primary)',
             margin: '0 0 8px', letterSpacing: '-0.02em',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
           }}>
-            Slyce<span style={{ color: '#0d9488', fontStyle: 'italic', fontWeight: 500 }}>ai</span>
+            Slyce<span style={{ color: 'var(--accent)', fontStyle: 'italic', fontWeight: 500 }}>ai</span>
           </h1>
-          <p style={{ fontSize: '15px', color: '#6b6b6b', margin: 0, fontWeight: 400 }}>
+          <p style={{ fontSize: '15px', color: 'var(--text-secondary)', margin: 0, fontWeight: 400 }}>
             Know your body. Own your life.
           </p>
         </div>
 
         {/* Register Card */}
         <div style={{
-          background: '#ffffff',
+          background: 'var(--bg-card)fff',
           borderRadius: '24px',
           padding: '32px 20px',
-          border: '1px solid #d9d5ce',
+          border: '1px solid var(--border)',
           boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
           position: 'relative',
           boxSizing: 'border-box',
@@ -104,9 +104,9 @@ export default function RegisterPage() {
             position: 'absolute', top: '16px', right: '16px',
             display: 'flex', alignItems: 'center', gap: '6px',
             padding: '4px 10px', borderRadius: '8px',
-            background: '#f5f1eb', border: '1px solid #e8e4dd'
+            background: 'var(--bg-secondary)', border: '1px solid var(--border)'
           }}>
-             <ShieldCheck size={14} style={{ color: '#0d9488' }} />
+             <ShieldCheck size={14} style={{ color: 'var(--accent)' }} />
              <span style={{ fontSize: '11px', fontWeight: 600, color: '#5a5652' }}>HIPAA Secure</span>
           </div>
 
@@ -114,7 +114,7 @@ export default function RegisterPage() {
           <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="name" style={{ fontSize: '13.5px', fontWeight: 500, color: '#3d3d3d', marginLeft: '4px' }}>
+              <label htmlFor="name" style={{ fontSize: '13.5px', fontWeight: 500, color: 'var(--text-secondary)', marginLeft: '4px' }}>
                 Full Name
               </label>
               <input
@@ -123,20 +123,20 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 style={{
-                  width: '100%', background: '#ffffff', border: '1px solid #d9d5ce',
+                  width: '100%', background: 'var(--bg-card)fff', border: '1px solid var(--border)',
                   borderRadius: '12px', padding: '14px 16px', fontSize: '15px',
-                  color: '#1a1a1a', outline: 'none', transition: 'all 0.2s',
+                  color: 'var(--text-primary)', outline: 'none', transition: 'all 0.2s',
                   fontFamily: 'inherit'
                 }}
                 placeholder="Priya Sharma"
                 required
-                onFocus={e => { e.currentTarget.style.borderColor = '#0d9488'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,148,136,0.1)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = '#d9d5ce'; e.currentTarget.style.boxShadow = 'none' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(29,158,117,0.1)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
               />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="email" style={{ fontSize: '13.5px', fontWeight: 500, color: '#3d3d3d', marginLeft: '4px' }}>
+              <label htmlFor="email" style={{ fontSize: '13.5px', fontWeight: 500, color: 'var(--text-secondary)', marginLeft: '4px' }}>
                 Email Address
               </label>
               <input
@@ -145,22 +145,22 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 style={{
-                  width: '100%', background: '#ffffff', border: '1px solid #d9d5ce',
+                  width: '100%', background: 'var(--bg-card)fff', border: '1px solid var(--border)',
                   borderRadius: '12px', padding: '14px 16px', fontSize: '15px',
-                  color: '#1a1a1a', outline: 'none', transition: 'all 0.2s',
+                  color: 'var(--text-primary)', outline: 'none', transition: 'all 0.2s',
                   fontFamily: 'inherit'
                 }}
                 placeholder="you@example.com"
                 required
-                onFocus={e => { e.currentTarget.style.borderColor = '#0d9488'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,148,136,0.1)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = '#d9d5ce'; e.currentTarget.style.boxShadow = 'none' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(29,158,117,0.1)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
               />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Password */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label htmlFor="password" style={{ fontSize: '13.5px', fontWeight: 500, color: '#3d3d3d', marginLeft: '4px' }}>
+                <label htmlFor="password" style={{ fontSize: '13.5px', fontWeight: 500, color: 'var(--text-secondary)', marginLeft: '4px' }}>
                   Password
                 </label>
                 <div style={{ position: 'relative' }}>
@@ -170,26 +170,26 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     style={{
-                      width: '100%', background: '#ffffff', border: '1px solid #d9d5ce',
+                      width: '100%', background: 'var(--bg-card)fff', border: '1px solid var(--border)',
                       borderRadius: '12px', padding: '14px 40px 14px 16px', fontSize: '15px',
-                      color: '#1a1a1a', outline: 'none', transition: 'all 0.2s',
+                      color: 'var(--text-primary)', outline: 'none', transition: 'all 0.2s',
                       fontFamily: 'inherit'
                     }}
                     placeholder="Min 8 chars"
                     required
-                    onFocus={e => { e.currentTarget.style.borderColor = '#0d9488'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,148,136,0.1)' }}
-                    onBlur={e => { e.currentTarget.style.borderColor = '#d9d5ce'; e.currentTarget.style.boxShadow = 'none' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(29,158,117,0.1)' }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     style={{
                       position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
-                      background: 'none', border: 'none', color: '#9a9690', cursor: 'pointer',
+                      background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#3d3d3d'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#9a9690'}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
@@ -199,7 +199,7 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label htmlFor="confirm" style={{ fontSize: '13.5px', fontWeight: 500, color: '#3d3d3d', marginLeft: '4px' }}>
+                <label htmlFor="confirm" style={{ fontSize: '13.5px', fontWeight: 500, color: 'var(--text-secondary)', marginLeft: '4px' }}>
                   Confirm
                 </label>
                 <div style={{ position: 'relative' }}>
@@ -209,26 +209,26 @@ export default function RegisterPage() {
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     style={{
-                      width: '100%', background: '#ffffff', border: '1px solid #d9d5ce',
+                      width: '100%', background: 'var(--bg-card)fff', border: '1px solid var(--border)',
                       borderRadius: '12px', padding: '14px 40px 14px 16px', fontSize: '15px',
-                      color: '#1a1a1a', outline: 'none', transition: 'all 0.2s',
+                      color: 'var(--text-primary)', outline: 'none', transition: 'all 0.2s',
                       fontFamily: 'inherit'
                     }}
                     placeholder="Confirm password"
                     required
-                    onFocus={e => { e.currentTarget.style.borderColor = '#0d9488'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,148,136,0.1)' }}
-                    onBlur={e => { e.currentTarget.style.borderColor = '#d9d5ce'; e.currentTarget.style.boxShadow = 'none' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(29,158,117,0.1)' }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
                     style={{
                       position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
-                      background: 'none', border: 'none', color: '#9a9690', cursor: 'pointer',
+                      background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#3d3d3d'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#9a9690'}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
                     aria-label={showConfirm ? 'Hide password' : 'Show password'}
                   >
                     {showConfirm ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
@@ -239,9 +239,9 @@ export default function RegisterPage() {
 
             {error && (
               <div style={{
-                padding: '12px 16px', borderRadius: '12px', background: '#fff1f2',
-                border: '1px solid #ffe4e6', display: 'flex', alignItems: 'flex-start', gap: '10px',
-                color: '#e11d48'
+                padding: '12px 16px', borderRadius: '12px', background: 'var(--bg-card)1f2',
+                border: '1px solid var(--badge-red-bg)', display: 'flex', alignItems: 'flex-start', gap: '10px',
+                color: 'var(--badge-red-text)'
               }}>
                 <Lock size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
                 <span style={{ fontSize: '13.5px', fontWeight: 500, lineHeight: 1.4 }}>{error}</span>
@@ -253,24 +253,24 @@ export default function RegisterPage() {
               disabled={loading}
               style={{
                 marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                background: '#1a1a1a', color: '#ffffff', height: '52px', borderRadius: '14px',
+                background: 'var(--text-primary)', color: 'var(--bg-card)fff', height: '52px', borderRadius: '14px',
                 fontSize: '15px', fontWeight: 500, cursor: loading ? 'wait' : 'pointer',
                 transition: 'all 0.2s', border: 'none', opacity: loading ? 0.7 : 1,
                 boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
               }}
-              onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; e.currentTarget.style.background = '#2d2d2d' } }}
-              onMouseLeave={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.1)'; e.currentTarget.style.background = '#1a1a1a' } }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; e.currentTarget.style.background = 'var(--text-primary)' } }}
+              onMouseLeave={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.1)'; e.currentTarget.style.background = 'var(--text-primary)' } }}
             >
               {loading ? 'Creating Account...' : (
-                <>Create Account <ArrowRight size={18} style={{ color: '#0d9488' }} /></>
+                <>Create Account <ArrowRight size={18} style={{ color: 'var(--accent)' }} /></>
               )}
             </button>
           </form>
 
-          <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e8e4dd', textAlign: 'center' }}>
-            <p style={{ fontSize: '14px', color: '#6b6b6b', margin: 0 }}>
+          <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
               Already have an account?{' '}
-              <Link href="/auth/login" style={{ fontWeight: 600, color: '#0d9488', textDecoration: 'none' }}
+              <Link href="/auth/login" style={{ fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}
                 onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
                 onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}>
                 Sign In

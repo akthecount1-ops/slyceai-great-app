@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AppLayoutWrapper from '@/components/app/AppLayoutWrapper'
-import HealthTourPopup from '@/components/app/HealthTourPopup'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -16,19 +15,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/auth/login')
 
-  // Check onboarding
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('onboarding_complete, name')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.onboarding_complete) redirect('/onboarding')
+  // We no longer redirect to /onboarding — the dashboard shows the onboarding banner instead
+  // The onboarding steps are surfaced as a modal overlay on the dashboard
 
   return (
     <AppLayoutWrapper>
       {children}
-      <HealthTourPopup />
     </AppLayoutWrapper>
   )
 }

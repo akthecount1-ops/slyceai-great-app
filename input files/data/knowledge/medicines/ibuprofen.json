@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "ibuprofen",
+  "name": "Brufen / Combiflam",
+  "generic_name": "Ibuprofen",
+  "manufacturer": "Abbott / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Mild to moderate pain",
+    "Fever",
+    "Inflammatory conditions",
+    "Arthritis",
+    "Dental pain",
+    "Dysmenorrhea (period pain)",
+    "Headache"
+  ],
+  "how_it_works": "Non-selective COX-1 and COX-2 inhibitor that reduces prostaglandin synthesis, decreasing pain, fever, and inflammation.",
+  "dosage_forms": [
+    "Tablet 200mg",
+    "Tablet 400mg",
+    "Tablet 600mg",
+    "Syrup 100mg/5ml",
+    "Gel topical"
+  ],
+  "side_effects": {
+    "common": [
+      "GI upset",
+      "Nausea",
+      "Heartburn",
+      "Dizziness",
+      "Headache",
+      "Fluid retention"
+    ],
+    "serious": [
+      "GI bleeding and ulceration",
+      "Acute kidney injury",
+      "Cardiovascular events (prolonged use)",
+      "Bronchospasm in aspirin-sensitive asthma",
+      "Liver damage (rare)"
+    ]
+  },
+  "drug_interactions": [
+    "Aspirin (reduces cardioprotective effect)",
+    "Warfarin",
+    "Methotrexate",
+    "ACE inhibitors/ARBs",
+    "Lithium",
+    "SSRIs",
+    "Corticosteroids"
+  ],
+  "food_interactions": [
+    "Always take with food or milk",
+    "Avoid alcohol — increases GI bleeding risk",
+    "Avoid in dehydration"
+  ],
+  "contraindications": [
+    "Active peptic ulcer",
+    "GI bleeding",
+    "Severe kidney or liver disease",
+    "Third trimester pregnancy",
+    "Aspirin allergy",
+    "Heart failure",
+    "After bypass surgery"
+  ],
+  "what_to_avoid": [
+    "Always take with food",
+    "Avoid the longest course necessary",
+    "Drink adequate water",
+    "Avoid in kidney disease",
+    "Safer alternatives in elderly: paracetamol preferred"
+  ],
+  "storage": "Store below 25°C"
+}

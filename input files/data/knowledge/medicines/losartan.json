@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "losartan",
+  "name": "Losartan 50mg",
+  "generic_name": "Losartan Potassium",
+  "manufacturer": "MSD / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Hypertension",
+    "Diabetic nephropathy",
+    "Heart failure",
+    "Stroke prevention in hypertension with LVH"
+  ],
+  "how_it_works": "Angiotensin II receptor blocker (ARB) that blocks AT1 receptors, reducing vasoconstriction and aldosterone secretion, lowering blood pressure.",
+  "dosage_forms": [
+    "Tablet 25mg",
+    "Tablet 50mg",
+    "Tablet 100mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Dizziness",
+      "Hyperkalemia",
+      "Upper respiratory infection",
+      "Diarrhea",
+      "Back pain"
+    ],
+    "serious": [
+      "Angioedema",
+      "Severe hypotension (first dose)",
+      "Acute kidney injury",
+      "Fetal toxicity"
+    ]
+  },
+  "drug_interactions": [
+    "Potassium-sparing diuretics",
+    "NSAIDs",
+    "Lithium",
+    "ACE inhibitors (dual blockade risk)"
+  ],
+  "food_interactions": [
+    "Potassium-rich foods (bananas, coconut water) may worsen hyperkalemia",
+    "Salt substitutes containing potassium"
+  ],
+  "contraindications": [
+    "Pregnancy (all trimesters)",
+    "Bilateral renal artery stenosis",
+    "Hyperkalemia",
+    "Aliskiren use in diabetes"
+  ],
+  "what_to_avoid": [
+    "Avoid potassium supplements without doctor approval",
+    "Monitor kidney function and potassium",
+    "Do not use in pregnancy"
+  ],
+  "storage": "Store below 25°C"
+}

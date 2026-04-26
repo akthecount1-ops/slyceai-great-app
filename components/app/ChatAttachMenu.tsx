@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Plus, FileText, Heart, Pill, X } from 'lucide-react'
+import { Plus, FileText, Heart, Pill, X, Image } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface ChatAttachMenuProps {
@@ -98,9 +98,9 @@ Please analyse these readings and advise.`
   const menuItems = [
     {
       id: 'report',
-      icon: FileText,
-      label: 'Upload Medical Report',
-      sublabel: 'PDF, image, or lab report',
+      icon: Image,
+      label: 'Upload File',
+      sublabel: 'PDF, image (JPG/PNG/WebP), CSV, Word',
       onClick: () => fileInputRef.current?.click(),
     },
     {
@@ -125,7 +125,7 @@ Please analyse these readings and advise.`
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+        accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv,.doc,.docx"
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
@@ -140,7 +140,7 @@ Please analyse these readings and advise.`
           height: '36px',
           borderRadius: '50%',
           border: '1.5px solid #e2e8f0',
-          background: open ? '#f1f5f9' : '#ffffff',
+          background: open ? '#f1f5f9' : 'var(--bg-card)fff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -158,7 +158,7 @@ Please analyse these readings and advise.`
         }}
         onMouseLeave={(e) => {
           if (!open) {
-            e.currentTarget.style.background = '#ffffff'
+            e.currentTarget.style.background = 'var(--bg-card)fff'
             e.currentTarget.style.borderColor = '#e2e8f0'
             e.currentTarget.style.color = '#64748b'
           }
@@ -178,9 +178,9 @@ Please analyse these readings and advise.`
             bottom: 'calc(100% + 10px)',
             left: 0,
             width: '252px',
-            background: '#f5f1eb',
+            background: 'var(--bg-secondary)',
             borderRadius: '14px',
-            border: '1px solid #d9d5ce',
+            border: '1px solid var(--border)',
             boxShadow: 'var(--shadow-menu, 0 8px 32px rgba(0,0,0,0.10))',
             overflow: 'hidden',
             zIndex: 50,
@@ -224,7 +224,7 @@ Please analyse these readings and advise.`
                   width: '34px',
                   height: '34px',
                   borderRadius: '9px',
-                  background: '#e8e4dd',
+                  background: 'var(--border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -235,7 +235,7 @@ Please analyse these readings and advise.`
                 {loading === item.id
                   ? <div style={{
                       width: '16px', height: '16px', borderRadius: '50%',
-                      border: '2px solid #e2e8f0', borderTopColor: '#0d9488',
+                      border: '2px solid #e2e8f0', borderTopColor: 'var(--accent)',
                       animation: 'spin 0.6s linear infinite',
                     }} />
                   : <item.icon size={17} strokeWidth={1.75} />

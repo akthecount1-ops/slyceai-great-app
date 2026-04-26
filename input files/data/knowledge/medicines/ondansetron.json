@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "ondansetron",
+  "name": "Emeset / Zofran",
+  "generic_name": "Ondansetron Hydrochloride",
+  "manufacturer": "Cipla / GSK",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Chemotherapy-induced nausea and vomiting",
+    "Post-operative nausea",
+    "Radiation-induced nausea",
+    "Gastroenteritis-related vomiting (off-label)",
+    "Pregnancy nausea (off-label)"
+  ],
+  "how_it_works": "Selective 5-HT3 serotonin receptor antagonist that blocks serotonin peripherally in vagal nerve terminals and centrally in the chemoreceptor trigger zone.",
+  "dosage_forms": [
+    "Tablet 4mg",
+    "Tablet 8mg",
+    "ODT (mouth dissolving) 4mg",
+    "ODT 8mg",
+    "IV injection",
+    "Syrup 2mg/5ml"
+  ],
+  "side_effects": {
+    "common": [
+      "Headache",
+      "Constipation",
+      "Flushing",
+      "Dizziness",
+      "Fatigue"
+    ],
+    "serious": [
+      "QT prolongation and cardiac arrhythmias",
+      "Serotonin syndrome (rare)",
+      "Severe skin reactions"
+    ]
+  },
+  "drug_interactions": [
+    "Drugs that prolong QT",
+    "Apomorphine (hypotension)",
+    "Tramadol (reduced efficacy)",
+    "SSRIs (serotonin syndrome risk)"
+  ],
+  "food_interactions": [
+    "Can be taken with or without food"
+  ],
+  "contraindications": [
+    "Congenital QT syndrome",
+    "Hypersensitivity to ondansetron or setrons",
+    "Caution with other QT-prolonging drugs"
+  ],
+  "what_to_avoid": [
+    "Melts on tongue (ODT form) — do not swallow whole",
+    "Effective for 24h — redose as needed",
+    "Not for routine nausea — primarily for chemo and post-op settings"
+  ],
+  "storage": "Store below 30°C"
+}

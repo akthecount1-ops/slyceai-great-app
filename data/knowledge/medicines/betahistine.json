@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "betahistine",
+  "name": "Vertin / Betaserc",
+  "generic_name": "Betahistine Dihydrochloride",
+  "manufacturer": "Abbott / Solvay",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Meniere's disease",
+    "Vertigo",
+    "Tinnitus associated with vestibular disorders",
+    "Balance disorders"
+  ],
+  "how_it_works": "Histamine H1 agonist and H3 receptor antagonist that improves microcirculation in the inner ear by dilating precapillary sphincters and reducing endolymphatic pressure.",
+  "dosage_forms": [
+    "Tablet 8mg",
+    "Tablet 16mg",
+    "Tablet 24mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Headache",
+      "GI upset",
+      "Indigestion"
+    ],
+    "serious": [
+      "Bronchospasm in asthmatic patients (rare)",
+      "Peptic ulceration (worsens)"
+    ]
+  },
+  "drug_interactions": [
+    "Antihistamines (opposing effects)",
+    "MAOIs",
+    "Beta-agonists"
+  ],
+  "food_interactions": [
+    "Take with food to reduce GI upset"
+  ],
+  "contraindications": [
+    "Pheochromocytoma",
+    "Asthma (caution)",
+    "Peptic ulcer",
+    "Allergy to betahistine"
+  ],
+  "what_to_avoid": [
+    "Long-term treatment often needed for Meniere's disease",
+    "Not for acute attacks of severe vertigo",
+    "Consistent dosing important"
+  ],
+  "storage": "Store below 25°C"
+}

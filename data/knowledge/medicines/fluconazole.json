@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "fluconazole",
+  "name": "Zocon / Diflucan",
+  "generic_name": "Fluconazole",
+  "manufacturer": "Pfizer / FDC",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Vaginal candidiasis",
+    "Oral thrush",
+    "Esophageal candidiasis",
+    "Cryptococcal meningitis",
+    "Tinea infections",
+    "Onychomycosis (nail fungus)"
+  ],
+  "how_it_works": "Triazole antifungal that inhibits fungal cytochrome P450 14α-demethylase, blocking ergosterol synthesis and disrupting fungal cell membrane integrity.",
+  "dosage_forms": [
+    "Capsule 50mg",
+    "Capsule 150mg",
+    "Tablet 200mg",
+    "Oral suspension 50mg/5ml",
+    "IV infusion"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Headache",
+      "Abdominal pain",
+      "Diarrhea",
+      "Rash",
+      "Elevated liver enzymes"
+    ],
+    "serious": [
+      "Hepatotoxicity",
+      "QT prolongation",
+      "Severe skin reactions (SJS)",
+      "Drug interactions — potent CYP2C9/CYP3A4 inhibitor"
+    ]
+  },
+  "drug_interactions": [
+    "Warfarin (major — can double INR)",
+    "Statins (rhabdomyolysis risk)",
+    "Phenytoin",
+    "Cyclosporine",
+    "Oral hypoglycemics",
+    "Cisapride",
+    "Rifampicin",
+    "Many others via CYP inhibition"
+  ],
+  "food_interactions": [
+    "Can be taken with or without food",
+    "Alcohol may worsen liver stress"
+  ],
+  "contraindications": [
+    "Allergy to azole antifungals",
+    "QT prolongation",
+    "Liver disease",
+    "Pregnancy (prolonged systemic use)"
+  ],
+  "what_to_avoid": [
+    "Highly interactive drug — check all medications",
+    "Single dose sufficient for vaginal candidiasis",
+    "Report jaundice or severe rash immediately",
+    "Complete course for systemic infections"
+  ],
+  "storage": "Store below 30°C"
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "pregabalin",
+  "name": "Lyrica / Pregabalin",
+  "generic_name": "Pregabalin",
+  "manufacturer": "Pfizer / Sun Pharma",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Neuropathic pain (diabetic, post-herpetic, central)",
+    "Fibromyalgia",
+    "Epilepsy (adjunct)",
+    "Generalized anxiety disorder"
+  ],
+  "how_it_works": "Binds to alpha-2-delta subunit of voltage-gated calcium channels in CNS, reducing neurotransmitter release (glutamate, norepinephrine, substance P) in hyperexcited neurons.",
+  "dosage_forms": [
+    "Capsule 25mg",
+    "Capsule 50mg",
+    "Capsule 75mg",
+    "Capsule 150mg",
+    "Capsule 300mg",
+    "Oral solution"
+  ],
+  "side_effects": {
+    "common": [
+      "Dizziness",
+      "Drowsiness",
+      "Weight gain",
+      "Peripheral edema",
+      "Blurred vision",
+      "Dry mouth"
+    ],
+    "serious": [
+      "Severe respiratory depression (with CNS depressants)",
+      "Angioedema",
+      "Misuse and dependence",
+      "Suicidal ideation"
+    ]
+  },
+  "drug_interactions": [
+    "CNS depressants (additive)",
+    "Alcohol",
+    "Opioids (respiratory depression risk)",
+    "Thiazolidinediones (edema)"
+  ],
+  "food_interactions": [
+    "Alcohol significantly worsens drowsiness and dizziness",
+    "Avoid driving after starting"
+  ],
+  "contraindications": [
+    "Allergy to pregabalin",
+    "Severe kidney failure (dose adjust)",
+    "Substance abuse history (caution)"
+  ],
+  "what_to_avoid": [
+    "Do not stop suddenly — taper slowly (seizure risk)",
+    "Avoid driving until you know how it affects you",
+    "Controlled substance — do not share",
+    "Report mood changes or suicidal thoughts"
+  ],
+  "storage": "Store below 25°C"
+}

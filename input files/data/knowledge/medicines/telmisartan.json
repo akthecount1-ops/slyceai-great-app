@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "telmisartan",
+  "name": "Telmisartan 40mg",
+  "generic_name": "Telmisartan",
+  "manufacturer": "Boehringer Ingelheim / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Hypertension",
+    "Cardiovascular risk reduction in patients with established CV disease",
+    "Diabetic nephropathy"
+  ],
+  "how_it_works": "Long-acting ARB that selectively blocks angiotensin II type 1 receptors, reducing blood pressure for up to 24 hours.",
+  "dosage_forms": [
+    "Tablet 20mg",
+    "Tablet 40mg",
+    "Tablet 80mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Dizziness",
+      "Hyperkalemia",
+      "Back pain",
+      "Upper respiratory infection",
+      "Diarrhea"
+    ],
+    "serious": [
+      "Angioedema",
+      "Severe hypotension",
+      "Fetal toxicity",
+      "Acute kidney injury"
+    ]
+  },
+  "drug_interactions": [
+    "Digoxin (levels increased)",
+    "Ramipril (dual RAAS blockade)",
+    "Lithium",
+    "NSAIDs"
+  ],
+  "food_interactions": [
+    "Avoid high-potassium foods if prone to hyperkalemia",
+    "Alcohol enhances blood pressure lowering"
+  ],
+  "contraindications": [
+    "Pregnancy",
+    "Severe liver disease",
+    "Biliary obstruction",
+    "Hyperkalemia"
+  ],
+  "what_to_avoid": [
+    "Take at same time daily",
+    "Do not stop abruptly",
+    "Monitor potassium and kidney function"
+  ],
+  "storage": "Store below 30°C"
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "levothyroxine",
+  "name": "Eltroxin / Thyronorm",
+  "generic_name": "Levothyroxine Sodium",
+  "manufacturer": "Abbott / GlaxoSmithKline",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Hypothyroidism",
+    "Thyroid hormone replacement",
+    "Thyroid cancer (post-surgery)",
+    "Goiter"
+  ],
+  "how_it_works": "Synthetic T4 thyroid hormone that is converted to active T3 in peripheral tissues, restoring normal metabolic function.",
+  "dosage_forms": [
+    "Tablet 25mcg",
+    "Tablet 50mcg",
+    "Tablet 75mcg",
+    "Tablet 100mcg",
+    "Tablet 150mcg"
+  ],
+  "side_effects": {
+    "common": [
+      "Palpitations if dose too high",
+      "Sweating",
+      "Headache",
+      "Diarrhea",
+      "Weight loss (overdose)",
+      "Insomnia"
+    ],
+    "serious": [
+      "Cardiac arrhythmias (overdose)",
+      "Bone loss with long-term over-treatment",
+      "Adrenal crisis if started before cortisol replacement"
+    ]
+  },
+  "drug_interactions": [
+    "Calcium/antacids (take 4h apart)",
+    "Iron supplements (take 4h apart)",
+    "Warfarin",
+    "Digoxin",
+    "Estrogen",
+    "Rifampin"
+  ],
+  "food_interactions": [
+    "Take 30–60 minutes before breakfast on empty stomach",
+    "Coffee and soy milk reduce absorption"
+  ],
+  "contraindications": [
+    "Untreated adrenal insufficiency",
+    "Thyrotoxicosis",
+    "Acute MI (use with caution)"
+  ],
+  "what_to_avoid": [
+    "Always take on empty stomach at the same time daily",
+    "Never miss a dose",
+    "TSH levels checked regularly",
+    "Many interactions — inform all doctors"
+  ],
+  "storage": "Store below 25°C, protect from light and moisture"
+}

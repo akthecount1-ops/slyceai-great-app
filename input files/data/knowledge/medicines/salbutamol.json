@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "salbutamol",
+  "name": "Asthalin / Ventolin",
+  "generic_name": "Salbutamol Sulfate",
+  "manufacturer": "Cipla / GSK",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Acute bronchospasm in asthma",
+    "COPD acute exacerbation",
+    "Exercise-induced bronchospasm",
+    "Hyperkalemia (IV — emergency)"
+  ],
+  "how_it_works": "Short-acting beta-2 adrenoceptor agonist (SABA) that relaxes bronchial smooth muscle by stimulating beta-2 receptors, causing rapid bronchodilation.",
+  "dosage_forms": [
+    "MDI inhaler 100mcg/puff",
+    "Rotacaps 200mcg",
+    "Nebulizer solution 2.5mg/2.5ml",
+    "Syrup 2mg/5ml",
+    "Tablet 4mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Tremor",
+      "Palpitations",
+      "Headache",
+      "Tachycardia",
+      "Nervousness",
+      "Hypokalemia (high doses)"
+    ],
+    "serious": [
+      "Severe tachycardia",
+      "Arrhythmias",
+      "Paradoxical bronchospasm",
+      "Hypokalemia"
+    ]
+  },
+  "drug_interactions": [
+    "Beta-blockers (opposing effect — avoid)",
+    "Digoxin",
+    "Other sympathomimetics",
+    "MAOIs",
+    "Theophylline (increased cardiovascular risk)"
+  ],
+  "food_interactions": [
+    "Caffeine can worsen tachycardia and tremor"
+  ],
+  "contraindications": [
+    "Allergy to salbutamol",
+    "Caution in cardiac arrhythmias",
+    "Caution in hyperthyroidism",
+    "Diabetes (can raise blood sugar)"
+  ],
+  "what_to_avoid": [
+    "Do not use more than prescribed — overuse indicates poor asthma control",
+    "Shake inhaler well before use",
+    "Always have a spare inhaler",
+    "Rinse mouth after use (if using high dose)"
+  ],
+  "storage": "Store below 30°C, away from heat and direct sunlight"
+}

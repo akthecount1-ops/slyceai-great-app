@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "aspirin_low",
+  "name": "Aspirin 75mg",
+  "generic_name": "Acetylsalicylic Acid",
+  "manufacturer": "Bayer / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Antiplatelet therapy in cardiovascular disease",
+    "Secondary prevention of MI and stroke",
+    "Atrial fibrillation risk reduction"
+  ],
+  "how_it_works": "Irreversibly inhibits cyclooxygenase (COX-1 and COX-2), preventing thromboxane A2 formation and platelet aggregation.",
+  "dosage_forms": [
+    "Tablet 75mg",
+    "Tablet 150mg",
+    "Tablet 300mg",
+    "Enteric-coated tablet"
+  ],
+  "side_effects": {
+    "common": [
+      "Stomach irritation",
+      "Nausea",
+      "GI upset",
+      "Heartburn",
+      "Easy bruising"
+    ],
+    "serious": [
+      "GI bleeding",
+      "Peptic ulcer hemorrhage",
+      "Hemorrhagic stroke",
+      "Reye's syndrome in children",
+      "Aspirin-exacerbated respiratory disease"
+    ]
+  },
+  "drug_interactions": [
+    "Warfarin (increased bleeding)",
+    "Methotrexate",
+    "NSAIDs",
+    "Clopidogrel",
+    "SSRIs",
+    "Ibuprofen (reduces antiplatelet effect)"
+  ],
+  "food_interactions": [
+    "Alcohol significantly increases GI bleeding risk",
+    "Take with food"
+  ],
+  "contraindications": [
+    "Active peptic ulcer",
+    "GI bleeding",
+    "Hemophilia",
+    "Children under 16 (risk of Reye's syndrome)",
+    "Severe kidney/liver disease"
+  ],
+  "what_to_avoid": [
+    "Always take with food or milk",
+    "Do not combine with regular NSAIDs",
+    "Tell all doctors you are on aspirin",
+    "Avoid alcohol"
+  ],
+  "storage": "Store below 25°C, keep dry"
+}

@@ -1,9 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import AppSidebar from './AppSidebar'
-import AppHeader from './AppHeader'
+import dynamic from 'next/dynamic'
 import { Menu, X } from 'lucide-react'
+
+const AppSidebar = dynamic(() => import('./AppSidebar'), { 
+  ssr: false,
+  loading: () => <div style={{ width: 'var(--sidebar-width)', height: '100%', background: 'var(--bg-card)', borderRight: '1px solid var(--border)', flexShrink: 0 }} />
+})
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -15,12 +19,12 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
   }, [])
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-page)', overflow: 'hidden' }}>
 
       {/* Sidebar — desktop sticky, mobile overlay */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} md:sticky md:top-0 md:h-screen md:block`}
-        style={{ width: '260px', flexShrink: 0 }}
+        style={{ width: 'var(--sidebar-width)', flexShrink: 0 }}
       >
         <AppSidebar onMobileClose={() => setIsSidebarOpen(false)} />
       </div>
@@ -34,44 +38,36 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
         />
       )}
 
-      {/* Main column */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
+      {/* Main column — full width, no header */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
-        {/* Fixed header */}
-        <div
-          className="fixed top-0 right-0 z-30 left-0 md:left-[260px]"
-          style={{ height: 'var(--header-height)' }}
-        >
-          <AppHeader>
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="md:hidden flex items-center justify-center mr-2"
-              style={{
-                width: 36, height: 36, borderRadius: 9,
-                border: '1px solid rgba(0,0,0,0.12)',
-                background: 'rgba(255,255,255,0.7)',
-                color: '#5a5652', cursor: 'pointer', flexShrink: 0,
-              }}
-            >
-              {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
-          </AppHeader>
+        {/* Mobile hamburger row */}
+        <div className="md:hidden flex items-center px-4 py-3 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            style={{
+              width: 36, height: 36, borderRadius: 9,
+              border: '1px solid rgba(0,0,0,0.12)',
+              background: 'rgba(255,255,255,0.7)',
+              color: '#5a5652', cursor: 'pointer', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+          <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)', marginLeft: 10 }}>Arogya</span>
         </div>
 
         {/* Scrollable page content */}
         <main
           style={{
             flex: 1,
-            paddingTop: 'var(--header-height)',
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             overflowY: 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'],
           } as React.CSSProperties}
         >
-          <div style={{ width: '100%', maxWidth: 1200, margin: '0 auto' }}>
-            {children}
-          </div>
+          {children}
         </main>
 
       </div>

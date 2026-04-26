@@ -1,0 +1,372 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:600px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)}
+.sidebar{background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);padding:20px 0;display:flex;flex-direction:column;gap:2px}
+.sidebar-logo{padding:0 16px 16px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.sidebar-logo span{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.sidebar-logo small{display:block;font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;cursor:pointer;color:var(--color-text-secondary);border-radius:0;transition:background 0.1s}
+.nav-item:hover{background:var(--color-background-primary);color:var(--color-text-primary)}
+.nav-item.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border-right:2px solid #1D9E75}
+.nav-icon{width:16px;height:16px;opacity:0.7}
+.nav-section{font-size:10px;color:var(--color-text-tertiary);padding:12px 16px 4px;letter-spacing:0.05em;text-transform:uppercase}
+.main{overflow-y:auto;background:var(--color-background-tertiary)}
+
+.onboard-banner{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.onboard-left h2{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.onboard-left p{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.progress-steps{display:flex;align-items:center;gap:6px}
+.step{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary)}
+.step-dot{width:20px;height:20px;border-radius:50%;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--color-text-secondary)}
+.step-dot.done{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.step-dot.active{background:var(--color-background-primary);border:1.5px solid #1D9E75;color:#1D9E75}
+.step-line{width:16px;height:0.5px;background:var(--color-border-tertiary)}
+.step-line.done{background:#1D9E75}
+.start-btn{background:#1D9E75;color:#fff;border:none;padding:8px 16px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;font-weight:500}
+
+.dash-content{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.dash-top{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.metric-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px}
+.metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.metric-value{font-size:22px;font-weight:500;color:var(--color-text-primary);line-height:1}
+.metric-sub{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.metric-badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.badge-green{background:#E1F5EE;color:#0F6E56}
+.badge-amber{background:#FAEEDA;color:#854F0B}
+.badge-red{background:#FCEBEB;color:#A32D2D}
+
+.dash-mid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.card-action{font-size:11px;color:#1D9E75;cursor:pointer}
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vital-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.vital-name{font-size:11px;color:var(--color-text-secondary)}
+.vital-val{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.vital-unit{font-size:10px;color:var(--color-text-tertiary);margin-left:2px}
+
+.meds-list{display:flex;flex-direction:column;gap:6px}
+.med-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.med-name{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.med-dose{font-size:11px;color:var(--color-text-secondary)}
+.med-check{width:18px;height:18px;border-radius:4px;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center}
+.med-check.taken{background:#1D9E75;border-color:#1D9E75}
+.checkmark{color:#fff;font-size:10px;font-weight:700}
+
+.symptom-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);background:var(--color-background-secondary)}
+.chip.active{background:#E1F5EE;color:#0F6E56;border-color:#5DCAA5}
+.chip.warn{background:#FCEBEB;color:#A32D2D;border-color:#F09595}
+
+.insight-box{background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;color:#085041;line-height:1.5}
+.insight-label{font-size:10px;font-weight:500;letter-spacing:0.04em;color:#0F6E56;margin-bottom:4px;text-transform:uppercase}
+
+.talk-btn{width:100%;background:#111;color:#fff;border:none;padding:10px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px}
+
+.empty-state{text-align:center;padding:20px 0;color:var(--color-text-tertiary);font-size:12px}
+.empty-icon{font-size:24px;margin-bottom:6px}
+.add-link{font-size:11px;color:#1D9E75;cursor:pointer;margin-top:4px;display:inline-block}
+
+.dash-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.score-ring{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.score-num{font-size:36px;font-weight:500;color:#1D9E75;line-height:1}
+.score-label{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
+.score-max{font-size:13px;color:var(--color-text-secondary)}
+
+.journal-list{display:flex;flex-direction:column;gap:6px}
+.journal-item{padding:8px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.journal-date{font-size:10px;color:var(--color-text-tertiary)}
+.journal-text{font-size:12px;color:var(--color-text-primary);margin-top:2px}
+
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:2px 0}
+
+.tab-row{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:12px}
+.tab{font-size:12px;padding:6px 12px;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px}
+.tab.active{color:#1D9E75;border-bottom-color:#1D9E75;font-weight:500}
+
+.onboard-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:10;border-radius:var(--border-radius-lg)}
+.onboard-modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:24px;width:440px;max-width:95%}
+.modal-title{font-size:16px;font-weight:500;margin-bottom:4px;color:var(--color-text-primary)}
+.modal-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;color:var(--color-text-secondary)}
+.form-input{font-size:13px;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);outline:none}
+.form-input:focus{border-color:#1D9E75;box-shadow:0 0 0 2px rgba(29,158,117,0.12)}
+.modal-step{font-size:11px;color:var(--color-text-tertiary);margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-ghost{background:transparent;border:0.5px solid var(--color-border-secondary);padding:7px 14px;border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;color:var(--color-text-secondary)}
+.btn-primary{background:#1D9E75;border:none;padding:7px 14px;border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;color:#fff;font-weight:500}
+.chip-select{display:flex;flex-wrap:wrap;gap:6px}
+.chip-opt{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--color-border-secondary);cursor:pointer;color:var(--color-text-secondary);background:var(--color-background-secondary)}
+.chip-opt.sel{background:#E1F5EE;color:#0F6E56;border-color:#5DCAA5}
+.section-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;margin-top:10px}
+.opt-tag{font-size:10px;color:var(--color-text-tertiary);margin-left:4px}
+
+.shell-wrap{position:relative}
+</style>
+
+<div class="shell-wrap">
+<div class="shell" id="mainShell">
+
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span>Arogya</span>
+      <small>Your health companion</small>
+    </div>
+    <div class="nav-item active">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.8"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.4"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.4"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.8"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+      Chat history
+    </div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+      My profile
+    </div>
+    <div class="divider" style="margin:8px 16px"></div>
+    <div class="nav-section">Quick links</div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Log vitals
+    </div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+      Upload report
+    </div>
+    <div style="flex:1"></div>
+    <div class="divider" style="margin:8px 16px"></div>
+    <div class="nav-item" style="font-size:12px;">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+      Akash Gupta
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="onboard-banner">
+      <div class="onboard-left">
+        <h2>Complete your health profile</h2>
+        <p>Takes 2 minutes — helps Slyceai give you accurate, personalised answers</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="progress-steps">
+          <div class="step-dot done">✓</div>
+          <div class="step-line done"></div>
+          <div class="step-dot active">2</div>
+          <div class="step-line"></div>
+          <div class="step-dot">3</div>
+          <div class="step-line"></div>
+          <div class="step-dot">4</div>
+        </div>
+        <button class="start-btn" onclick="showModal()">Continue setup</button>
+      </div>
+    </div>
+
+    <div class="dash-content">
+      <div class="dash-top">
+        <div class="metric-card">
+          <div class="metric-label">Health score <span class="metric-badge badge-amber">Low</span></div>
+          <div class="metric-value" style="color:#BA7517">10</div>
+          <div class="metric-sub">Complete profile to improve</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Blood pressure <span class="metric-badge badge-green">Normal</span></div>
+          <div class="metric-value">120<span style="font-size:14px;color:var(--color-text-secondary)">/80</span></div>
+          <div class="metric-sub">mmHg · logged today</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Pulse <span class="metric-badge badge-amber">High-normal</span></div>
+          <div class="metric-value">100</div>
+          <div class="metric-sub">bpm · monitoring</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Blood sugar <span class="metric-badge badge-green">Normal</span></div>
+          <div class="metric-value">98</div>
+          <div class="metric-sub">mg/dL · fasting</div>
+        </div>
+      </div>
+
+      <div class="dash-mid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Today's vitals</div>
+            <span class="card-action" onclick="sendPrompt('I want to log new vitals')">+ Log vitals</span>
+          </div>
+          <div class="tab-row">
+            <div class="tab active">Today</div>
+            <div class="tab">7 days</div>
+            <div class="tab">30 days</div>
+          </div>
+          <div class="vitals-grid">
+            <div class="vital-row">
+              <div class="vital-name">SpO2</div>
+              <div class="vital-val">99<span class="vital-unit">%</span></div>
+            </div>
+            <div class="vital-row">
+              <div class="vital-name">Temperature</div>
+              <div class="vital-val">—</div>
+            </div>
+            <div class="vital-row">
+              <div class="vital-name">Weight</div>
+              <div class="vital-val">—<span class="vital-unit">kg</span></div>
+            </div>
+            <div class="vital-row">
+              <div class="vital-name">Blood group</div>
+              <div class="vital-val">—</div>
+            </div>
+          </div>
+          <div class="insight-box" style="margin-top:10px">
+            <div class="insight-label">Slyceai insight</div>
+            Your pulse is at the high end of normal. Gentle walks and hydration can help. Consider logging temperature today.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Medicines today</div>
+            <span class="card-action" onclick="sendPrompt('Add a new medicine to my profile')">+ Add</span>
+          </div>
+          <div class="meds-list">
+            <div class="med-item">
+              <div>
+                <div class="med-name">Metformin 500mg</div>
+                <div class="med-dose">Morning · after breakfast</div>
+              </div>
+              <div class="med-check taken"><span class="checkmark">✓</span></div>
+            </div>
+            <div class="med-item">
+              <div>
+                <div class="med-name">Vitamin D3 60K</div>
+                <div class="med-dose">Once weekly · Sunday</div>
+              </div>
+              <div class="med-check"></div>
+            </div>
+            <div class="med-item" style="border:0.5px dashed var(--color-border-tertiary);background:transparent;justify-content:center;cursor:pointer" onclick="sendPrompt('Add a new medicine to my profile')">
+              <span style="font-size:11px;color:var(--color-text-tertiary)">+ Add medicine</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-bottom">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Current symptoms</div>
+            <span class="card-action" onclick="sendPrompt('I want to log a new symptom')">+ Add</span>
+          </div>
+          <div class="symptom-chips">
+            <div class="chip active">Muscle weakness</div>
+            <div class="chip warn">Fatigue</div>
+            <div class="chip">Dizziness (past)</div>
+            <div class="chip" style="border-style:dashed;cursor:pointer" onclick="sendPrompt('I want to log a new symptom')">+ Add symptom</div>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--color-text-secondary)">
+            Known condition: <strong style="color:var(--color-text-primary)">Muscle Fibrosis</strong>
+          </div>
+        </div>
+
+        <div class="card" style="grid-column:span 1">
+          <div class="card-header">
+            <div class="card-title">Health journals</div>
+            <span class="card-action">+ New entry</span>
+          </div>
+          <div class="journal-list">
+            <div class="journal-item">
+              <div class="journal-date">24 Apr 2025</div>
+              <div class="journal-text">Felt slightly fatigued after lunch. Walked 800 steps.</div>
+            </div>
+            <div class="journal-item" style="background:transparent;border:0.5px dashed var(--color-border-tertiary);text-align:center;cursor:pointer">
+              <div class="journal-text" style="color:var(--color-text-tertiary);font-size:11px">Write today's entry</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header" style="margin-bottom:6px">
+            <div class="card-title">Daily insight</div>
+          </div>
+          <div class="insight-box" style="margin-bottom:10px">
+            <div class="insight-label">Slyceai</div>
+            Your vitals look stable today. Pulse is monitored — consider a 10-minute slow walk after dinner.
+          </div>
+          <button class="talk-btn" onclick="sendPrompt('Talk to Slyceai about my health today')">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14 2H2a1 1 0 00-1 1v8a1 1 0 001 1h3l3 3 3-3h3a1 1 0 001-1V3a1 1 0 00-1-1z" fill="white" opacity="0.9"/></svg>
+            Talk to Slyceai
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="onboard-overlay" id="onboardModal" style="display:none">
+  <div class="onboard-modal">
+    <div class="modal-step">Step 2 of 4 — Body measurements</div>
+    <div class="modal-title">Tell us about your body</div>
+    <div class="modal-sub">This helps Slyceai personalise diet, dosage context, and health scores for you.</div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <div class="form-label">Weight (kg) <span class="opt-tag">required</span></div>
+        <input class="form-input" type="number" placeholder="e.g. 72">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Height (cm) <span class="opt-tag">required</span></div>
+        <input class="form-input" type="number" placeholder="e.g. 175">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Blood group <span class="opt-tag">optional</span></div>
+        <select class="form-input">
+          <option value="">Select</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Age</div>
+        <input class="form-input" type="number" placeholder="e.g. 28" value="28">
+      </div>
+    </div>
+
+    <div class="section-label">Current vitals <span class="opt-tag">(optional — fill if you have a reading)</span></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <div class="form-label">Blood pressure</div>
+        <input class="form-input" type="text" placeholder="e.g. 120/80">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Pulse (bpm)</div>
+        <input class="form-input" type="number" placeholder="e.g. 78">
+      </div>
+      <div class="form-group">
+        <div class="form-label">SpO2 (%)</div>
+        <input class="form-input" type="number" placeholder="e.g. 98">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Blood sugar (mg/dL)</div>
+        <input class="form-input" type="number" placeholder="e.g. 95">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="hideModal()">Back</button>
+      <button class="btn-ghost" onclick="hideModal()">Skip vitals</button>
+      <button class="btn-primary" onclick="hideModal()">Save &amp; continue →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function showModal(){
+  document.getElementById('onboardModal').style.display='flex';
+}
+function hideModal(){
+  document.getElementById('onboardModal').style.display='none';
+}
+</script>

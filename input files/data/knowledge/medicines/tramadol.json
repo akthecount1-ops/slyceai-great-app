@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "tramadol",
+  "name": "Contramal / Ultracet",
+  "generic_name": "Tramadol Hydrochloride",
+  "manufacturer": "J&J / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Moderate to severe pain",
+    "Post-operative pain",
+    "Neuropathic pain",
+    "Cancer pain (moderate)",
+    "Chronic musculoskeletal pain"
+  ],
+  "how_it_works": "Centrally-acting synthetic opioid analgesic that binds weakly to mu-opioid receptors and inhibits reuptake of norepinephrine and serotonin, providing dual pain relief.",
+  "dosage_forms": [
+    "Tablet 50mg",
+    "Capsule 50mg",
+    "SR tablet 100mg",
+    "IV injection",
+    "Drops"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Dizziness",
+      "Constipation",
+      "Headache",
+      "Drowsiness",
+      "Sweating",
+      "Dry mouth"
+    ],
+    "serious": [
+      "Seizures",
+      "Serotonin syndrome",
+      "Respiratory depression (overdose)",
+      "Dependence and withdrawal",
+      "Opioid toxicity"
+    ]
+  },
+  "drug_interactions": [
+    "MAOIs (serotonin syndrome — avoid)",
+    "SSRIs/SNRIs (serotonin syndrome)",
+    "Other CNS depressants",
+    "Carbamazepine",
+    "Warfarin",
+    "Triptan medications"
+  ],
+  "food_interactions": [
+    "Alcohol severely increases CNS and respiratory depression — AVOID",
+    "Avoid driving"
+  ],
+  "contraindications": [
+    "Epilepsy",
+    "Alcohol/opioid intoxication",
+    "Severe respiratory depression",
+    "MAOI use within 14 days",
+    "Severe kidney or liver failure",
+    "Pregnancy",
+    "Under 12 years"
+  ],
+  "what_to_avoid": [
+    "Do not drive or operate machinery",
+    "Do not take with alcohol",
+    "Taper dose to stop — do not stop suddenly",
+    "Not suitable long-term without medical supervision",
+    "Strictly keep from children"
+  ],
+  "storage": "Store below 25°C"
+}

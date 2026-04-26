@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "tamsulosin",
+  "name": "Urimax / Flomax",
+  "generic_name": "Tamsulosin Hydrochloride",
+  "manufacturer": "Cipla / Boehringer",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Benign prostatic hyperplasia (BPH)",
+    "Ureteral stones (facilitates passage — off-label)"
+  ],
+  "how_it_works": "Selective alpha-1A/1D adrenoceptor blocker that relaxes smooth muscle in the prostate and bladder neck, improving urine flow without significantly affecting blood pressure.",
+  "dosage_forms": [
+    "Capsule 0.4mg (MR)"
+  ],
+  "side_effects": {
+    "common": [
+      "Retrograde ejaculation",
+      "Dizziness",
+      "Postural hypotension (especially first dose)",
+      "Rhinitis",
+      "Headache"
+    ],
+    "serious": [
+      "Severe postural hypotension (first dose)",
+      "Intraoperative floppy iris syndrome (inform ophthalmologist before eye surgery)",
+      "Priapism (rare)"
+    ]
+  },
+  "drug_interactions": [
+    "Other alpha-blockers",
+    "PDE5 inhibitors (sildenafil — severe hypotension)",
+    "Strong CYP3A4 inhibitors (ketoconazole)",
+    "Antihypertensives"
+  ],
+  "food_interactions": [
+    "Alcohol worsens hypotension — avoid at first dose",
+    "Take after same meal each day"
+  ],
+  "contraindications": [
+    "Allergy to tamsulosin",
+    "Orthostatic hypotension",
+    "Severe liver disease"
+  ],
+  "what_to_avoid": [
+    "First dose at bedtime to avoid fall risk",
+    "Tell ophthalmologist before any eye surgery",
+    "Rise slowly from bed",
+    "Retrograde ejaculation is not harmful but is expected"
+  ],
+  "storage": "Store below 25°C"
+}

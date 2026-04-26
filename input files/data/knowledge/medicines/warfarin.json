@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "warfarin",
+  "name": "Warf / Coumadin",
+  "generic_name": "Warfarin Sodium",
+  "manufacturer": "Sun Pharma / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Atrial fibrillation (stroke prevention)",
+    "Deep vein thrombosis (DVT)",
+    "Pulmonary embolism",
+    "Mechanical heart valves",
+    "Post-MI thromboembolism prevention"
+  ],
+  "how_it_works": "Vitamin K antagonist that inhibits VKORC1 enzyme, preventing regeneration of Vitamin K, and reducing synthesis of clotting factors II, VII, IX, and X.",
+  "dosage_forms": [
+    "Tablet 1mg",
+    "Tablet 2mg",
+    "Tablet 5mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Bleeding (minor)",
+      "Easy bruising",
+      "Skin necrosis (rare, early)",
+      "Purple toe syndrome"
+    ],
+    "serious": [
+      "Major life-threatening bleeding (intracranial, GI)",
+      "Warfarin-induced skin necrosis",
+      "Hematoma"
+    ]
+  },
+  "drug_interactions": [
+    "Extremely long list — significant interactions with almost all drugs",
+    "Aspirin, clopidogrel, NSAIDs (increased bleeding)",
+    "Antibiotics alter gut flora and vitamin K",
+    "Amiodarone, fluconazole, metronidazole (greatly increase INR)",
+    "Rifampicin, carbamazepine (reduce INR)",
+    "Vitamin K supplements"
+  ],
+  "food_interactions": [
+    "Consistent intake of leafy green vegetables (vitamin K) — do not drastically change diet",
+    "Cranberry juice can increase INR",
+    "Alcohol (variable effects — avoid)"
+  ],
+  "contraindications": [
+    "Active major bleeding",
+    "Pregnancy (fetal warfarin syndrome)",
+    "Severe liver disease",
+    "Non-compliant patient",
+    "Recent neurosurgery"
+  ],
+  "what_to_avoid": [
+    "Regular INR monitoring is essential — never skip",
+    "Keep a medication interaction card",
+    "Tell EVERY doctor you are on warfarin",
+    "Consistent diet of leafy greens (don't suddenly increase/decrease)",
+    "Carry a medical alert card",
+    "Any bleeding: seek care immediately"
+  ],
+  "storage": "Store below 25°C, protect from light"
+}

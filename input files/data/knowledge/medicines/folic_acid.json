@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "folic_acid",
+  "name": "Folic Acid 5mg",
+  "generic_name": "Folic Acid",
+  "manufacturer": "Generic / Multiple",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Folate deficiency anemia",
+    "Prevention of neural tube defects (preconception and pregnancy)",
+    "Megaloblastic anemia",
+    "Methotrexate toxicity prevention",
+    "Supplement in dialysis"
+  ],
+  "how_it_works": "Water-soluble B9 vitamin converted to tetrahydrofolate, essential for DNA synthesis, cell division, and amino acid metabolism — particularly critical during rapid growth phases.",
+  "dosage_forms": [
+    "Tablet 0.4mg (400mcg)",
+    "Tablet 1mg",
+    "Tablet 5mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Generally very well tolerated",
+      "Nausea (high doses)",
+      "Bloating"
+    ],
+    "serious": [
+      "Masks B12 deficiency anemia (neurological damage can progress — check B12 first)"
+    ]
+  },
+  "drug_interactions": [
+    "Methotrexate (antagonist)",
+    "Phenytoin and barbiturates (reduced folate levels)",
+    "Sulfasalazine",
+    "Trimethoprim"
+  ],
+  "food_interactions": [
+    "Can be taken with or without food"
+  ],
+  "contraindications": [
+    "Allergy to folic acid"
+  ],
+  "what_to_avoid": [
+    "Always check B12 before treating anemia with folate alone",
+    "Preconception supplementation is most critical — start 3 months before planned pregnancy"
+  ],
+  "storage": "Store below 25°C"
+}

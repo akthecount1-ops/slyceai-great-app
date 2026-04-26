@@ -58,13 +58,13 @@ export default function MobileBottomNav() {
                 <Icon
                   size={20}
                   strokeWidth={active ? 2.2 : 1.75}
-                  style={{ color: active ? '#0d9488' : '#9a9690', transition: 'all 0.2s' }}
+                  style={{ color: active ? 'var(--accent)' : 'var(--text-muted)', transition: 'all 0.2s' }}
                 />
               </div>
               <span style={{
                 fontSize: 10,
                 fontWeight: active ? 700 : 500,
-                color: active ? '#0d9488' : '#9a9690',
+                color: active ? 'var(--accent)' : 'var(--text-muted)',
                 letterSpacing: '0.02em',
                 transition: 'all 0.2s',
               }}>

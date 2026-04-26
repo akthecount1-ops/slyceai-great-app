@@ -30,7 +30,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     icon: <Activity size={28} />,
     color: '#be123c',
-    bgColor: '#fff1f2',
+    bgColor: 'var(--bg-card)1f2',
     title: 'Record Your Health Vitals',
     description:
       'Log your blood pressure, pulse, oxygen level, and blood sugar regularly. Your AI health assistant uses this data to identify trends and alert you to risks early.',
@@ -171,7 +171,7 @@ export default function HealthTourPopup() {
           right: '32px',
           width: '380px',
           maxWidth: 'calc(100vw - 48px)',
-          background: '#ffffff',
+          background: 'var(--bg-card)fff',
           borderRadius: '20px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)',
           overflow: 'hidden',
@@ -184,7 +184,7 @@ export default function HealthTourPopup() {
         >
           <div className="flex items-center gap-2">
             <Sparkles size={16} style={{ color: 'var(--medical-teal)' }} />
-            <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '13px', letterSpacing: '0.04em' }}>
+            <span style={{ color: 'var(--bg-card)fff', fontWeight: 700, fontSize: '13px', letterSpacing: '0.04em' }}>
               HEALTH SETUP GUIDE
             </span>
           </div>

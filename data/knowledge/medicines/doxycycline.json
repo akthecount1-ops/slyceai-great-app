@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "doxycycline",
+  "name": "Doxycycline",
+  "generic_name": "Doxycycline Monohydrate/Hyclate",
+  "manufacturer": "GSK / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Respiratory infections",
+    "Chlamydia and STIs",
+    "Malaria prophylaxis",
+    "Lyme disease",
+    "Acne (long-term)",
+    "Rickettsial infections",
+    "Dengue (supportive — off-label)"
+  ],
+  "how_it_works": "Tetracycline antibiotic that binds to 30S ribosomal subunit, reversibly inhibiting aminoacyl-tRNA binding to mRNA-ribosome complex.",
+  "dosage_forms": [
+    "Capsule 100mg",
+    "Tablet 100mg",
+    "Oral suspension"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Esophageal irritation",
+      "Photosensitivity",
+      "Diarrhea",
+      "Skin discoloration"
+    ],
+    "serious": [
+      "Esophageal ulceration",
+      "Severe photosensitivity",
+      "Hepatotoxicity",
+      "Intracranial hypertension (pseudotumor cerebri)",
+      "Tooth discoloration (children)"
+    ]
+  },
+  "drug_interactions": [
+    "Antacids/iron/calcium/zinc",
+    "Oral contraceptives (reduced efficacy)",
+    "Warfarin",
+    "Retinoids",
+    "Barbiturates"
+  ],
+  "food_interactions": [
+    "Dairy products reduce absorption (take 1h before or 2h after)",
+    "Avoid sunlight during treatment"
+  ],
+  "contraindications": [
+    "Children under 8 (tooth discoloration and bone effects)",
+    "Pregnancy and breastfeeding",
+    "Esophageal obstruction",
+    "Allergy to tetracyclines"
+  ],
+  "what_to_avoid": [
+    "Take with full glass of water and remain upright for 30 minutes",
+    "Strict sun protection",
+    "Avoid antacids/dairy near dose time"
+  ],
+  "storage": "Store below 25°C, protect from light"
+}

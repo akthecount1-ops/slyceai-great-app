@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "clopidogrel",
+  "name": "Clopidogrel 75mg",
+  "generic_name": "Clopidogrel Bisulfate",
+  "manufacturer": "Sanofi / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Prevention of atherosclerotic events in MI, stroke, or peripheral arterial disease",
+    "Acute coronary syndrome",
+    "After coronary stent placement"
+  ],
+  "how_it_works": "Irreversibly blocks the P2Y12 ADP receptor on platelets, preventing platelet activation and aggregation.",
+  "dosage_forms": [
+    "Tablet 75mg",
+    "Tablet 300mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Bleeding",
+      "Bruising",
+      "Nausea",
+      "Diarrhea",
+      "Abdominal pain",
+      "Headache"
+    ],
+    "serious": [
+      "Severe bleeding including intracranial",
+      "TTP (rare)",
+      "GI hemorrhage"
+    ]
+  },
+  "drug_interactions": [
+    "Aspirin",
+    "Warfarin",
+    "PPIs — omeprazole/esomeprazole reduce efficacy",
+    "NSAIDs",
+    "SSRIs"
+  ],
+  "food_interactions": [
+    "Alcohol increases bleeding risk",
+    "Take with food to reduce GI upset"
+  ],
+  "contraindications": [
+    "Active pathological bleeding",
+    "Severe liver impairment",
+    "Allergy to clopidogrel"
+  ],
+  "what_to_avoid": [
+    "Never stop without cardiologist approval — risk of stent thrombosis",
+    "Inform all surgeons/dentists",
+    "Avoid omeprazole — use pantoprazole instead"
+  ],
+  "storage": "Store below 25°C, protect from moisture"
+}

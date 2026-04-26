@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "sitagliptin",
+  "name": "Januvia (Sitagliptin)",
+  "generic_name": "Sitagliptin Phosphate",
+  "manufacturer": "MSD / Merck",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Type 2 diabetes mellitus",
+    "Used alone or in combination with metformin"
+  ],
+  "how_it_works": "DPP-4 inhibitor that increases incretin levels (GLP-1, GIP), which stimulate insulin release and suppress glucagon in a glucose-dependent manner.",
+  "dosage_forms": [
+    "Tablet 25mg",
+    "Tablet 50mg",
+    "Tablet 100mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Nasopharyngitis",
+      "Headache",
+      "Nausea",
+      "Mild hypoglycemia (when combined with sulfonylurea)"
+    ],
+    "serious": [
+      "Pancreatitis",
+      "Severe joint pain",
+      "Heart failure (monitor)",
+      "Severe allergic reactions"
+    ]
+  },
+  "drug_interactions": [
+    "Digoxin",
+    "Sulfonylureas (increased hypoglycemia risk)"
+  ],
+  "food_interactions": [
+    "No significant food interactions"
+  ],
+  "contraindications": [
+    "Type 1 diabetes",
+    "Diabetic ketoacidosis",
+    "Severe kidney disease"
+  ],
+  "what_to_avoid": [
+    "Report severe and persistent stomach pain immediately",
+    "Monitor kidney function annually"
+  ],
+  "storage": "Store below 25°C"
+}

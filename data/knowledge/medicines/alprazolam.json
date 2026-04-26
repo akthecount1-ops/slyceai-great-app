@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "alprazolam",
+  "name": "Alprax / Xanax",
+  "generic_name": "Alprazolam",
+  "manufacturer": "Pfizer / Torrent",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Generalized anxiety disorder",
+    "Panic disorder",
+    "Short-term anxiety relief",
+    "Anxiety with depression"
+  ],
+  "how_it_works": "Benzodiazepine that enhances GABA-A receptor activity, increasing chloride ion conductance and producing anxiolytic, sedative, and muscle-relaxant effects.",
+  "dosage_forms": [
+    "Tablet 0.25mg",
+    "Tablet 0.5mg",
+    "Tablet 1mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Drowsiness",
+      "Dizziness",
+      "Memory impairment",
+      "Coordination problems",
+      "Slurred speech",
+      "Fatigue"
+    ],
+    "serious": [
+      "Dependence and addiction",
+      "Severe respiratory depression",
+      "Withdrawal seizures",
+      "Paradoxical aggression",
+      "Anterograde amnesia"
+    ]
+  },
+  "drug_interactions": [
+    "CNS depressants (additive)",
+    "Alcohol (life-threatening respiratory depression)",
+    "Opioids",
+    "Ketoconazole/itraconazole (levels markedly increased)",
+    "CYP3A4 inhibitors",
+    "Antiretrovirals"
+  ],
+  "food_interactions": [
+    "Alcohol — NEVER combine — can be fatal",
+    "Grapefruit juice increases drug levels"
+  ],
+  "contraindications": [
+    "Severe respiratory disease",
+    "Sleep apnea",
+    "Severe liver disease",
+    "Myasthenia gravis",
+    "Substance use disorder",
+    "Pregnancy (neonatal withdrawal)",
+    "Breastfeeding"
+  ],
+  "what_to_avoid": [
+    "Schedule H1 — requires prescription",
+    "Only for short-term use (2–4 weeks)",
+    "Never stop suddenly — risk of seizures",
+    "Do not drive",
+    "Do not take with alcohol",
+    "High dependency risk — must be tapered"
+  ],
+  "storage": "Store below 25°C, in a secure location"
+}

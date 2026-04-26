@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "montelukast",
+  "name": "Singulair / Montair",
+  "generic_name": "Montelukast Sodium",
+  "manufacturer": "MSD / Cipla",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Asthma prophylaxis",
+    "Allergic rhinitis",
+    "Exercise-induced bronchoconstriction",
+    "Urticaria (off-label)"
+  ],
+  "how_it_works": "Cysteinyl leukotriene receptor antagonist (LTRA) that blocks LTD4, LTC4, LTE4 from binding to receptors in airways, reducing airway inflammation and bronchoconstriction.",
+  "dosage_forms": [
+    "Tablet 10mg",
+    "Chewable tablet 4mg (children 2-5)",
+    "Chewable tablet 5mg (children 6-14)",
+    "Granules 4mg sachet"
+  ],
+  "side_effects": {
+    "common": [
+      "Headache",
+      "Nausea",
+      "Diarrhea",
+      "Abdominal pain",
+      "Upper respiratory infection symptoms"
+    ],
+    "serious": [
+      "Neuropsychiatric events (agitation, depression, suicidal ideation — FDA warning)",
+      "Eosinophilic granulomatosis (rare)"
+    ]
+  },
+  "drug_interactions": [
+    "Phenobarbital and phenytoin (reduced efficacy)",
+    "Rifampicin"
+  ],
+  "food_interactions": [
+    "Can be taken with or without food",
+    "Evening administration preferred for asthma"
+  ],
+  "contraindications": [
+    "Allergy to montelukast",
+    "Not for acute asthma attacks (rescue use)"
+  ],
+  "what_to_avoid": [
+    "Not a rescue inhaler — must continue other controllers",
+    "Report mood changes, aggression, or suicidal thoughts immediately",
+    "Review benefit-risk annually"
+  ],
+  "storage": "Store below 25°C, protect from moisture and light"
+}

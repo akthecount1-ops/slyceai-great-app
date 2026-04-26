@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "atenolol",
+  "name": "Atenolol 50mg",
+  "generic_name": "Atenolol",
+  "manufacturer": "AstraZeneca / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Hypertension",
+    "Angina pectoris",
+    "Cardiac arrhythmias",
+    "Post-myocardial infarction"
+  ],
+  "how_it_works": "Selective beta-1 adrenoceptor blocker that reduces heart rate and cardiac output, lowering blood pressure and myocardial oxygen demand.",
+  "dosage_forms": [
+    "Tablet 25mg",
+    "Tablet 50mg",
+    "Tablet 100mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Bradycardia",
+      "Fatigue",
+      "Cold extremities",
+      "Dizziness",
+      "Depression",
+      "Sexual dysfunction"
+    ],
+    "serious": [
+      "Severe bradycardia",
+      "Heart block",
+      "Severe heart failure",
+      "Bronchospasm"
+    ]
+  },
+  "drug_interactions": [
+    "Verapamil/diltiazem (risk of heart block)",
+    "Clonidine (rebound hypertension on withdrawal)",
+    "NSAIDs",
+    "Insulin (masks hypoglycemia)"
+  ],
+  "food_interactions": [
+    "Alcohol amplifies hypotensive effects"
+  ],
+  "contraindications": [
+    "Asthma/COPD",
+    "Sinus bradycardia",
+    "Cardiogenic shock",
+    "2nd/3rd degree AV block"
+  ],
+  "what_to_avoid": [
+    "Never stop suddenly — taper over 1–2 weeks",
+    "Masks hypoglycemia symptoms in diabetics",
+    "Avoid cold remedies with pseudoephedrine"
+  ],
+  "storage": "Store below 25°C, away from moisture"
+}

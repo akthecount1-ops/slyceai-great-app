@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "metformin",
+  "name": "Metformin 500mg",
+  "generic_name": "Metformin Hydrochloride",
+  "manufacturer": "Sun Pharma / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Type 2 diabetes mellitus",
+    "Insulin resistance",
+    "PCOD/PCOS (off-label)",
+    "Pre-diabetes"
+  ],
+  "how_it_works": "Reduces hepatic glucose production and improves insulin sensitivity in peripheral tissues without stimulating insulin secretion.",
+  "dosage_forms": [
+    "Tablet 500mg",
+    "Tablet 850mg",
+    "Tablet 1000mg",
+    "Extended release tablet"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Diarrhea",
+      "Stomach upset",
+      "Metallic taste",
+      "Loss of appetite"
+    ],
+    "serious": [
+      "Lactic acidosis (rare but serious)",
+      "Vitamin B12 deficiency (long-term)"
+    ]
+  },
+  "drug_interactions": [
+    "Contrast dye (hold 48h before/after imaging)",
+    "Alcohol",
+    "Furosemide",
+    "Cimetidine"
+  ],
+  "food_interactions": [
+    "Alcohol increases lactic acidosis risk",
+    "High-carb meals can reduce efficacy"
+  ],
+  "contraindications": [
+    "Kidney failure (eGFR<30)",
+    "Liver failure",
+    "Alcoholism",
+    "Contrast media use"
+  ],
+  "what_to_avoid": [
+    "Avoid excessive alcohol",
+    "Do not crush extended-release tablets",
+    "Hold before surgery"
+  ],
+  "storage": "Store below 25°C, away from moisture"
+}

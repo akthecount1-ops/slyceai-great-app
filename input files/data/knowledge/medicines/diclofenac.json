@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "diclofenac",
+  "name": "Voveran / Voltaren",
+  "generic_name": "Diclofenac Sodium",
+  "manufacturer": "Novartis / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Arthritis (osteo and rheumatoid)",
+    "Ankylosing spondylitis",
+    "Dental pain",
+    "Post-operative pain",
+    "Gout",
+    "Dysmenorrhea",
+    "Sports injuries (topical)"
+  ],
+  "how_it_works": "Preferentially inhibits COX-2 over COX-1, reducing prostaglandin synthesis with somewhat less GI toxicity than ibuprofen.",
+  "dosage_forms": [
+    "Tablet 50mg",
+    "Tablet 75mg (SR)",
+    "Injection 75mg/3ml",
+    "Gel 1%",
+    "Eye drops"
+  ],
+  "side_effects": {
+    "common": [
+      "GI upset",
+      "Headache",
+      "Dizziness",
+      "Elevated liver enzymes",
+      "Fluid retention"
+    ],
+    "serious": [
+      "GI bleeding",
+      "Hepatotoxicity",
+      "Cardiovascular events",
+      "Acute kidney injury",
+      "Severe skin reactions"
+    ]
+  },
+  "drug_interactions": [
+    "Warfarin",
+    "Methotrexate",
+    "Lithium",
+    "ACE inhibitors",
+    "Cyclosporine",
+    "Aspirin",
+    "SSRIs"
+  ],
+  "food_interactions": [
+    "Alcohol increases GI and liver toxicity",
+    "Take with food or milk"
+  ],
+  "contraindications": [
+    "Active GI ulcers",
+    "Severe kidney/liver disease",
+    "Third trimester pregnancy",
+    "Coronary artery disease",
+    "Post-CABG",
+    "Allergy to NSAIDs"
+  ],
+  "what_to_avoid": [
+    "Use lowest effective dose for shortest duration",
+    "Topical gel preferred when possible (lower systemic risk)",
+    "Monitor BP and kidney function long-term"
+  ],
+  "storage": "Store below 25°C, protect from light"
+}

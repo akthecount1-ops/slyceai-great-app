@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "insulin_human",
+  "name": "Human Insulin (Regular/NPH)",
+  "generic_name": "Human Insulin",
+  "manufacturer": "Novo Nordisk / Eli Lilly",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Type 1 diabetes mellitus",
+    "Type 2 diabetes mellitus (when oral agents insufficient)",
+    "Gestational diabetes",
+    "Diabetic ketoacidosis",
+    "Hyperkalemia (emergency)"
+  ],
+  "how_it_works": "Binds insulin receptors on target cells (liver, muscle, fat), facilitating glucose uptake, glycogen synthesis, lipogenesis, and protein synthesis while suppressing gluconeogenesis.",
+  "dosage_forms": [
+    "Vial 10ml (100IU/ml)",
+    "Cartridge 3ml",
+    "Pen device",
+    "Prefilled syringe"
+  ],
+  "side_effects": {
+    "common": [
+      "Hypoglycemia",
+      "Injection site reactions",
+      "Lipohypertrophy",
+      "Weight gain",
+      "Local allergic reactions"
+    ],
+    "serious": [
+      "Severe hypoglycemia with coma or seizures",
+      "Anaphylaxis (rare)",
+      "Hypokalemia"
+    ]
+  },
+  "drug_interactions": [
+    "Beta-blockers (mask hypoglycemia)",
+    "Oral hypoglycemics (additive)",
+    "Corticosteroids (increase glucose)",
+    "Alcohol",
+    "Salicylates"
+  ],
+  "food_interactions": [
+    "Alcohol can cause severe delayed hypoglycemia",
+    "Meal timing must match insulin type",
+    "Skipping meals causes hypoglycemia"
+  ],
+  "contraindications": [
+    "Hypoglycemia",
+    "Allergy to human insulin"
+  ],
+  "what_to_avoid": [
+    "Always carry glucose tablets or sugar sachet",
+    "Rotate injection sites to prevent lipohypertrophy",
+    "Never shake vial — roll gently",
+    "Regular insulin: inject 30min before meals, Rapid: inject with meals",
+    "Store open vial at room temperature (28 days), unopened in fridge"
+  ],
+  "storage": "Unopened: refrigerate 2–8°C. Opened: room temperature below 30°C for up to 28 days. Never freeze."
+}

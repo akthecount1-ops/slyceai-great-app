@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "betamethasone_topical",
+  "name": "Betnovate / Diprovate",
+  "generic_name": "Betamethasone Valerate",
+  "manufacturer": "GSK / Cadila",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Eczema / atopic dermatitis",
+    "Psoriasis",
+    "Contact dermatitis",
+    "Lichen planus",
+    "Seborrheic dermatitis",
+    "Insect bite reactions"
+  ],
+  "how_it_works": "Potent topical corticosteroid that binds glucocorticoid receptors and reduces pro-inflammatory mediators (prostaglandins, leukotrienes), inhibiting immune-inflammatory cascade in skin.",
+  "dosage_forms": [
+    "Cream 0.1%",
+    "Ointment 0.1%",
+    "Lotion 0.1%"
+  ],
+  "side_effects": {
+    "common": [
+      "Skin thinning (atrophy — with prolonged use)",
+      "Telangiectasia",
+      "Stretch marks",
+      "Acne at application site",
+      "Folliculitis"
+    ],
+    "serious": [
+      "Skin atrophy",
+      "Systemic absorption causing Cushing-like features",
+      "HPA axis suppression (children especially)",
+      "Steroid-induced glaucoma (near eyes)",
+      "Skin infections (can mask)"
+    ]
+  },
+  "drug_interactions": [
+    "No significant drug interactions topically",
+    "Systemic interactions if large areas used under occlusion"
+  ],
+  "food_interactions": [
+    "Not food-related"
+  ],
+  "contraindications": [
+    "Skin infections (bacterial, fungal, viral) — do not apply",
+    "Rosacea",
+    "Perioral dermatitis",
+    "Face (use weaker steroids)",
+    "Perianal and genital area",
+    "Do not use in children under 1 year"
+  ],
+  "what_to_avoid": [
+    "Use sparingly — thin layer only",
+    "Do not use on face or genitals unless directed",
+    "Do not use for more than 2 weeks continuously",
+    "Do not cover with occlusive dressing unless directed",
+    "Wash hands after application"
+  ],
+  "storage": "Store below 25°C"
+}

@@ -61,7 +61,7 @@ const SYMPTOMS_LIST = [
 const TABS: { key: Tab; label: string; icon: React.ReactNode; color: string; bg: string }[] = [
   { key: 'vitals',    label: 'Add Vitals',   icon: <Activity size={17} />,  color: '#4f46e5', bg: '#eef2ff' },
   { key: 'medicine',  label: 'Add Medicine', icon: <Pill size={17} />,      color: '#059669', bg: '#ecfdf5' },
-  { key: 'symptoms',  label: 'Log Symptoms', icon: <BookOpen size={17} />,  color: '#b45309', bg: '#fffbeb' },
+  { key: 'symptoms',  label: 'Log Symptoms', icon: <BookOpen size={17} />,  color: '#b45309', bg: 'var(--bg-card)beb' },
   { key: 'documents', label: 'Upload Doc',   icon: <FileText size={17} />,  color: '#0369a1', bg: '#e0f2fe' },
 ]
 
@@ -518,7 +518,7 @@ export default function AddActionModal({ onClose, defaultTab }: { onClose: () =>
                       className="px-3 py-2 rounded-xl border font-semibold transition-all"
                       style={{
                         fontSize: '13px',
-                        background: active ? '#fff1f2' : 'white',
+                        background: active ? 'var(--bg-card)1f2' : 'white',
                         color: active ? '#be123c' : 'var(--text-muted)',
                         borderColor: active ? '#fecdd3' : 'var(--border)',
                       }}

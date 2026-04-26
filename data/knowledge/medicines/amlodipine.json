@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "amlodipine",
+  "name": "Amlodipine 5mg",
+  "generic_name": "Amlodipine Besylate",
+  "manufacturer": "Pfizer / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Hypertension (high blood pressure)",
+    "Stable angina",
+    "Vasospastic angina",
+    "Coronary artery disease"
+  ],
+  "how_it_works": "Calcium channel blocker that relaxes vascular smooth muscle, dilating arterioles and reducing peripheral resistance and cardiac afterload.",
+  "dosage_forms": [
+    "Tablet 2.5mg",
+    "Tablet 5mg",
+    "Tablet 10mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Ankle swelling",
+      "Flushing",
+      "Headache",
+      "Dizziness",
+      "Fatigue",
+      "Palpitations"
+    ],
+    "serious": [
+      "Symptomatic hypotension",
+      "Severe liver impairment",
+      "Rare skin reactions (Stevens-Johnson)"
+    ]
+  },
+  "drug_interactions": [
+    "Cyclosporine",
+    "Simvastatin (limit dose)",
+    "Tacrolimus",
+    "Strong CYP3A4 inhibitors"
+  ],
+  "food_interactions": [
+    "Grapefruit juice increases drug levels — avoid",
+    "Alcohol amplifies blood pressure lowering"
+  ],
+  "contraindications": [
+    "Severe hypotension",
+    "Severe aortic stenosis",
+    "Cardiogenic shock"
+  ],
+  "what_to_avoid": [
+    "Avoid grapefruit juice",
+    "Rise slowly from seated/lying position",
+    "Do not stop suddenly"
+  ],
+  "storage": "Store below 30°C, protect from light"
+}

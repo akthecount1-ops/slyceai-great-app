@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "azithromycin",
+  "name": "Azee / Zithromax",
+  "generic_name": "Azithromycin",
+  "manufacturer": "Cipla / Pfizer",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Community-acquired pneumonia",
+    "Sinusitis",
+    "Tonsillopharyngitis",
+    "Skin and soft tissue infections",
+    "Chlamydia",
+    "Typhoid (children)",
+    "H. pylori (combination)"
+  ],
+  "how_it_works": "Macrolide antibiotic that binds to 50S ribosomal subunit, inhibiting bacterial protein synthesis. Long tissue half-life allows short course therapy.",
+  "dosage_forms": [
+    "Tablet 250mg",
+    "Tablet 500mg",
+    "Oral suspension 200mg/5ml",
+    "IV infusion 500mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Vomiting",
+      "Diarrhea",
+      "Abdominal pain",
+      "Headache"
+    ],
+    "serious": [
+      "QT prolongation and cardiac arrhythmias",
+      "Hepatotoxicity",
+      "Hearing loss (high doses)",
+      "Severe allergic reaction"
+    ]
+  },
+  "drug_interactions": [
+    "Antacids containing aluminum/magnesium (take 2h apart)",
+    "Warfarin",
+    "Digoxin",
+    "Ergot alkaloids",
+    "Drugs that prolong QT"
+  ],
+  "food_interactions": [
+    "Can be taken with or without food",
+    "Alcohol may worsen GI side effects"
+  ],
+  "contraindications": [
+    "Allergy to macrolides",
+    "Hepatic disease",
+    "QT prolongation",
+    "Low potassium or magnesium levels"
+  ],
+  "what_to_avoid": [
+    "Complete the full course even if feeling better",
+    "Report palpitations or irregular heartbeat",
+    "Do not use antacids within 2 hours"
+  ],
+  "storage": "Store below 30°C, away from moisture"
+}

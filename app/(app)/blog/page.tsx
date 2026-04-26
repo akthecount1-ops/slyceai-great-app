@@ -11,7 +11,7 @@ const POSTS = [
   {
     tag: 'Heart Health',
     tagColor: '#be123c',
-    tagBg: '#fff1f2',
+    tagBg: 'var(--bg-card)1f2',
     title: 'Understanding Blood Pressure: What the Numbers Mean',
     excerpt:
       'Blood pressure readings consist of two numbers — systolic and diastolic. Learn what each number indicates, what ranges are considered normal, and when you should seek medical advice.',
@@ -65,7 +65,7 @@ const POSTS = [
   },
   {
     tag: 'Yoga & Lifestyle',
-    tagColor: '#0d9488',
+    tagColor: 'var(--accent)',
     tagBg: '#f0fdfa',
     title: 'Morning Yoga Routines for Seniors: A 15-Minute Guide',
     excerpt:
@@ -109,7 +109,7 @@ export default function BlogPage() {
             key={i}
             className="rounded-2xl border p-5 flex flex-col gap-3 hover:shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer"
             style={{
-              background: '#ffffff',
+              background: 'var(--bg-card)fff',
               borderColor: 'var(--border)',
             }}
           >

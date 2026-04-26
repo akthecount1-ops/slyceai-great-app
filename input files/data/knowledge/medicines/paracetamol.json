@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "paracetamol",
+  "name": "Calpol / Dolo 650",
+  "generic_name": "Paracetamol (Acetaminophen)",
+  "manufacturer": "GSK / Micro Labs",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Mild to moderate pain relief",
+    "Fever (antipyretic)",
+    "Headache",
+    "Dental pain",
+    "Post-immunization fever",
+    "Arthritis pain (mild)"
+  ],
+  "how_it_works": "Inhibits prostaglandin synthesis in the CNS and peripherally blocks pain impulse generation. Exact antipyretic mechanism involves endocannabinoid system modulation.",
+  "dosage_forms": [
+    "Tablet 500mg",
+    "Tablet 650mg",
+    "Syrup 250mg/5ml",
+    "IV infusion 10mg/ml",
+    "Suppository"
+  ],
+  "side_effects": {
+    "common": [
+      "Generally very well tolerated",
+      "Rare: skin rash",
+      "Nausea (at high doses)"
+    ],
+    "serious": [
+      "Hepatotoxicity (overdose or with chronic alcohol use)",
+      "Acute liver failure",
+      "Severe skin reactions (rare — DRESS, SJS)"
+    ]
+  },
+  "drug_interactions": [
+    "Warfarin (increased INR)",
+    "Isoniazid (liver toxicity)",
+    "Alcohol",
+    "Other paracetamol-containing products (many cold medicines)"
+  ],
+  "food_interactions": [
+    "Alcohol with regular paracetamol causes severe liver damage",
+    "Do not exceed 4g/day total from ALL sources"
+  ],
+  "contraindications": [
+    "Severe liver disease",
+    "Allergy to paracetamol"
+  ],
+  "what_to_avoid": [
+    "Maximum 4 grams per day — check ALL products for hidden paracetamol",
+    "Do not give adult doses to children",
+    "Store safely from children"
+  ],
+  "storage": "Store below 30°C"
+}

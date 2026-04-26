@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "vitamin_d3",
+  "name": "Calcirol / Cholecalciferol 60000IU",
+  "generic_name": "Cholecalciferol (Vitamin D3)",
+  "manufacturer": "Cadila / Sun Pharma",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Vitamin D deficiency",
+    "Osteoporosis prevention",
+    "Rickets (children)",
+    "Hypoparathyroidism (adjunct)",
+    "Bone pain and muscle weakness from deficiency",
+    "PCOD (adjunct)"
+  ],
+  "how_it_works": "Fat-soluble vitamin that is hydroxylated in liver and kidney to form active 1,25-dihydroxyvitamin D3 (calcitriol), which regulates calcium and phosphate absorption from gut.",
+  "dosage_forms": [
+    "Sachet 60000 IU",
+    "Capsule 60000 IU",
+    "Drops 400 IU/drop",
+    "Tablet 1000 IU",
+    "Tablet 2000 IU"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea (if overdosed)",
+      "Constipation (overdose)",
+      "Weakness (overdose)",
+      "Headache (overdose)"
+    ],
+    "serious": [
+      "Hypercalcemia (from overdose)",
+      "Hypercalciuria",
+      "Kidney stones",
+      "Soft tissue calcification",
+      "Cardiac arrhythmias (severe toxicity)"
+    ]
+  },
+  "drug_interactions": [
+    "Thiazide diuretics (increased calcium — monitor)",
+    "Digoxin (hypercalcemia increases toxicity)",
+    "Orlistat and cholestyramine reduce absorption",
+    "Corticosteroids reduce efficacy"
+  ],
+  "food_interactions": [
+    "Take with a fatty meal for best absorption",
+    "Avoid excessive dairy if taking high doses (calcium overload)"
+  ],
+  "contraindications": [
+    "Hypercalcemia",
+    "Hyperparathyroidism",
+    "Vitamin D toxicity",
+    "Granulomatous diseases (sarcoidosis — can cause hypercalcemia)",
+    "Malignancy with hypercalcemia"
+  ],
+  "what_to_avoid": [
+    "Do not take more than prescribed — fat-soluble and can accumulate",
+    "Check 25-OH Vitamin D level before starting high doses",
+    "Recheck levels after 3 months"
+  ],
+  "storage": "Store below 25°C, protect from light"
+}

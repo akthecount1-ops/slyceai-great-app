@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "pantoprazole",
+  "name": "Pan 40 / Pantodac",
+  "generic_name": "Pantoprazole Sodium",
+  "manufacturer": "Sun Pharma / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "GERD",
+    "Peptic ulcer disease",
+    "H. pylori eradication",
+    "Prevention of NSAID-related ulcers",
+    "Stress ulcer prophylaxis"
+  ],
+  "how_it_works": "Proton pump inhibitor that binds irreversibly to H+/K+ ATPase on gastric parietal cells. Fewer drug interactions than omeprazole.",
+  "dosage_forms": [
+    "Tablet 20mg",
+    "Tablet 40mg",
+    "Injection 40mg (IV)"
+  ],
+  "side_effects": {
+    "common": [
+      "Headache",
+      "Diarrhea",
+      "Nausea",
+      "Abdominal pain",
+      "Flatulence"
+    ],
+    "serious": [
+      "Hypomagnesemia",
+      "Vitamin B12 deficiency",
+      "C. diff infection",
+      "Bone fractures (long-term)"
+    ]
+  },
+  "drug_interactions": [
+    "Methotrexate",
+    "Warfarin (minor)",
+    "Atazanavir (avoid combination)"
+  ],
+  "food_interactions": [
+    "Take before meals for best effect",
+    "Alcohol increases GI irritation"
+  ],
+  "contraindications": [
+    "Allergy to PPIs"
+  ],
+  "what_to_avoid": [
+    "Preferred PPI when on clopidogrel (unlike omeprazole)",
+    "Use minimum effective dose for minimum duration"
+  ],
+  "storage": "Store below 30°C"
+}

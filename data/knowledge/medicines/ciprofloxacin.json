@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "ciprofloxacin",
+  "name": "Ciplox",
+  "generic_name": "Ciprofloxacin Hydrochloride",
+  "manufacturer": "Cipla / Bayer",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "UTI",
+    "Diarrheal illnesses",
+    "Typhoid fever",
+    "Respiratory infections",
+    "Bone and joint infections",
+    "Skin infections",
+    "Anthrax prophylaxis"
+  ],
+  "how_it_works": "Fluoroquinolone antibiotic that inhibits bacterial DNA gyrase and topoisomerase IV, preventing DNA replication and repair.",
+  "dosage_forms": [
+    "Tablet 250mg",
+    "Tablet 500mg",
+    "Tablet 750mg",
+    "IV infusion",
+    "Eye drops",
+    "Ear drops"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Diarrhea",
+      "Headache",
+      "Dizziness",
+      "Sensitivity to sunlight",
+      "Tendon pain"
+    ],
+    "serious": [
+      "Tendon rupture (especially Achilles)",
+      "QT prolongation",
+      "Peripheral neuropathy",
+      "CNS effects (seizures)",
+      "C. diff infection"
+    ]
+  },
+  "drug_interactions": [
+    "Antacids/iron/calcium (take 2h apart)",
+    "Theophylline",
+    "Warfarin",
+    "NSAIDs",
+    "Drugs that prolong QT",
+    "Tizanidine (avoid)"
+  ],
+  "food_interactions": [
+    "Dairy products and calcium-fortified juices reduce absorption — take 2h apart",
+    "Avoid caffeine (levels increased)"
+  ],
+  "contraindications": [
+    "Allergy to fluoroquinolones",
+    "Children under 18 (risk of arthropathy — use only when no alternatives)",
+    "Pregnancy and breastfeeding",
+    "Myasthenia gravis"
+  ],
+  "what_to_avoid": [
+    "Use sun protection — photosensitivity",
+    "Stop immediately if tendon pain",
+    "Complete full course",
+    "Avoid antacids, milk, iron within 2 hours",
+    "Drink plenty of water"
+  ],
+  "storage": "Store below 30°C, protect from light"
+}

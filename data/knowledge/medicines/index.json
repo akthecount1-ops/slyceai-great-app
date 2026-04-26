@@ -1,0 +1,222 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-04-25T18:09:48.529Z",
+  "total": 43,
+  "medicines": [
+    {
+      "slug": "metformin",
+      "name": "Metformin 500mg",
+      "generic_name": "Metformin Hydrochloride"
+    },
+    {
+      "slug": "glipizide",
+      "name": "Glipizide",
+      "generic_name": "Glipizide"
+    },
+    {
+      "slug": "sitagliptin",
+      "name": "Januvia (Sitagliptin)",
+      "generic_name": "Sitagliptin Phosphate"
+    },
+    {
+      "slug": "amlodipine",
+      "name": "Amlodipine 5mg",
+      "generic_name": "Amlodipine Besylate"
+    },
+    {
+      "slug": "losartan",
+      "name": "Losartan 50mg",
+      "generic_name": "Losartan Potassium"
+    },
+    {
+      "slug": "telmisartan",
+      "name": "Telmisartan 40mg",
+      "generic_name": "Telmisartan"
+    },
+    {
+      "slug": "atenolol",
+      "name": "Atenolol 50mg",
+      "generic_name": "Atenolol"
+    },
+    {
+      "slug": "aspirin_low",
+      "name": "Aspirin 75mg",
+      "generic_name": "Acetylsalicylic Acid"
+    },
+    {
+      "slug": "atorvastatin",
+      "name": "Atorvastatin 10mg",
+      "generic_name": "Atorvastatin Calcium"
+    },
+    {
+      "slug": "clopidogrel",
+      "name": "Clopidogrel 75mg",
+      "generic_name": "Clopidogrel Bisulfate"
+    },
+    {
+      "slug": "levothyroxine",
+      "name": "Eltroxin / Thyronorm",
+      "generic_name": "Levothyroxine Sodium"
+    },
+    {
+      "slug": "omeprazole",
+      "name": "Omeprazole 20mg",
+      "generic_name": "Omeprazole"
+    },
+    {
+      "slug": "pantoprazole",
+      "name": "Pan 40 / Pantodac",
+      "generic_name": "Pantoprazole Sodium"
+    },
+    {
+      "slug": "ranitidine_replacement",
+      "name": "Famotidine 20mg",
+      "generic_name": "Famotidine"
+    },
+    {
+      "slug": "paracetamol",
+      "name": "Calpol / Dolo 650",
+      "generic_name": "Paracetamol (Acetaminophen)"
+    },
+    {
+      "slug": "ibuprofen",
+      "name": "Brufen / Combiflam",
+      "generic_name": "Ibuprofen"
+    },
+    {
+      "slug": "diclofenac",
+      "name": "Voveran / Voltaren",
+      "generic_name": "Diclofenac Sodium"
+    },
+    {
+      "slug": "azithromycin",
+      "name": "Azee / Zithromax",
+      "generic_name": "Azithromycin"
+    },
+    {
+      "slug": "amoxicillin",
+      "name": "Mox / Novamox",
+      "generic_name": "Amoxicillin Trihydrate"
+    },
+    {
+      "slug": "ciprofloxacin",
+      "name": "Ciplox",
+      "generic_name": "Ciprofloxacin Hydrochloride"
+    },
+    {
+      "slug": "doxycycline",
+      "name": "Doxycycline",
+      "generic_name": "Doxycycline Monohydrate/Hyclate"
+    },
+    {
+      "slug": "cetirizine",
+      "name": "Zyrtec / CTZ",
+      "generic_name": "Cetirizine Hydrochloride"
+    },
+    {
+      "slug": "montelukast",
+      "name": "Singulair / Montair",
+      "generic_name": "Montelukast Sodium"
+    },
+    {
+      "slug": "salbutamol",
+      "name": "Asthalin / Ventolin",
+      "generic_name": "Salbutamol Sulfate"
+    },
+    {
+      "slug": "vitamin_d3",
+      "name": "Calcirol / Cholecalciferol 60000IU",
+      "generic_name": "Cholecalciferol (Vitamin D3)"
+    },
+    {
+      "slug": "calcium_carbonate",
+      "name": "Shelcal / Calcimax",
+      "generic_name": "Calcium Carbonate + Vitamin D3"
+    },
+    {
+      "slug": "becosules",
+      "name": "Becosules",
+      "generic_name": "Vitamin B Complex + Vitamin C"
+    },
+    {
+      "slug": "iron_ferrous",
+      "name": "Ferrous Sulfate / Orofer",
+      "generic_name": "Ferrous Sulfate / Ferrous Ascorbate"
+    },
+    {
+      "slug": "folic_acid",
+      "name": "Folic Acid 5mg",
+      "generic_name": "Folic Acid"
+    },
+    {
+      "slug": "tramadol",
+      "name": "Contramal / Ultracet",
+      "generic_name": "Tramadol Hydrochloride"
+    },
+    {
+      "slug": "pregabalin",
+      "name": "Lyrica / Pregabalin",
+      "generic_name": "Pregabalin"
+    },
+    {
+      "slug": "sertraline",
+      "name": "Zoloft / Serta",
+      "generic_name": "Sertraline Hydrochloride"
+    },
+    {
+      "slug": "alprazolam",
+      "name": "Alprax / Xanax",
+      "generic_name": "Alprazolam"
+    },
+    {
+      "slug": "tamsulosin",
+      "name": "Urimax / Flomax",
+      "generic_name": "Tamsulosin Hydrochloride"
+    },
+    {
+      "slug": "hydroxychloroquine",
+      "name": "HCQS / Plaquenil",
+      "generic_name": "Hydroxychloroquine Sulfate"
+    },
+    {
+      "slug": "betamethasone_topical",
+      "name": "Betnovate / Diprovate",
+      "generic_name": "Betamethasone Valerate"
+    },
+    {
+      "slug": "fluconazole",
+      "name": "Zocon / Diflucan",
+      "generic_name": "Fluconazole"
+    },
+    {
+      "slug": "allopurinol",
+      "name": "Zyloric / Allopurinol",
+      "generic_name": "Allopurinol"
+    },
+    {
+      "slug": "alendronate",
+      "name": "Fosamax / Osteofos",
+      "generic_name": "Alendronate Sodium"
+    },
+    {
+      "slug": "betahistine",
+      "name": "Vertin / Betaserc",
+      "generic_name": "Betahistine Dihydrochloride"
+    },
+    {
+      "slug": "ondansetron",
+      "name": "Emeset / Zofran",
+      "generic_name": "Ondansetron Hydrochloride"
+    },
+    {
+      "slug": "insulin_human",
+      "name": "Human Insulin (Regular/NPH)",
+      "generic_name": "Human Insulin"
+    },
+    {
+      "slug": "warfarin",
+      "name": "Warf / Coumadin",
+      "generic_name": "Warfarin Sodium"
+    }
+  ]
+}

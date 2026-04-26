@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "becosules",
+  "name": "Becosules",
+  "generic_name": "Vitamin B Complex + Vitamin C",
+  "manufacturer": "Pfizer India",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "B-vitamin deficiency",
+    "Adjunct in weakness and fatigue",
+    "Peripheral neuropathy (preventive)",
+    "During recovery from illness",
+    "Nutritional supplementation"
+  ],
+  "how_it_works": "Provides B1, B2, B3, B5, B6, B9 (folic acid), B12, biotin, and Vitamin C to support energy metabolism, red blood cell formation, nerve function, and antioxidant activity.",
+  "dosage_forms": [
+    "Capsule (standard)"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea (if taken on empty stomach)",
+      "Yellow/orange discoloration of urine (harmless — riboflavin)"
+    ],
+    "serious": [
+      "Sensory neuropathy (very high-dose B6 long-term)",
+      "Flushing (niacin in high doses)"
+    ]
+  },
+  "drug_interactions": [
+    "Levodopa (B6 reduces effectiveness unless combined with carbidopa)",
+    "Methotrexate (competes with folate)"
+  ],
+  "food_interactions": [
+    "Take after meals to reduce nausea",
+    "Riboflavin causes bright yellow urine — not harmful"
+  ],
+  "contraindications": [
+    "Known allergy to any B vitamin"
+  ],
+  "what_to_avoid": [
+    "Yellow urine is expected and harmless",
+    "Improves energy when taken consistently",
+    "Not a substitute for a balanced diet"
+  ],
+  "storage": "Store below 30°C, protect from moisture and light"
+}

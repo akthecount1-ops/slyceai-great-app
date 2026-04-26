@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "cetirizine",
+  "name": "Zyrtec / CTZ",
+  "generic_name": "Cetirizine Hydrochloride",
+  "manufacturer": "UCB / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Allergic rhinitis (hay fever)",
+    "Urticaria (hives)",
+    "Atopic dermatitis",
+    "Allergic conjunctivitis",
+    "Chronic idiopathic urticaria"
+  ],
+  "how_it_works": "Second-generation H1 antihistamine that selectively blocks peripheral histamine H1 receptors with minimal CNS penetration compared to first-generation antihistamines.",
+  "dosage_forms": [
+    "Tablet 5mg",
+    "Tablet 10mg",
+    "Syrup 5mg/5ml",
+    "Drops 10mg/ml"
+  ],
+  "side_effects": {
+    "common": [
+      "Drowsiness (less than first-gen)",
+      "Dry mouth",
+      "Headache",
+      "Fatigue",
+      "Nausea"
+    ],
+    "serious": [
+      "Severe drowsiness in sensitive individuals",
+      "Urinary retention",
+      "Elevated liver enzymes (rare)"
+    ]
+  },
+  "drug_interactions": [
+    "Alcohol (additive CNS depression)",
+    "Other CNS depressants",
+    "Theophylline (minor)"
+  ],
+  "food_interactions": [
+    "Alcohol significantly increases drowsiness"
+  ],
+  "contraindications": [
+    "Severe kidney disease (reduce dose)",
+    "End-stage renal disease",
+    "Allergy to hydroxyzine or cetirizine"
+  ],
+  "what_to_avoid": [
+    "Caution when driving — can cause drowsiness",
+    "Take at night if drowsiness is a problem",
+    "Not addictive"
+  ],
+  "storage": "Store below 25°C"
+}

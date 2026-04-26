@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "atorvastatin",
+  "name": "Atorvastatin 10mg",
+  "generic_name": "Atorvastatin Calcium",
+  "manufacturer": "Pfizer / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Hypercholesterolemia",
+    "Prevention of cardiovascular events",
+    "Familial hypercholesterolemia",
+    "Dyslipidemia",
+    "Type 2 diabetes with CV risk"
+  ],
+  "how_it_works": "HMG-CoA reductase inhibitor (statin) that blocks cholesterol synthesis in the liver, reducing LDL cholesterol and triglycerides while raising HDL.",
+  "dosage_forms": [
+    "Tablet 5mg",
+    "Tablet 10mg",
+    "Tablet 20mg",
+    "Tablet 40mg",
+    "Tablet 80mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Headache",
+      "Nausea",
+      "Diarrhea",
+      "Muscle aches",
+      "Joint pain",
+      "Elevated liver enzymes"
+    ],
+    "serious": [
+      "Rhabdomyolysis (severe muscle breakdown)",
+      "Hepatotoxicity",
+      "Myopathy",
+      "New-onset diabetes (long-term)"
+    ]
+  },
+  "drug_interactions": [
+    "Cyclosporine",
+    "Gemfibrozil",
+    "Macrolide antibiotics",
+    "Azole antifungals",
+    "Niacin",
+    "Digoxin",
+    "Colchicine"
+  ],
+  "food_interactions": [
+    "Grapefruit juice significantly increases drug levels — avoid completely",
+    "Alcohol increases liver damage risk"
+  ],
+  "contraindications": [
+    "Active liver disease",
+    "Pregnancy and breastfeeding",
+    "Unexplained persistent elevated liver enzymes",
+    "Allergy to statins"
+  ],
+  "what_to_avoid": [
+    "Avoid grapefruit completely",
+    "Report unexplained muscle pain immediately",
+    "Liver function tests periodically",
+    "Take at any time of day"
+  ],
+  "storage": "Store below 25°C"
+}

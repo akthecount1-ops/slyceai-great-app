@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "iron_ferrous",
+  "name": "Ferrous Sulfate / Orofer",
+  "generic_name": "Ferrous Sulfate / Ferrous Ascorbate",
+  "manufacturer": "Emcure / Zydus",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Iron deficiency anemia",
+    "Anemia in pregnancy",
+    "Anemia of chronic disease (adjunct)",
+    "Pre-operative anemia correction"
+  ],
+  "how_it_works": "Provides elemental iron for hemoglobin, myoglobin, and enzyme synthesis. Ferrous form (Fe2+) is better absorbed than ferric (Fe3+) in the intestine.",
+  "dosage_forms": [
+    "Tablet 200mg (65mg elemental)",
+    "Tablet ferrous ascorbate 100mg elemental",
+    "Drops",
+    "Syrup",
+    "IV infusion (Ferric carboxymaltose)"
+  ],
+  "side_effects": {
+    "common": [
+      "Dark/black stools (harmless)",
+      "Constipation",
+      "Nausea",
+      "Stomach cramps",
+      "Vomiting",
+      "Diarrhea"
+    ],
+    "serious": [
+      "Iron overload (hemosiderosis)",
+      "Acute toxicity in children — lethal in overdose",
+      "GI mucosal damage"
+    ]
+  },
+  "drug_interactions": [
+    "Calcium supplements (take 2h apart)",
+    "Antacids reduce absorption (take 2h apart)",
+    "Tetracyclines (take 2h apart)",
+    "Levothyroxine (take 4h apart)",
+    "Vitamin C increases absorption (beneficial)",
+    "Levodopa"
+  ],
+  "food_interactions": [
+    "Take with orange juice (Vitamin C enhances absorption)",
+    "Avoid tea, coffee, dairy near dose time — reduce absorption",
+    "Can be taken with food if GI upset occurs"
+  ],
+  "contraindications": [
+    "Hemochromatosis",
+    "Hemolytic anemia",
+    "Repeated blood transfusions",
+    "Allergy to iron products"
+  ],
+  "what_to_avoid": [
+    "Black stools are expected and harmless",
+    "Take with Vitamin C-rich juice for better absorption",
+    "Keep out of reach of children — overdose is dangerous",
+    "Constipation: increase fluid and fiber intake"
+  ],
+  "storage": "Store below 25°C, protect from light and moisture"
+}

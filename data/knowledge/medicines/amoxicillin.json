@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "amoxicillin",
+  "name": "Mox / Novamox",
+  "generic_name": "Amoxicillin Trihydrate",
+  "manufacturer": "GSK / Cipla",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Respiratory tract infections",
+    "Ear infections",
+    "Tonsillitis",
+    "UTI",
+    "Skin infections",
+    "H. pylori eradication (with clarithromycin and PPI)",
+    "Dental infections"
+  ],
+  "how_it_works": "Broad-spectrum aminopenicillin antibiotic that inhibits bacterial cell wall synthesis by binding penicillin-binding proteins.",
+  "dosage_forms": [
+    "Capsule 250mg",
+    "Capsule 500mg",
+    "Oral suspension 125mg/5ml",
+    "Oral suspension 250mg/5ml",
+    "Drops 100mg/ml"
+  ],
+  "side_effects": {
+    "common": [
+      "Nausea",
+      "Diarrhea",
+      "Skin rash",
+      "Vomiting",
+      "Headache"
+    ],
+    "serious": [
+      "Anaphylaxis (penicillin allergy)",
+      "Stevens-Johnson syndrome",
+      "Pseudomembranous colitis",
+      "Seizures (high doses)"
+    ]
+  },
+  "drug_interactions": [
+    "Methotrexate",
+    "Warfarin",
+    "Oral contraceptives (minor interaction)",
+    "Allopurinol (increased rash)"
+  ],
+  "food_interactions": [
+    "Can be taken with or without food",
+    "Alcohol may reduce immune effectiveness"
+  ],
+  "contraindications": [
+    "Penicillin allergy",
+    "Mononucleosis (high risk of widespread rash)"
+  ],
+  "what_to_avoid": [
+    "Complete full course",
+    "Report rash immediately — can indicate allergy",
+    "Probiotics can help prevent diarrhea"
+  ],
+  "storage": "Store below 25°C, oral suspension refrigerate and discard after 7 days"
+}

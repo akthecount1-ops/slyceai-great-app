@@ -1,0 +1,2116 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-04-25T18:01:41.675Z",
+  "total": 74,
+  "red_flag_count": 18,
+  "body_systems": [
+    "neurological",
+    "cardiovascular",
+    "respiratory",
+    "gastrointestinal",
+    "musculoskeletal",
+    "systemic",
+    "urological",
+    "dermatological",
+    "endocrine",
+    "reproductive",
+    "psychological",
+    "ophthalmological",
+    "ENT"
+  ],
+  "symptoms": [
+    {
+      "id": "dizziness",
+      "label": "Dizziness",
+      "aliases": [
+        "giddiness",
+        "lightheadedness",
+        "vertigo"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "BPPV",
+        "Hypertension",
+        "Anemia",
+        "Inner ear disorder",
+        "Dehydration"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Is the room spinning or are you lightheaded?",
+        "Does it worsen on standing?",
+        "Any recent ear infection?"
+      ]
+    },
+    {
+      "id": "headache",
+      "label": "Headache",
+      "aliases": [
+        "head pain",
+        "cephalalgia"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Migraine",
+        "Tension headache",
+        "Hypertension",
+        "Sinusitis",
+        "Dehydration"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Where exactly is the pain?",
+        "Scale 1–10?",
+        "Any visual disturbances before it starts?",
+        "How long does it last?"
+      ]
+    },
+    {
+      "id": "severe_headache",
+      "label": "Sudden Severe Headache",
+      "aliases": [
+        "thunderclap headache",
+        "worst headache of life"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Subarachnoid hemorrhage",
+        "Meningitis",
+        "Stroke"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Did it come on suddenly within seconds?",
+        "Any neck stiffness?",
+        "Any fever or vomiting?"
+      ]
+    },
+    {
+      "id": "numbness",
+      "label": "Numbness",
+      "aliases": [
+        "tingling",
+        "pins and needles",
+        "paresthesia"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Peripheral neuropathy",
+        "Diabetes",
+        "Vitamin B12 deficiency",
+        "Cervical spondylosis",
+        "MS"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Which body part is affected?",
+        "Is it constant or intermittent?",
+        "Any weakness alongside it?"
+      ]
+    },
+    {
+      "id": "confusion",
+      "label": "Confusion",
+      "aliases": [
+        "disorientation",
+        "delirium",
+        "brain fog"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hypoglycemia",
+        "Stroke",
+        "UTI (elderly)",
+        "Dementia",
+        "Encephalitis"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Did it come on suddenly?",
+        "Any recent fever?",
+        "Any history of diabetes?"
+      ]
+    },
+    {
+      "id": "seizure",
+      "label": "Seizure",
+      "aliases": [
+        "convulsion",
+        "fit",
+        "epileptic episode"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Epilepsy",
+        "Hypoglycemia",
+        "Febrile seizure",
+        "Brain tumor",
+        "Meningitis"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "How long did it last?",
+        "Any loss of consciousness?",
+        "First time or recurrent?"
+      ]
+    },
+    {
+      "id": "memory_loss",
+      "label": "Memory Loss",
+      "aliases": [
+        "forgetfulness",
+        "amnesia",
+        "cognitive decline"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Dementia",
+        "Alzheimer's",
+        "Depression",
+        "Hypothyroidism",
+        "B12 deficiency"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Short-term or long-term memory affected?",
+        "How long has this been happening?",
+        "Any family history?"
+      ]
+    },
+    {
+      "id": "slurred_speech",
+      "label": "Slurred Speech",
+      "aliases": [
+        "dysarthria",
+        "speech difficulty"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Stroke",
+        "TIA",
+        "Alcohol intoxication",
+        "MS",
+        "Bell's palsy"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Did it come on suddenly?",
+        "Any facial drooping or arm weakness?",
+        "Any recent injury?"
+      ]
+    },
+    {
+      "id": "tremor",
+      "label": "Tremor",
+      "aliases": [
+        "shaking",
+        "shakiness",
+        "hand tremor"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Parkinson's disease",
+        "Essential tremor",
+        "Hyperthyroidism",
+        "Anxiety",
+        "Alcohol withdrawal"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "At rest or during movement?",
+        "Which body part?",
+        "How long have you had it?"
+      ]
+    },
+    {
+      "id": "fainting",
+      "label": "Fainting",
+      "aliases": [
+        "syncope",
+        "blackout",
+        "loss of consciousness",
+        "passing out"
+      ],
+      "body_system": "neurological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Vasovagal syncope",
+        "Cardiac arrhythmia",
+        "Hypotension",
+        "Dehydration",
+        "Anemia"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Any warning signs before fainting?",
+        "How long were you unconscious?",
+        "Any heart palpitations before?"
+      ]
+    },
+    {
+      "id": "chest_pain",
+      "label": "Chest Pain",
+      "aliases": [
+        "chest tightness",
+        "chest pressure",
+        "angina"
+      ],
+      "body_system": "cardiovascular",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Myocardial infarction",
+        "Angina",
+        "GERD",
+        "Pleuritis",
+        "Anxiety"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Is it crushing or sharp?",
+        "Does it radiate to arm or jaw?",
+        "Any shortness of breath?",
+        "Worsens with exertion?"
+      ]
+    },
+    {
+      "id": "palpitations",
+      "label": "Palpitations",
+      "aliases": [
+        "heart racing",
+        "irregular heartbeat",
+        "fluttering"
+      ],
+      "body_system": "cardiovascular",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Arrhythmia",
+        "Anxiety",
+        "Hyperthyroidism",
+        "Anemia",
+        "Caffeine excess"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Is it fast, slow, or irregular?",
+        "How long does each episode last?",
+        "Any dizziness with it?"
+      ]
+    },
+    {
+      "id": "breathlessness",
+      "label": "Shortness of Breath",
+      "aliases": [
+        "dyspnea",
+        "breathlessness",
+        "difficulty breathing"
+      ],
+      "body_system": "cardiovascular",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Heart failure",
+        "Asthma",
+        "COPD",
+        "Anemia",
+        "Pulmonary embolism",
+        "COVID-19"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "At rest or on exertion?",
+        "Is it sudden onset?",
+        "Any leg swelling?",
+        "Do you wake up breathless at night?"
+      ]
+    },
+    {
+      "id": "leg_swelling",
+      "label": "Leg Swelling",
+      "aliases": [
+        "edema",
+        "swollen ankles",
+        "pitting edema"
+      ],
+      "body_system": "cardiovascular",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Heart failure",
+        "Kidney disease",
+        "Liver disease",
+        "DVT",
+        "Hypoalbuminemia"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "One leg or both?",
+        "Is it pitting (leaves indent)?",
+        "Worse at end of day?",
+        "Any pain or redness?"
+      ]
+    },
+    {
+      "id": "high_bp_symptom",
+      "label": "High Blood Pressure Symptoms",
+      "aliases": [
+        "hypertension symptoms",
+        "BP symptoms"
+      ],
+      "body_system": "cardiovascular",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hypertension",
+        "Kidney disease",
+        "Adrenal tumor",
+        "Stress"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Do you have a known BP diagnosis?",
+        "Any headache or vision changes?",
+        "Are you on medication?"
+      ]
+    },
+    {
+      "id": "cough",
+      "label": "Cough",
+      "aliases": [
+        "dry cough",
+        "wet cough",
+        "productive cough"
+      ],
+      "body_system": "respiratory",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "URTI",
+        "Asthma",
+        "GERD",
+        "TB",
+        "COVID-19",
+        "Allergic bronchitis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Dry or productive?",
+        "How long?",
+        "Any blood in sputum?",
+        "Worse at night?"
+      ]
+    },
+    {
+      "id": "coughing_blood",
+      "label": "Coughing Blood",
+      "aliases": [
+        "hemoptysis",
+        "blood in sputum"
+      ],
+      "body_system": "respiratory",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "TB",
+        "Lung cancer",
+        "Pulmonary embolism",
+        "Bronchiectasis"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "How much blood?",
+        "Any weight loss or night sweats?",
+        "History of TB?"
+      ]
+    },
+    {
+      "id": "wheezing",
+      "label": "Wheezing",
+      "aliases": [
+        "breathing difficulty",
+        "whistling sound breathing"
+      ],
+      "body_system": "respiratory",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Asthma",
+        "COPD",
+        "Allergic reaction",
+        "Heart failure"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Does it respond to inhalers?",
+        "Any known triggers?",
+        "How long?"
+      ]
+    },
+    {
+      "id": "sore_throat",
+      "label": "Sore Throat",
+      "aliases": [
+        "throat pain",
+        "pharyngitis",
+        "tonsil pain"
+      ],
+      "body_system": "respiratory",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Tonsillitis",
+        "Strep throat",
+        "URTI",
+        "GERD",
+        "Mono"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any white patches on tonsils?",
+        "Fever alongside?",
+        "Difficulty swallowing?"
+      ]
+    },
+    {
+      "id": "runny_nose",
+      "label": "Runny Nose",
+      "aliases": [
+        "rhinorrhea",
+        "nasal discharge",
+        "blocked nose"
+      ],
+      "body_system": "respiratory",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Allergic rhinitis",
+        "Common cold",
+        "Sinusitis",
+        "Flu"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Clear or colored discharge?",
+        "Any sneezing or itchy eyes?",
+        "Seasonal pattern?"
+      ]
+    },
+    {
+      "id": "nausea",
+      "label": "Nausea",
+      "aliases": [
+        "feeling sick",
+        "queasy",
+        "upset stomach"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Gastritis",
+        "GERD",
+        "Pregnancy",
+        "Migraine",
+        "Food poisoning",
+        "Hepatitis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any vomiting?",
+        "After eating or unrelated?",
+        "Any abdominal pain?",
+        "Could you be pregnant?"
+      ]
+    },
+    {
+      "id": "vomiting",
+      "label": "Vomiting",
+      "aliases": [
+        "throwing up",
+        "emesis",
+        "puking"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Gastroenteritis",
+        "Food poisoning",
+        "Appendicitis",
+        "Hepatitis",
+        "Migraine"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How many times?",
+        "Any blood in vomit?",
+        "Any fever?",
+        "Able to keep fluids down?"
+      ]
+    },
+    {
+      "id": "vomiting_blood",
+      "label": "Vomiting Blood",
+      "aliases": [
+        "hematemesis",
+        "blood in vomit"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Peptic ulcer",
+        "Esophageal varices",
+        "Mallory-Weiss tear",
+        "Gastric cancer"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Color — bright red or coffee-ground?",
+        "Any alcohol use?",
+        "Any liver disease history?"
+      ]
+    },
+    {
+      "id": "abdominal_pain",
+      "label": "Abdominal Pain",
+      "aliases": [
+        "stomach pain",
+        "belly pain",
+        "tummy ache"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Appendicitis",
+        "Gastritis",
+        "IBS",
+        "Kidney stone",
+        "Hernia",
+        "Pancreatitis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Where exactly?",
+        "Constant or crampy?",
+        "Any fever?",
+        "Any change in bowel habits?"
+      ]
+    },
+    {
+      "id": "diarrhea",
+      "label": "Diarrhea",
+      "aliases": [
+        "loose stools",
+        "loose motions",
+        "watery stools"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Gastroenteritis",
+        "IBS",
+        "Infections",
+        "Food intolerance",
+        "IBD"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How many times per day?",
+        "Any blood or mucus?",
+        "Any fever?",
+        "Recent travel or food change?"
+      ]
+    },
+    {
+      "id": "constipation",
+      "label": "Constipation",
+      "aliases": [
+        "no bowel movement",
+        "hard stools",
+        "straining"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "IBS",
+        "Hypothyroidism",
+        "Dehydration",
+        "Colon cancer",
+        "Medication side effect"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How many days without bowel movement?",
+        "Any blood on wiping?",
+        "Any abdominal bloating?"
+      ]
+    },
+    {
+      "id": "bloating",
+      "label": "Bloating",
+      "aliases": [
+        "distension",
+        "gas",
+        "flatulence",
+        "feeling full"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "IBS",
+        "SIBO",
+        "Lactose intolerance",
+        "Celiac disease",
+        "Ovarian cyst"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "After meals or constant?",
+        "Any specific foods that trigger it?",
+        "Any change in bowel habits?"
+      ]
+    },
+    {
+      "id": "jaundice",
+      "label": "Jaundice",
+      "aliases": [
+        "yellow skin",
+        "yellow eyes",
+        "icterus"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hepatitis A/B/C",
+        "Gallstones",
+        "Liver cirrhosis",
+        "Hemolytic anemia",
+        "Bile duct obstruction"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Is urine dark colored?",
+        "Are stools pale?",
+        "Any abdominal pain?",
+        "Any fever?"
+      ]
+    },
+    {
+      "id": "loss_of_appetite",
+      "label": "Loss of Appetite",
+      "aliases": [
+        "anorexia",
+        "not hungry",
+        "poor appetite"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Depression",
+        "Hepatitis",
+        "Cancer",
+        "Chronic kidney disease",
+        "Thyroid disorder"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How long?",
+        "Any weight loss?",
+        "Any nausea?",
+        "Any emotional changes?"
+      ]
+    },
+    {
+      "id": "heartburn",
+      "label": "Heartburn",
+      "aliases": [
+        "acid reflux",
+        "GERD symptoms",
+        "burning chest"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "GERD",
+        "Hiatal hernia",
+        "Peptic ulcer",
+        "Pregnancy"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "After meals or lying down?",
+        "Does antacid help?",
+        "Any sour taste in mouth?"
+      ]
+    },
+    {
+      "id": "joint_pain",
+      "label": "Joint Pain",
+      "aliases": [
+        "arthralgia",
+        "joint swelling",
+        "arthritis pain"
+      ],
+      "body_system": "musculoskeletal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Osteoarthritis",
+        "Rheumatoid arthritis",
+        "Gout",
+        "Lupus",
+        "Viral fever"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Which joints?",
+        "Morning stiffness?",
+        "Any swelling or redness?",
+        "Worse with activity or rest?"
+      ]
+    },
+    {
+      "id": "muscle_pain",
+      "label": "Muscle Pain",
+      "aliases": [
+        "myalgia",
+        "body ache",
+        "muscle soreness"
+      ],
+      "body_system": "musculoskeletal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Viral fever",
+        "Fibromyalgia",
+        "Hypothyroidism",
+        "Overexertion",
+        "Polymyositis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Generalized or localized?",
+        "Any fever?",
+        "Any recent illness or exertion?"
+      ]
+    },
+    {
+      "id": "back_pain",
+      "label": "Back Pain",
+      "aliases": [
+        "lower back pain",
+        "lumbar pain",
+        "spine pain"
+      ],
+      "body_system": "musculoskeletal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Lumbar spondylosis",
+        "IVDP",
+        "Muscle strain",
+        "Kidney stone",
+        "Ankylosing spondylitis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Lower or upper back?",
+        "Radiates to legs?",
+        "Any bladder or bowel issues?",
+        "Worse on bending?"
+      ]
+    },
+    {
+      "id": "neck_pain",
+      "label": "Neck Pain",
+      "aliases": [
+        "cervical pain",
+        "stiff neck",
+        "neck stiffness"
+      ],
+      "body_system": "musculoskeletal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Cervical spondylosis",
+        "Muscle strain",
+        "Meningitis",
+        "Whiplash"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any radiation to arms?",
+        "Sudden or gradual?",
+        "Any fever (rule out meningitis)?"
+      ]
+    },
+    {
+      "id": "muscle_weakness",
+      "label": "Muscle Weakness",
+      "aliases": [
+        "weakness",
+        "loss of strength",
+        "fatigue in muscles"
+      ],
+      "body_system": "musculoskeletal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Myasthenia gravis",
+        "Hypothyroidism",
+        "Vitamin D deficiency",
+        "Stroke",
+        "Polymyositis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Which muscle groups?",
+        "Getting worse over time?",
+        "Any difficulty swallowing or breathing?"
+      ]
+    },
+    {
+      "id": "fatigue",
+      "label": "Fatigue",
+      "aliases": [
+        "tiredness",
+        "exhaustion",
+        "low energy",
+        "lethargy"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Anemia",
+        "Hypothyroidism",
+        "Diabetes",
+        "Depression",
+        "Chronic kidney disease",
+        "Sleep apnea"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How long?",
+        "Rest relieves or not?",
+        "Any sleep disturbances?",
+        "Any recent weight change?"
+      ]
+    },
+    {
+      "id": "fever",
+      "label": "Fever",
+      "aliases": [
+        "high temperature",
+        "pyrexia",
+        "chills with fever"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Malaria",
+        "Dengue",
+        "Typhoid",
+        "UTI",
+        "COVID-19",
+        "TB",
+        "Viral URTI"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "What temperature?",
+        "How many days?",
+        "Any chills or rigors?",
+        "Any rash?",
+        "Any travel recently?"
+      ]
+    },
+    {
+      "id": "high_fever",
+      "label": "Very High Fever",
+      "aliases": [
+        "hyperpyrexia",
+        "fever above 104",
+        "extremely high temperature"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Sepsis",
+        "Malaria",
+        "Dengue",
+        "Meningitis",
+        "Heat stroke"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Above 104°F / 40°C?",
+        "Any seizures?",
+        "Any neck stiffness or rash?"
+      ]
+    },
+    {
+      "id": "weight_loss",
+      "label": "Unexplained Weight Loss",
+      "aliases": [
+        "losing weight",
+        "unintentional weight loss"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Diabetes",
+        "Hyperthyroidism",
+        "Cancer",
+        "TB",
+        "HIV",
+        "Depression",
+        "Malabsorption"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How much weight in how long?",
+        "Any change in appetite?",
+        "Any night sweats or fever?"
+      ]
+    },
+    {
+      "id": "weight_gain",
+      "label": "Unexplained Weight Gain",
+      "aliases": [
+        "gaining weight",
+        "sudden weight gain"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hypothyroidism",
+        "PCOD",
+        "Cushing's syndrome",
+        "Heart failure",
+        "Medication side effect"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How much in how long?",
+        "Any swelling in legs?",
+        "Any fatigue or cold intolerance?"
+      ]
+    },
+    {
+      "id": "night_sweats",
+      "label": "Night Sweats",
+      "aliases": [
+        "sweating at night",
+        "nocturnal sweating"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "TB",
+        "Lymphoma",
+        "Menopause",
+        "HIV",
+        "Hyperthyroidism",
+        "Anxiety"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How long?",
+        "Any weight loss or fever?",
+        "Soaking through clothes?",
+        "Any cough?"
+      ]
+    },
+    {
+      "id": "chills",
+      "label": "Chills",
+      "aliases": [
+        "rigor",
+        "shivering",
+        "feeling cold"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Malaria",
+        "Dengue",
+        "Typhoid",
+        "Sepsis",
+        "Influenza"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any fever alongside?",
+        "How long do episodes last?",
+        "Any recent travel to malaria-prone area?"
+      ]
+    },
+    {
+      "id": "excessive_sweating",
+      "label": "Excessive Sweating",
+      "aliases": [
+        "hyperhidrosis",
+        "sweating too much"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hyperthyroidism",
+        "Menopause",
+        "Anxiety",
+        "Diabetes",
+        "Heart disease"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Generalized or specific areas?",
+        "Day or night or both?",
+        "Any palpitations or weight loss?"
+      ]
+    },
+    {
+      "id": "frequent_urination",
+      "label": "Frequent Urination",
+      "aliases": [
+        "polyuria",
+        "urinating often",
+        "peeing a lot"
+      ],
+      "body_system": "urological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Diabetes mellitus",
+        "UTI",
+        "Diabetes insipidus",
+        "BPH",
+        "Overactive bladder"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How many times per day/night?",
+        "Any burning sensation?",
+        "Any increased thirst?"
+      ]
+    },
+    {
+      "id": "painful_urination",
+      "label": "Painful Urination",
+      "aliases": [
+        "dysuria",
+        "burning urination",
+        "burning pee"
+      ],
+      "body_system": "urological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "UTI",
+        "STI",
+        "Kidney stone",
+        "Vaginitis",
+        "Urethritis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any fever or back pain?",
+        "Any blood in urine?",
+        "Any discharge?"
+      ]
+    },
+    {
+      "id": "blood_in_urine",
+      "label": "Blood in Urine",
+      "aliases": [
+        "hematuria",
+        "red urine",
+        "pink urine"
+      ],
+      "body_system": "urological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "UTI",
+        "Kidney stone",
+        "Kidney cancer",
+        "Bladder cancer",
+        "Glomerulonephritis"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Painful or painless?",
+        "Any clots?",
+        "Any flank pain?",
+        "How long?"
+      ]
+    },
+    {
+      "id": "decreased_urine",
+      "label": "Decreased Urination",
+      "aliases": [
+        "oliguria",
+        "not urinating",
+        "low urine output"
+      ],
+      "body_system": "urological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Acute kidney injury",
+        "Dehydration",
+        "Urinary obstruction",
+        "Sepsis"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Any fluid intake reduction?",
+        "Any fever or vomiting?",
+        "Any back pain?"
+      ]
+    },
+    {
+      "id": "rash",
+      "label": "Skin Rash",
+      "aliases": [
+        "skin eruption",
+        "hives",
+        "urticaria",
+        "red spots"
+      ],
+      "body_system": "dermatological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Allergic reaction",
+        "Dengue",
+        "Viral exanthem",
+        "Eczema",
+        "Psoriasis",
+        "Drug reaction"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Itchy?",
+        "Any fever?",
+        "Any new medicine or food?",
+        "Spreading or stable?"
+      ]
+    },
+    {
+      "id": "itching",
+      "label": "Itching",
+      "aliases": [
+        "pruritus",
+        "skin itch",
+        "generalized itch"
+      ],
+      "body_system": "dermatological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Allergic dermatitis",
+        "Scabies",
+        "Liver disease",
+        "Kidney failure",
+        "Diabetes",
+        "Thyroid"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Localized or all over?",
+        "Any rash visible?",
+        "Worse at night?",
+        "Any jaundice?"
+      ]
+    },
+    {
+      "id": "hair_loss",
+      "label": "Hair Loss",
+      "aliases": [
+        "alopecia",
+        "falling hair",
+        "thinning hair"
+      ],
+      "body_system": "dermatological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hypothyroidism",
+        "PCOD",
+        "Anemia",
+        "Alopecia areata",
+        "Nutritional deficiency",
+        "Stress"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Patchy or diffuse?",
+        "How long?",
+        "Any scalp changes?",
+        "Any recent illness or stress?"
+      ]
+    },
+    {
+      "id": "wounds_not_healing",
+      "label": "Wounds Not Healing",
+      "aliases": [
+        "slow healing",
+        "non-healing wound",
+        "chronic wound"
+      ],
+      "body_system": "dermatological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Diabetes",
+        "Peripheral vascular disease",
+        "Anemia",
+        "Malnutrition"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How long has the wound been there?",
+        "Known diabetic?",
+        "Any signs of infection?"
+      ]
+    },
+    {
+      "id": "pallor",
+      "label": "Pallor",
+      "aliases": [
+        "pale skin",
+        "paleness",
+        "pale gums"
+      ],
+      "body_system": "dermatological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Anemia",
+        "Blood loss",
+        "Shock",
+        "Vitamin B12/folate deficiency"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any fatigue or breathlessness?",
+        "Any blood in stools or urine?",
+        "Any recent surgery?"
+      ]
+    },
+    {
+      "id": "excessive_thirst",
+      "label": "Excessive Thirst",
+      "aliases": [
+        "polydipsia",
+        "always thirsty",
+        "drinking a lot of water"
+      ],
+      "body_system": "endocrine",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Diabetes mellitus",
+        "Diabetes insipidus",
+        "Hypercalcemia",
+        "Dehydration"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any increased urination?",
+        "Any weight loss?",
+        "Blood sugar tested recently?"
+      ]
+    },
+    {
+      "id": "cold_intolerance",
+      "label": "Cold Intolerance",
+      "aliases": [
+        "feeling cold all the time",
+        "sensitive to cold"
+      ],
+      "body_system": "endocrine",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hypothyroidism",
+        "Anemia",
+        "Raynaud's phenomenon",
+        "Malnutrition"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any weight gain or fatigue?",
+        "Any hair loss?",
+        "Cold hands and feet specifically?"
+      ]
+    },
+    {
+      "id": "heat_intolerance",
+      "label": "Heat Intolerance",
+      "aliases": [
+        "sensitive to heat",
+        "feeling hot all the time"
+      ],
+      "body_system": "endocrine",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hyperthyroidism",
+        "Menopause",
+        "Anxiety",
+        "Medications"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any weight loss or palpitations?",
+        "Excessive sweating?",
+        "Any tremor?"
+      ]
+    },
+    {
+      "id": "increased_hunger",
+      "label": "Increased Hunger",
+      "aliases": [
+        "polyphagia",
+        "always hungry",
+        "excessive appetite"
+      ],
+      "body_system": "endocrine",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Diabetes mellitus",
+        "Hyperthyroidism",
+        "Anxiety",
+        "Tapeworm",
+        "Steroid use"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any weight loss despite eating more?",
+        "Any excessive thirst or urination?"
+      ]
+    },
+    {
+      "id": "irregular_periods",
+      "label": "Irregular Periods",
+      "aliases": [
+        "menstrual irregularity",
+        "missed period",
+        "PCOD symptom"
+      ],
+      "body_system": "reproductive",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "PCOD/PCOS",
+        "Hypothyroidism",
+        "Stress",
+        "Premature ovarian insufficiency",
+        "Pregnancy"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How irregular? (cycle length)?",
+        "Any weight gain or facial hair?",
+        "Any pelvic pain?"
+      ]
+    },
+    {
+      "id": "pelvic_pain",
+      "label": "Pelvic Pain",
+      "aliases": [
+        "lower abdominal pain",
+        "pelvic cramps"
+      ],
+      "body_system": "reproductive",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Endometriosis",
+        "Ovarian cyst",
+        "PID",
+        "Ectopic pregnancy",
+        "Fibroids"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Cyclical or constant?",
+        "Any abnormal vaginal discharge?",
+        "Any fever?",
+        "Sexually active?"
+      ]
+    },
+    {
+      "id": "vaginal_discharge",
+      "label": "Vaginal Discharge",
+      "aliases": [
+        "white discharge",
+        "abnormal discharge",
+        "leucorrhea"
+      ],
+      "body_system": "reproductive",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Vaginitis",
+        "BV",
+        "STI",
+        "Cervicitis",
+        "Candidiasis"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Color, consistency, smell?",
+        "Any itching or burning?",
+        "Any fever?"
+      ]
+    },
+    {
+      "id": "breast_lump",
+      "label": "Breast Lump",
+      "aliases": [
+        "breast mass",
+        "lump in breast"
+      ],
+      "body_system": "reproductive",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Fibrocystic disease",
+        "Fibroadenoma",
+        "Breast cancer",
+        "Breast abscess"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Hard or soft?",
+        "Painful?",
+        "Any nipple discharge?",
+        "Any skin changes?",
+        "Family history of breast cancer?"
+      ]
+    },
+    {
+      "id": "anxiety",
+      "label": "Anxiety",
+      "aliases": [
+        "nervousness",
+        "worry",
+        "panic attacks",
+        "anxious feeling"
+      ],
+      "body_system": "psychological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Generalized anxiety disorder",
+        "Panic disorder",
+        "Hyperthyroidism",
+        "Phobia",
+        "PTSD"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Physical symptoms (palpitations, sweating)?",
+        "Triggered or spontaneous?",
+        "How long?",
+        "Affecting daily life?"
+      ]
+    },
+    {
+      "id": "depression",
+      "label": "Depression",
+      "aliases": [
+        "feeling low",
+        "sadness",
+        "hopelessness",
+        "low mood"
+      ],
+      "body_system": "psychological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Major depressive disorder",
+        "Hypothyroidism",
+        "Bipolar disorder",
+        "Grief",
+        "Burnout"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "How long?",
+        "Any loss of interest in activities?",
+        "Any thoughts of self-harm?",
+        "Sleep changes?"
+      ]
+    },
+    {
+      "id": "insomnia",
+      "label": "Insomnia",
+      "aliases": [
+        "sleeplessness",
+        "can't sleep",
+        "difficulty sleeping",
+        "poor sleep"
+      ],
+      "body_system": "psychological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Anxiety",
+        "Depression",
+        "Sleep apnea",
+        "Hyperthyroidism",
+        "Chronic pain"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Difficulty falling asleep or staying asleep?",
+        "How long?",
+        "Any stress or anxiety?",
+        "Any snoring?"
+      ]
+    },
+    {
+      "id": "irritability",
+      "label": "Irritability",
+      "aliases": [
+        "mood swings",
+        "short temper",
+        "agitation",
+        "anger"
+      ],
+      "body_system": "psychological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Anxiety",
+        "Bipolar disorder",
+        "Hyperthyroidism",
+        "Premenstrual syndrome",
+        "Sleep deprivation"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any triggers?",
+        "Any sleep problems?",
+        "Any physical symptoms alongside?"
+      ]
+    },
+    {
+      "id": "vision_changes",
+      "label": "Vision Changes",
+      "aliases": [
+        "blurry vision",
+        "vision loss",
+        "seeing double"
+      ],
+      "body_system": "ophthalmological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Diabetes",
+        "Hypertension",
+        "Glaucoma",
+        "Cataract",
+        "Migraine aura",
+        "Stroke"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Gradual or sudden?",
+        "One eye or both?",
+        "Any pain?",
+        "Flashes or floaters?"
+      ]
+    },
+    {
+      "id": "sudden_vision_loss",
+      "label": "Sudden Vision Loss",
+      "aliases": [
+        "can't see",
+        "acute blindness",
+        "vision gone"
+      ],
+      "body_system": "ophthalmological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Retinal detachment",
+        "Stroke",
+        "Acute glaucoma",
+        "Central retinal artery occlusion"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Completely gone or partial?",
+        "One eye or both?",
+        "Any pain?",
+        "How long ago?"
+      ]
+    },
+    {
+      "id": "red_eye",
+      "label": "Red Eye",
+      "aliases": [
+        "pink eye",
+        "conjunctivitis",
+        "eye redness"
+      ],
+      "body_system": "ophthalmological",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Conjunctivitis",
+        "Allergy",
+        "Subconjunctival hemorrhage",
+        "Uveitis",
+        "Acute glaucoma"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any discharge?",
+        "Any pain or photophobia?",
+        "Vision affected?"
+      ]
+    },
+    {
+      "id": "ear_pain",
+      "label": "Ear Pain",
+      "aliases": [
+        "otalgia",
+        "earache",
+        "ear infection"
+      ],
+      "body_system": "ENT",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Otitis media",
+        "Otitis externa",
+        "Referred pain from jaw",
+        "Eustachian tube dysfunction"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Any discharge from ear?",
+        "Any fever?",
+        "Any hearing loss?",
+        "Recent URTI?"
+      ]
+    },
+    {
+      "id": "hearing_loss",
+      "label": "Hearing Loss",
+      "aliases": [
+        "deafness",
+        "can't hear",
+        "reduced hearing"
+      ],
+      "body_system": "ENT",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Earwax blockage",
+        "Otitis media",
+        "NIHL",
+        "Acoustic neuroma",
+        "Age-related"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "One ear or both?",
+        "Sudden or gradual?",
+        "Any ringing in ears?",
+        "Any dizziness?"
+      ]
+    },
+    {
+      "id": "tinnitus",
+      "label": "Tinnitus",
+      "aliases": [
+        "ringing in ears",
+        "ear noise",
+        "buzzing in ears"
+      ],
+      "body_system": "ENT",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Noise exposure",
+        "Earwax",
+        "Meniere's disease",
+        "Acoustic neuroma",
+        "Hypertension"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Constant or intermittent?",
+        "One ear or both?",
+        "Any hearing loss?",
+        "Any dizziness?"
+      ]
+    },
+    {
+      "id": "swollen_lymph_nodes",
+      "label": "Swollen Lymph Nodes",
+      "aliases": [
+        "lumps in neck",
+        "lymphadenopathy",
+        "swollen glands"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Infection",
+        "Lymphoma",
+        "Leukemia",
+        "TB",
+        "HIV",
+        "Autoimmune"
+      ],
+      "red_flag": false,
+      "follow_up_questions": [
+        "Location?",
+        "Painful or painless?",
+        "How long?",
+        "Any fever or weight loss?"
+      ]
+    },
+    {
+      "id": "excessive_bleeding",
+      "label": "Excessive Bleeding",
+      "aliases": [
+        "prolonged bleeding",
+        "bleeding doesn't stop",
+        "hemorrhage"
+      ],
+      "body_system": "systemic",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Hemophilia",
+        "Thrombocytopenia",
+        "Liver disease",
+        "Anticoagulant use",
+        "Von Willebrand disease"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Minor cut or major trauma?",
+        "How long to stop?",
+        "Any bruising elsewhere?",
+        "Any blood thinners?"
+      ]
+    },
+    {
+      "id": "pale_stool",
+      "label": "Pale/Clay Colored Stool",
+      "aliases": [
+        "white stool",
+        "pale feces",
+        "clay stool"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Bile duct obstruction",
+        "Liver disease",
+        "Pancreatitis",
+        "Cholestasis"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Any jaundice?",
+        "Any dark urine?",
+        "Any abdominal pain?"
+      ]
+    },
+    {
+      "id": "black_stool",
+      "label": "Black Tarry Stool",
+      "aliases": [
+        "melena",
+        "tarry stool",
+        "dark stool"
+      ],
+      "body_system": "gastrointestinal",
+      "severity_levels": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "commonly_associated_diseases": [
+        "Upper GI bleed",
+        "Peptic ulcer",
+        "Gastric cancer",
+        "Iron supplements"
+      ],
+      "red_flag": true,
+      "follow_up_questions": [
+        "Are you on iron tablets?",
+        "Any abdominal pain?",
+        "Any vomiting blood?"
+      ]
+    }
+  ]
+}

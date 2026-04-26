@@ -121,7 +121,7 @@ export default function PrivacyPage() {
         className="rounded-2xl p-4 mb-6 flex gap-3 items-start"
         style={{ background: '#f0fdfa', border: '1.5px solid #99f6e4' }}
       >
-        <Lock size={18} style={{ color: '#0d9488', flexShrink: 0, marginTop: '2px' }} />
+        <Lock size={18} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '2px' }} />
         <p style={{ fontSize: '13.5px', color: '#134e4a', margin: 0, lineHeight: 1.6 }}>
           At Arogya Health, your privacy is our highest priority. We are committed to protecting your personal health information with the same care you take of your health. This policy explains exactly what data we collect, how it is used, and the rights you have.
         </p>
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
           <div
             key={i}
             className="rounded-2xl border overflow-hidden"
-            style={{ background: '#ffffff', borderColor: 'var(--border)' }}
+            style={{ background: 'var(--bg-card)fff', borderColor: 'var(--border)' }}
           >
             {/* Section header */}
             <div
@@ -177,7 +177,7 @@ export default function PrivacyPage() {
         style={{ background: 'var(--medical-navy)' }}
       >
         <ShieldCheck size={24} style={{ color: 'var(--medical-teal)', margin: '0 auto 10px' }} />
-        <h3 style={{ color: '#ffffff', fontWeight: 800, fontSize: '16px', margin: '0 0 8px' }}>
+        <h3 style={{ color: 'var(--bg-card)fff', fontWeight: 800, fontSize: '16px', margin: '0 0 8px' }}>
           Questions About Your Privacy?
         </h3>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13.5px', margin: '0 0 14px' }}>

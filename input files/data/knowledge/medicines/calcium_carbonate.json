@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "calcium_carbonate",
+  "name": "Shelcal / Calcimax",
+  "generic_name": "Calcium Carbonate + Vitamin D3",
+  "manufacturer": "Elder / Meyer Organics",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Calcium deficiency",
+    "Osteoporosis treatment and prevention",
+    "Post-menopausal bone loss",
+    "Rickets (adjunct)",
+    "Pregnancy and lactation calcium supplementation"
+  ],
+  "how_it_works": "Provides elemental calcium for bone mineralization, nerve conduction, and muscle function. Vitamin D3 component enhances intestinal calcium absorption.",
+  "dosage_forms": [
+    "Tablet 500mg elemental",
+    "Tablet 1000mg elemental",
+    "Chewable tablet",
+    "Suspension"
+  ],
+  "side_effects": {
+    "common": [
+      "Constipation",
+      "Bloating",
+      "Gas",
+      "Nausea"
+    ],
+    "serious": [
+      "Hypercalcemia (overdose)",
+      "Kidney stones (high doses)",
+      "Milk-alkali syndrome"
+    ]
+  },
+  "drug_interactions": [
+    "Iron supplements (take 2h apart — reduces absorption)",
+    "Levothyroxine (take 4h apart)",
+    "Tetracyclines",
+    "Quinolone antibiotics",
+    "Bisphosphonates (take 2h apart)"
+  ],
+  "food_interactions": [
+    "Take with meals for better absorption",
+    "Avoid spinach, rhubarb, bran around dose time (reduce calcium absorption)",
+    "Avoid excessive caffeine"
+  ],
+  "contraindications": [
+    "Hypercalcemia",
+    "Hypercalciuria",
+    "Severe kidney disease",
+    "Malabsorption syndromes"
+  ],
+  "what_to_avoid": [
+    "Split dose if taking more than 500mg elemental calcium at a time",
+    "Many interactions — take 2h away from most medications",
+    "Drink plenty of water"
+  ],
+  "storage": "Store below 30°C"
+}

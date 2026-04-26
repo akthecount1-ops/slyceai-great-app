@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "glipizide",
+  "name": "Glipizide",
+  "generic_name": "Glipizide",
+  "manufacturer": "Pfizer / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Type 2 diabetes mellitus",
+    "Adjunct to diet and exercise"
+  ],
+  "how_it_works": "Stimulates pancreatic beta cells to release insulin by blocking ATP-sensitive potassium channels.",
+  "dosage_forms": [
+    "Tablet 5mg",
+    "Tablet 10mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Hypoglycemia",
+      "Nausea",
+      "Diarrhea",
+      "Dizziness",
+      "Weight gain"
+    ],
+    "serious": [
+      "Severe hypoglycemia",
+      "Hepatotoxicity (rare)",
+      "Agranulocytosis (rare)"
+    ]
+  },
+  "drug_interactions": [
+    "Fluconazole",
+    "NSAIDs",
+    "Beta-blockers (mask hypoglycemia symptoms)",
+    "Alcohol"
+  ],
+  "food_interactions": [
+    "Alcohol can cause severe hypoglycemia",
+    "Fasting increases hypoglycemia risk"
+  ],
+  "contraindications": [
+    "Type 1 diabetes",
+    "Diabetic ketoacidosis",
+    "Kidney failure",
+    "Sulfa allergy"
+  ],
+  "what_to_avoid": [
+    "Take 30 minutes before meals",
+    "Carry glucose tablets",
+    "Avoid skipping meals"
+  ],
+  "storage": "Store below 30°C"
+}

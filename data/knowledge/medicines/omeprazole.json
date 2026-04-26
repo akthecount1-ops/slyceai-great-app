@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "omeprazole",
+  "name": "Omeprazole 20mg",
+  "generic_name": "Omeprazole",
+  "manufacturer": "AstraZeneca / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "GERD (acid reflux)",
+    "Peptic ulcer disease",
+    "H. pylori eradication (in combination)",
+    "Zollinger-Ellison syndrome",
+    "NSAID-induced ulcer prevention"
+  ],
+  "how_it_works": "Proton pump inhibitor (PPI) that irreversibly blocks H+/K+ ATPase in gastric parietal cells, potently suppressing acid production.",
+  "dosage_forms": [
+    "Capsule 10mg",
+    "Capsule 20mg",
+    "Capsule 40mg",
+    "Tablet 20mg (dispersible)"
+  ],
+  "side_effects": {
+    "common": [
+      "Headache",
+      "Nausea",
+      "Diarrhea",
+      "Abdominal pain",
+      "Constipation",
+      "Flatulence"
+    ],
+    "serious": [
+      "Hypomagnesemia (long-term)",
+      "Vitamin B12 deficiency (long-term)",
+      "C. diff infection",
+      "Bone fractures (long-term)",
+      "Kidney disease (chronic use)"
+    ]
+  },
+  "drug_interactions": [
+    "Clopidogrel (reduces antiplatelet effect — avoid)",
+    "Methotrexate",
+    "Warfarin",
+    "Ketoconazole",
+    "Digoxin",
+    "Iron absorption reduced"
+  ],
+  "food_interactions": [
+    "Alcohol worsens acid reflux and interacts with medication",
+    "Caffeine and spicy foods worsen GERD"
+  ],
+  "contraindications": [
+    "Known allergy to PPIs or benzimidazoles",
+    "Use with caution in liver disease"
+  ],
+  "what_to_avoid": [
+    "Take 30–60 minutes before meals",
+    "Use for shortest effective duration",
+    "Do not crush or chew delayed-release capsules",
+    "Long-term use needs monitoring"
+  ],
+  "storage": "Store below 25°C, protect from moisture"
+}

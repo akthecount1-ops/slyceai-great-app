@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "slug": "allopurinol",
+  "name": "Zyloric / Allopurinol",
+  "generic_name": "Allopurinol",
+  "manufacturer": "GSK / Generic",
+  "source_note": "Data compiled for Arogya knowledge base. Verify against 1mg.com and pharmeasy.in for live updates.",
+  "last_updated": "2026-04-25T18:09:48.529Z",
+  "uses": [
+    "Chronic gout prevention",
+    "Hyperuricemia",
+    "Uric acid kidney stones",
+    "Tumor lysis syndrome prevention"
+  ],
+  "how_it_works": "Xanthine oxidase inhibitor that blocks conversion of hypoxanthine and xanthine to uric acid, reducing serum urate levels.",
+  "dosage_forms": [
+    "Tablet 100mg",
+    "Tablet 300mg"
+  ],
+  "side_effects": {
+    "common": [
+      "Rash",
+      "Nausea",
+      "Diarrhea",
+      "Elevated liver enzymes",
+      "Drowsiness"
+    ],
+    "serious": [
+      "Allopurinol hypersensitivity syndrome (DRESS — life-threatening)",
+      "Stevens-Johnson syndrome",
+      "Agranulocytosis",
+      "Bone marrow suppression"
+    ]
+  },
+  "drug_interactions": [
+    "Azathioprine/6-mercaptopurine (severe toxicity — reduce dose by 75%)",
+    "Warfarin",
+    "Ampicillin/amoxicillin (increased rash)",
+    "ACE inhibitors",
+    "Theophylline",
+    "Ciclosporin"
+  ],
+  "food_interactions": [
+    "Drink 2–3 liters of water daily — prevents kidney stones",
+    "Avoid high-purine foods (red meat, organ meats, shellfish, beer)"
+  ],
+  "contraindications": [
+    "Acute gout attack (wait for attack to resolve before starting)",
+    "HLA-B*5801 carriers (higher risk of severe reactions — test before use, especially in Asians)",
+    "Allergy to allopurinol"
+  ],
+  "what_to_avoid": [
+    "Never start during an acute gout attack — wait 2–4 weeks after",
+    "Drink plenty of water",
+    "Report rash immediately — can be fatal if ignored",
+    "Takes weeks to lower uric acid — be patient",
+    "Avoid aspirin"
+  ],
+  "storage": "Store below 25°C"
+}
