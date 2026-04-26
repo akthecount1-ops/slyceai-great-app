@@ -11,8 +11,8 @@ interface OBProfile {
   gender: string | null
   weight_kg: number | null
   height_cm: number | null
-  chat_ready: number
-  onboarding_complete: number
+  chat_ready: boolean
+  onboarding_complete: boolean
   medical_history: { known_diseases: string[]; past_surgeries: string[]; allergies: string[]; family_history: string[] } | null
   latest_vitals: { blood_pressure: string | null; pulse: number | null; spo2: number | null; blood_sugar: number | null } | null
   active_medications: Array<{ medicine_name: string; dose: string | null; frequency: string | null; since: string | null }>
@@ -21,38 +21,38 @@ interface OBProfile {
 interface Msg { id: string; role: 'ai' | 'user'; text: string }
 
 // ─── Static data ────────────────────────────────────────────────────────────
-const CONDITIONS = ['Diabetes Type 2','Hypertension','Hypothyroidism','PCOD/PCOS','Asthma','Anemia','Anxiety','Arthritis','Heart Disease','Kidney Disease','Migraine','Obesity','Osteoporosis','Depression','Fatty Liver','High Cholesterol']
-const SYMPTOMS   = ['Fever','Headache','Dizziness','Cough','Chest Pain','Fatigue','Nausea','Vomiting','Stomach Pain','Back Pain','Joint Pain','Skin Rash','Swelling','Insomnia','Weight Loss','Palpitations','Breathlessness','Constipation','Diarrhea','Eye Pain']
-const SEVERITIES = ['Mild','Moderate','Severe'] as const
+const CONDITIONS = ['Diabetes Type 2', 'Hypertension', 'Hypothyroidism', 'PCOD/PCOS', 'Asthma', 'Anemia', 'Anxiety', 'Arthritis', 'Heart Disease', 'Kidney Disease', 'Migraine', 'Obesity', 'Osteoporosis', 'Depression', 'Fatty Liver', 'High Cholesterol']
+const SYMPTOMS = ['Fever', 'Headache', 'Dizziness', 'Cough', 'Chest Pain', 'Fatigue', 'Nausea', 'Vomiting', 'Stomach Pain', 'Back Pain', 'Joint Pain', 'Skin Rash', 'Swelling', 'Insomnia', 'Weight Loss', 'Palpitations', 'Breathlessness', 'Constipation', 'Diarrhea', 'Eye Pain']
+const SEVERITIES = ['Mild', 'Moderate', 'Severe'] as const
 
-const STEP_LABELS = ['Vitals','Basic Info','Conditions','Medicines','Past Issues','Current Symptoms','Done']
+const STEP_LABELS = ['Vitals', 'Basic Info', 'Conditions', 'Medicines', 'Past Issues', 'Current Symptoms', 'Done']
 
 // ─── Parsers ─────────────────────────────────────────────────────────────────
 function parseVitals(t: string) {
-  const tl    = t.toLowerCase()
-  const bp    = tl.match(/bp[:\s]*(\d+)[/\s]+(\d+)/)
+  const tl = t.toLowerCase()
+  const bp = tl.match(/bp[:\s]*(\d+)[/\s]+(\d+)/)
   const pulse = tl.match(/pulse[:\s]*(\d+)/)
-  const spo2  = tl.match(/sp?o2[:\s]*(\d+)/)
+  const spo2 = tl.match(/sp?o2[:\s]*(\d+)/)
   const sugar = tl.match(/sugar[:\s]*(\d+)/)
   if (!bp && !pulse && !spo2 && !sugar) return null
-  return { blood_pressure: bp?`${bp[1]}/${bp[2]}`:null, pulse: pulse?+pulse[1]:null, spo2: spo2?+spo2[1]:null, blood_sugar: sugar?+sugar[1]:null }
+  return { blood_pressure: bp ? `${bp[1]}/${bp[2]}` : null, pulse: pulse ? +pulse[1] : null, spo2: spo2 ? +spo2[1] : null, blood_sugar: sugar ? +sugar[1] : null }
 }
 
 function parseDemographics(t: string) {
-  const age  = t.match(/\b(\d{1,3})\s*(?:years?|yr|y\/o)\b/i)
-  const wt   = t.match(/\b(\d{2,3}(?:\.\d)?)\s*(?:kg|kgs|kilos?)\b/i)
-  const ht   = t.match(/\b(\d{3}(?:\.\d)?)\s*(?:cm)\b/i)
+  const age = t.match(/\b(\d{1,3})\s*(?:years?|yr|y\/o)\b/i)
+  const wt = t.match(/\b(\d{2,3}(?:\.\d)?)\s*(?:kg|kgs|kilos?)\b/i)
+  const ht = t.match(/\b(\d{3}(?:\.\d)?)\s*(?:cm)\b/i)
   const male = /\b(?:male|man|boy)\b/i.test(t)
-  const fem  = /\b(?:female|woman|girl)\b/i.test(t)
-  return { age: age?+age[1]:null, weight_kg: wt?+wt[1]:null, height_cm: ht?+ht[1]:null, gender: male?'male':fem?'female':null }
+  const fem = /\b(?:female|woman|girl)\b/i.test(t)
+  return { age: age ? +age[1] : null, weight_kg: wt ? +wt[1] : null, height_cm: ht ? +ht[1] : null, gender: male ? 'male' : fem ? 'female' : null }
 }
 
 function parseMeds(t: string) {
   return t.split(/\n|;/).map(l => l.trim()).filter(Boolean).map(line => {
-    const dose  = line.match(/\b(\d+\s*(?:mg|ml|mcg|iu|g))\b/i)
-    const freq  = line.match(/\b(once|twice|thrice|\d+\s*times?)\s*(?:a\s*)?(?:daily|day)?\b/i)
+    const dose = line.match(/\b(\d+\s*(?:mg|ml|mcg|iu|g))\b/i)
+    const freq = line.match(/\b(once|twice|thrice|\d+\s*times?)\s*(?:a\s*)?(?:daily|day)?\b/i)
     const since = line.match(/\bsince\s+(\d{4}|\d+\s*(?:month|week|year)s?\s*ago)/i)
-    return { name: line.split(/\d/)[0].trim() || line, dose: dose?.[1]??'', frequency: freq?.[1]??'', since: since?.[1]??'' }
+    return { name: line.split(/\d/)[0].trim() || line, dose: dose?.[1] ?? '', frequency: freq?.[1] ?? '', since: since?.[1] ?? '' }
   })
 }
 
@@ -132,21 +132,21 @@ function UserBubble({ text }: { text: string }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function OnboardingChat({ onComplete }: { onComplete: () => void }) {
-  const [msgs,    setMsgs]    = useState<Msg[]>([])
-  const [input,   setInput]   = useState('')
-  const [step,    setStep]    = useState(1)
-  const [busy,    setBusy]    = useState(false)
+  const [msgs, setMsgs] = useState<Msg[]>([])
+  const [input, setInput] = useState('')
+  const [step, setStep] = useState(1)
+  const [busy, setBusy] = useState(false)
   const [profile, setProfile] = useState<OBProfile | null>(null)
 
   // Chip selections
-  const [conditions, setConditions]   = useState<string[]>([])
-  const [pastSx,     setPastSx]       = useState<string[]>([])
-  const [currSx,     setCurrSx]       = useState<string[]>([])
-  const [severity,   setSeverity]     = useState<string>('Mild')
+  const [conditions, setConditions] = useState<string[]>([])
+  const [pastSx, setPastSx] = useState<string[]>([])
+  const [currSx, setCurrSx] = useState<string[]>([])
+  const [severity, setSeverity] = useState<string>('Mild')
 
   const bottomRef = useRef<HTMLDivElement>(null)
-  const taRef     = useRef<HTMLTextAreaElement>(null)
-  const initRef   = useRef(false)  // ← prevents double-fire in StrictMode
+  const taRef = useRef<HTMLTextAreaElement>(null)
+  const initRef = useRef(false)  // ← prevents double-fire in StrictMode
 
   // ── Load & resume ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -168,7 +168,7 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
         addAi(buildPrompt(clampedStep, p?.name ?? null))
       })
       .catch(() => addAi(buildPrompt(1, null)))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs, busy])
@@ -179,8 +179,8 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
     taRef.current.style.height = Math.min(taRef.current.scrollHeight, 140) + 'px'
   }, [input])
 
-  const addAi   = (text: string) => setMsgs(p => [...p, { id: `ai-${Date.now()}`,   role: 'ai',   text }])
-  const addUser = (text: string) => setMsgs(p => [...p, { id: `u-${Date.now()+1}`, role: 'user', text }])
+  const addAi = (text: string) => setMsgs(p => [...p, { id: `ai-${Date.now()}`, role: 'ai', text }])
+  const addUser = (text: string) => setMsgs(p => [...p, { id: `u-${Date.now() + 1}`, role: 'user', text }])
 
   // ── Advance step ────────────────────────────────────────────────────────────
   const advance = useCallback(async (displayText: string, apiCall?: () => Promise<void>) => {
@@ -223,8 +223,8 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
       await advance(text, () => callPatient({ action: 'update_patient', ...demo }))
 
     } else if (step === 3) {
-      const typed  = text ? text.split(/,|\n/).map(s => s.trim()).filter(Boolean) : []
-      const all    = [...new Set([...conditions, ...typed])]
+      const typed = text ? text.split(/,|\n/).map(s => s.trim()).filter(Boolean) : []
+      const all = [...new Set([...conditions, ...typed])]
       await advance(all.length ? all.join(', ') : 'None', () =>
         callPatient({ action: 'set_medical_history', known_diseases: all }))
 
@@ -235,15 +235,15 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
 
     } else if (step === 5) {
       const typed = text ? text.split(/,|\n/).map(s => s.trim()).filter(Boolean) : []
-      const all   = [...new Set([...pastSx, ...typed])]
+      const all = [...new Set([...pastSx, ...typed])]
       await advance(all.length ? all.join(', ') : 'None', all.length === 0 ? undefined : () =>
         callPatient({ action: 'add_symptoms', symptoms: all, type: 'past' }))
 
     } else if (step === 6) {
-      const typed    = text ? text.split(/,|\n/).map(s => s.trim()).filter(Boolean) : []
-      const allCurr  = [...new Set([...currSx, ...typed])]
-      const dur      = text.match(/\b(\d+\s*(?:day|week|month|hour)s?)\b/i)?.[1] ?? null
-      const display  = allCurr.join(', ') || text || 'Described symptoms'
+      const typed = text ? text.split(/,|\n/).map(s => s.trim()).filter(Boolean) : []
+      const allCurr = [...new Set([...currSx, ...typed])]
+      const dur = text.match(/\b(\d+\s*(?:day|week|month|hour)s?)\b/i)?.[1] ?? null
+      const display = allCurr.join(', ') || text || 'Described symptoms'
       await advance(display, () =>
         callPatient({ action: 'add_symptoms', symptoms: allCurr, type: 'current', severity: severity.toLowerCase(), duration: dur }))
     }
@@ -258,11 +258,11 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  const isDone    = step >= 7
+  const isDone = step >= 7
   const showChips3 = step === 3 && !busy
   const showChips5 = step === 5 && !busy
   const showChips6 = step === 6 && !busy
-  const showSkip   = step >= 1 && step <= 5
+  const showSkip = step >= 1 && step <= 5
 
   return (
     <div style={{
@@ -308,7 +308,7 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
               <span style={{ color: 'var(--accent)', fontSize: 12, fontWeight: 700 }}>S</span>
             </div>
             <div style={{ display: 'flex', gap: 5, paddingTop: 10 }}>
-              {[0,1,2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#c4bfb7', animation: `dotPulse 1.4s ${i * 0.2}s infinite ease-in-out` }} />)}
+              {[0, 1, 2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#c4bfb7', animation: `dotPulse 1.4s ${i * 0.2}s infinite ease-in-out` }} />)}
             </div>
           </div>
         )}
@@ -338,9 +338,9 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
               {SEVERITIES.map(sv => (
                 <button key={sv} onClick={() => setSeverity(sv)} style={{
                   padding: '5px 14px', borderRadius: 100, fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
-                  border: `1.5px solid ${severity === sv ? (sv==='Mild'?'#16a34a':sv==='Moderate'?'#d97706':'#dc2626') : 'var(--border)'}`,
-                  background: severity === sv ? (sv==='Mild'?'rgba(22,163,74,0.08)':sv==='Moderate'?'rgba(217,119,6,0.08)':'rgba(220,38,38,0.08)') : 'var(--bg-card)',
-                  color: severity === sv ? (sv==='Mild'?'#15803d':sv==='Moderate'?'#b45309':'#b91c1c') : 'var(--text-muted)',
+                  border: `1.5px solid ${severity === sv ? (sv === 'Mild' ? '#16a34a' : sv === 'Moderate' ? '#d97706' : '#dc2626') : 'var(--border)'}`,
+                  background: severity === sv ? (sv === 'Mild' ? 'rgba(22,163,74,0.08)' : sv === 'Moderate' ? 'rgba(217,119,6,0.08)' : 'rgba(220,38,38,0.08)') : 'var(--bg-card)',
+                  color: severity === sv ? (sv === 'Mild' ? '#15803d' : sv === 'Moderate' ? '#b45309' : '#b91c1c') : 'var(--text-muted)',
                   transition: 'all 0.12s',
                 }}>{sv}</button>
               ))}
@@ -374,11 +374,11 @@ export default function OnboardingChat({ onComplete }: { onComplete: () => void 
                 onChange={e => setInput(e.target.value)} onKeyDown={handleKey} disabled={busy}
                 placeholder={
                   step === 1 ? 'e.g. BP 120/80, pulse 78, spo2 98 — or "skip"' :
-                  step === 2 ? 'e.g. Female, 28 years, 62 kg, 163 cm' :
-                  step === 3 ? 'Type conditions or tap chips above…' :
-                  step === 4 ? 'e.g. Metformin 500mg twice daily, or "none"' :
-                  step === 5 ? 'Type past issues or tap chips…' :
-                  'Describe how you feel today…'
+                    step === 2 ? 'e.g. Female, 28 years, 62 kg, 163 cm' :
+                      step === 3 ? 'Type conditions or tap chips above…' :
+                        step === 4 ? 'e.g. Metformin 500mg twice daily, or "none"' :
+                          step === 5 ? 'Type past issues or tap chips…' :
+                            'Describe how you feel today…'
                 }
                 style={{
                   display: 'block', width: '100%', padding: '13px 16px',

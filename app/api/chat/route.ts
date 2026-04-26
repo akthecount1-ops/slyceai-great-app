@@ -8,9 +8,7 @@ import type { NextRequest } from 'next/server'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const db = require('@/server/db')
 
-type MedRow = { medicine_name: string; dose: string | null; frequency: string | null; slug?: string }
-
-// ── Vitals extractor — regex-based, fast & accurate ──────────────
+// ── Vitals extractor — regex-based, fast & accurate ───────────────────────────
 interface ExtractedVitals {
   bp_systolic: number | null
   bp_diastolic: number | null
@@ -28,7 +26,7 @@ function extractVitalsFromMessage(msg: string): ExtractedVitals | null {
   const spo2 = t.match(/\bsp?o2[:\s]*([0-9]{2,3})\b/)
   const sugar = t.match(/\b(?:sugar|blood\s*sugar|glucose)[:\s]*([0-9]{2,4})\b/)
   const temp = t.match(/\b(?:temp(?:erature)?)[:\s]*([0-9]{2,3}(?:\.[0-9])?)\b/)
-  const wt = t.match(/\b(?:weight)[:\s]*([0-9]{2,3}(?:\.[0-9]?)?)\s*kg\b/)
+  const wt = t.match(/\b(?:weight)[:\s]*([0-9]{2,3}(?:\.[0-9]?)?)\\s*kg\b/)
 
   if (!bp && !pulse && !spo2 && !sugar && !temp && !wt) return null
 
@@ -54,67 +52,151 @@ function describeExtractedVitals(v: ExtractedVitals): string {
   return parts.join(', ')
 }
 
-async function buildSystemPrompt(
-  profile: any,
-  supaProfile: any
-): Promise<string> {
-  const name = profile?.name || supaProfile?.name || 'Patient'
-  const age = profile?.age || '—'
-  const gender = profile?.gender || '—'
-  const weight = profile?.weight_kg || '—'
-  const height = profile?.height_cm || '—'
-  const blood_group = profile?.blood_group || '—'
-  const known_diseases = (profile?.medical_history?.known_diseases || []).join(', ') || 'None'
-  const medications = (profile?.active_medications || []) as MedRow[]
-  const medications_list = medications.length
-    ? medications.map(m => `${m.medicine_name}${m.dose ? ` ${m.dose}` : ''}${m.frequency ? ` (${m.frequency})` : ''}`).join(', ')
-    : 'None'
+function formatDate(dateStr: string | null | undefined, fallback = '—'): string {
+  if (!dateStr) return fallback
+  try {
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch { return fallback }
+}
 
-  const journal = profile?.recent_symptoms ?? []
-  const current_symptoms = journal.length
-    ? [...new Set(journal.flatMap((j: any) => j.symptoms || []))].join(', ')
-    : 'None reported'
+function formatDateTime(dateStr: string | null | undefined, fallback = '—'): string {
+  if (!dateStr) return fallback
+  try {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) +
+      ', ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+  } catch { return fallback }
+}
 
-  const v = profile?.latest_vitals
-  const bp = v ? `${v.bp_systolic}/${v.bp_diastolic}` : '—'
-  const pulse = v ? `${v.pulse} bpm` : '—'
-  const spo2 = v ? `${v.oxygen}%` : '—'
-  const blood_sugar = v ? `${v.blood_sugar} mg/dL` : '—'
-  const vitals_date = v ? new Date(v.recorded_at).toLocaleDateString('en-IN') : 'None recorded'
+function relativeTime(dateStr: string | null | undefined): string {
+  if (!dateStr) return 'unknown'
+  try {
+    const diff = (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24)
+    if (diff < 1) return 'today'
+    if (diff < 2) return 'yesterday'
+    return `${Math.floor(diff)} days ago`
+  } catch { return 'unknown' }
+}
 
-  return `You are Slyceai, a warm and knowledgeable AI health assistant on the Arogya platform.
-You already have this patient's full health profile — use it silently to personalise
-every response. Never ask the patient to repeat information that is already in their profile.
+// ── Build rich system prompt from patient context ─────────────────────────────
+function buildSystemPrompt(profile: any): string {
+  if (!profile) {
+    return `You are Slyceai, the AI health assistant on the Arogya platform.
+You are speaking with a patient. Be warm, clear, and professional.
+Never be casual about health concerns. Never give a definitive diagnosis.
+Always recommend consulting a doctor for serious concerns.`
+  }
 
-PATIENT PROFILE:
+  const name = profile.name || 'Patient'
+  const age = profile.age ?? '—'
+  const gender = profile.gender || '—'
+  const weight = profile.weight_kg ? `${profile.weight_kg} kg` : '—'
+  const height = profile.height_cm ? `${profile.height_cm} cm` : '—'
+  const bmi = profile.bmi ? `${profile.bmi} (${profile.bmiCategory})` : '—'
+  const bloodGroup = profile.blood_group || 'Not recorded'
+  const memberSince = formatDate(profile.created_at)
+
+  const mh = profile.medical_history || {}
+  const knownDiseases = (mh.known_diseases || []).join(', ') || 'None recorded'
+  const allergies = (mh.allergies || []).join(', ') || 'None recorded'
+  const pastSurgeries = (mh.past_surgeries || []).join(', ') || 'None'
+  const familyHistory = (mh.family_history || []).join(', ') || 'Not recorded'
+
+  const medications: any[] = profile.active_medications || []
+  const medicationsText = medications.length
+    ? medications.map((m: any) => {
+      const lines = [`  • ${m.medicine_name}${m.dose ? ` ${m.dose}` : ''}${m.frequency ? ` (${m.frequency})` : ''}`]
+      if (m.uses?.length) lines.push(`    Uses: ${m.uses.join(', ')}`)
+      if (m.how_it_works) lines.push(`    Mechanism: ${m.how_it_works}`)
+      if (m.side_effects_common?.length) lines.push(`    Common side effects: ${m.side_effects_common.join(', ')}`)
+      if (m.side_effects_serious?.length) lines.push(`    Serious side effects: ${m.side_effects_serious.join(', ')}`)
+      if (m.drug_interactions?.length) lines.push(`    Drug interactions: ${m.drug_interactions.join(', ')}`)
+      if (m.what_to_avoid?.length) lines.push(`    What to avoid: ${m.what_to_avoid.join(', ')}`)
+      return lines.join('\n')
+    }).join('\n\n')
+    : '  No medicines recorded'
+
+  const drugInteractions: any[] = profile.drug_interactions || []
+  const interactionsText = drugInteractions.length
+    ? drugInteractions.map((i: any) => `  ⚠️ ${i.medicine_a} + ${i.medicine_b}: ${i.warning}`).join('\n')
+    : '  No interactions detected between current medicines'
+
+  // Symptoms from recent symptom journal
+  const symptomsArr: string[] = profile.all_symptoms || []
+  const symptomsText = symptomsArr.length
+    ? symptomsArr.map((s: string) => `  - ${s}`).join('\n')
+    : '  No current symptoms recorded'
+
+  const v = profile.latest_vitals
+  const bpStr = v?.bp_systolic && v?.bp_diastolic ? `${v.bp_systolic}/${v.bp_diastolic} mmHg` : '—'
+  const pulseStr = v?.pulse ? `${v.pulse} bpm` : '—'
+  const spo2Str = v?.oxygen ? `${v.oxygen}%` : '—'
+  const sugarStr = v?.blood_sugar ? `${v.blood_sugar} mg/dL` : '—'
+  const tempStr = v?.temperature ? `${v.temperature}°F` : '—'
+  const weightVStr = v?.weight_kg ? `${v.weight_kg} kg` : '—'
+  const vitalsDate = v ? formatDateTime(v.recorded_at) : null
+  const vitalsAge = v ? relativeTime(v.recorded_at) : null
+  const vitalsOld = v ? (Date.now() - new Date(v.recorded_at).getTime()) / (1000 * 60 * 60 * 24) > 3 : false
+
+  const vitalsHistText = (profile.vitals_history || []).slice(0, 7).map((h: any) =>
+    `  ${formatDate(h.recorded_at)}: BP ${h.bp_systolic}/${h.bp_diastolic}, Pulse ${h.pulse}, SpO₂ ${h.oxygen}%`
+  ).join('\n') || '  No history available'
+
+  return `You are Slyceai, the AI health assistant on the Arogya platform.
+You are speaking with a real patient who may be dealing with serious health conditions.
+Be warm, clear, and professional. Never be casual about health concerns.
+You already have this patient's full health profile — use it to personalise every response.
+NEVER ask the patient to repeat information already in their profile below.
+
+━━━ PATIENT PROFILE ━━━
 Name: ${name}
-Age: ${age} | Gender: ${gender} | Weight: ${weight}kg | Height: ${height}cm
-Blood group: ${blood_group}
-Known conditions: ${known_diseases}
-Current medications: ${medications_list}
-Active symptoms: ${current_symptoms}
-Latest vitals: BP ${bp}, Pulse ${pulse}, SpO2 ${spo2}, Sugar ${blood_sugar}
-Last vitals logged: ${vitals_date}
+Age: ${age} years | Gender: ${gender}
+Weight: ${weight} | Height: ${height}
+BMI: ${bmi}
+Blood group: ${bloodGroup}
+Member since: ${memberSince}
 
-MEDICINE KNOWLEDGE:
-You have access to detailed information about all medicines in this patient's profile.
-For each medicine, you know: uses, mechanism, side effects, drug interactions, 
-contraindications, and what to avoid.
-Cross-reference this when answering questions about medicines.
+━━━ MEDICAL CONDITIONS ━━━
+Known conditions: ${knownDiseases}
+Past surgeries: ${pastSurgeries}
+Allergies: ${allergies}
+Family history: ${familyHistory}
 
-SYMPTOM KNOWLEDGE:
-You have the patient's symptom history and a medical symptom database.
-If a patient describes a red-flag symptom, recommend immediate medical attention.
+━━━ CURRENT MEDICATIONS ━━━
+${medicationsText}
 
-RULES:
-1. Never give a definitive diagnosis
-2. Always recommend consulting a doctor for serious concerns
-3. Be warm, clear, and use simple language (many patients are elderly or non-technical)
-4. If the patient writes in Hindi, respond fully in Hindi
-5. If asked about medicines, always mention interactions with their current medicines
-6. Keep responses concise — 3-4 sentences max unless the patient asks for detail
-7. Never ask for information already in the profile above
-8. If vitals are more than 3 days old, you may gently mention it once per session`
+━━━ DRUG INTERACTION ALERTS ━━━
+${interactionsText}
+
+━━━ CURRENT SYMPTOMS ━━━
+${symptomsText}
+
+━━━ LATEST VITALS ━━━
+${v ? `Blood pressure: ${bpStr}
+Pulse: ${pulseStr}
+SpO2: ${spo2Str}
+Blood sugar: ${sugarStr}
+Temperature: ${tempStr}
+Weight: ${weightVStr}
+Recorded: ${vitalsDate} (${vitalsAge})` : 'No vitals recorded yet'}
+${vitalsOld ? `\n⚠️ Note: Vitals from ${vitalsDate} — consider logging fresh readings for more accurate advice.` : ''}
+
+━━━ VITALS TREND (last 7 readings) ━━━
+${vitalsHistText}
+
+━━━ YOUR RULES ━━━
+1. Use the patient's name naturally in responses — warmly, not every message
+2. ALWAYS cross-reference current medications before suggesting any new medicine
+3. If a symptom matches a red_flag condition, prioritize it and recommend immediate doctor consultation
+4. If you detect a drug interaction in their current medicines, proactively mention it
+5. Never give a definitive diagnosis — always say "this could indicate" or "this suggests"
+6. Always end serious health answers with: "Please consult your doctor to confirm this."
+7. If the patient writes in Hindi or Hinglish, respond in the same language
+8. Keep responses focused — 3-5 sentences for simple questions, detailed for complex ones
+9. For Ayurvedic questions: mention if any Ayurvedic herb interacts with current medicines
+10. Never suggest stopping or changing prescription medicines — always say "discuss with your doctor before changing any prescribed medicine"
+11. This is a medical platform — be precise, not casual. Lives depend on accuracy.
+12. Never ask for information already in the profile above.`
 }
 
 export async function POST(request: NextRequest) {
@@ -126,7 +208,7 @@ export async function POST(request: NextRequest) {
   if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 })
   if (!sessionId) return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
 
-  // ── STEP 1: Extract vitals from message ──────────────────────
+  // ── STEP 1: Extract vitals from message ──────────────────────────────────
   let vitalsSavedNote = ''
   const extractedVitals = extractVitalsFromMessage(message)
   if (extractedVitals) {
@@ -146,40 +228,39 @@ export async function POST(request: NextRequest) {
       const { error: vitalsErr } = await supabase.from('vitals').insert(insertRow)
       if (!vitalsErr) {
         const desc = describeExtractedVitals(extractedVitals)
-        vitalsSavedNote = `\n\n[SYSTEM NOTE: The patient just shared vitals in this message. You have ALREADY saved these to their profile: ${desc}. Acknowledge that you saved them and comment on the values in your response.]`
-        console.log('Vitals auto-saved from chat:', desc)
+        vitalsSavedNote = `\n\n[SYSTEM NOTE: The patient just shared vitals in this message. You have ALREADY saved these to their profile: ${desc}. Acknowledge that you saved them and provide a clinical comment on the values.]`
+        console.log('[Chat] Vitals auto-saved from chat:', desc)
       }
     } catch (vitalsErr) {
-      console.error('Vitals save failed:', vitalsErr)
+      console.error('[Chat] Vitals save failed:', vitalsErr)
     }
   }
 
-  // ── STEP 2: Load context + build system prompt ───────────────
-  // Chat history from Supabase
+  // ── STEP 2: Load full patient context & build system prompt ───────────────
+  let arogyaProfile: any = null
+  try {
+    arogyaProfile = await db.getPatientFullProfile(user.id)
+    console.log(`[Chat] Patient context loaded for ${arogyaProfile?.name || user.id}`)
+  } catch (err) {
+    console.error('[Chat] Failed to load patient profile:', err)
+  }
+
+  // Fetch last 15 messages for conversation continuity
   const { data: history } = await supabase
     .from('chat_history').select('role, content')
     .eq('user_id', user.id).eq('session_id', sessionId)
-    .order('created_at', { ascending: false }).limit(12)
+    .order('created_at', { ascending: false }).limit(15)
 
-  // Load Supabase profile (food_preference, location, allergies)
-  const { data: supaProfile } = await supabase
-    .from('profiles')
-    .select('name, gender, food_preference, allergies, state, region')
-    .eq('id', user.id).single()
-
-  // Load full profile from Supabase
-  const arogyaProfile = await db.getPatientFullProfile(user.id)
-
-  const systemPrompt = (await buildSystemPrompt(arogyaProfile, supaProfile)) + vitalsSavedNote
+  const systemPrompt = buildSystemPrompt(arogyaProfile) + vitalsSavedNote
 
   const messages = [
-    ...(history ?? []).reverse().map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+    ...(history ?? []).reverse().map((m: any) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     { role: 'user' as const, content: message },
   ]
 
-  // ── STEP 3: Call AI ──────────────────────────────────────────
+  // ── STEP 3: Call AI ───────────────────────────────────────────────────────
   try {
-    const response = await ai.chat(messages, systemPrompt)
+    const response = await ai.chat(messages, systemPrompt, { maxTokens: 1024 })
 
     await supabase.from('chat_history').insert([
       { user_id: user.id, session_id: sessionId, role: 'user', content: message },
@@ -189,7 +270,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ content: response.content, usage: response.usage })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'AI error'
-    console.error('Chat error:', err)
+    console.error('[Chat] AI call error:', err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

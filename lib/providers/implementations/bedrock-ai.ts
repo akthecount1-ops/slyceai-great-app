@@ -17,7 +17,8 @@ import type { AIProvider, AIMessage, AIUsageStats } from '../interfaces'
  *   AWS_ACCESS_KEY_ID      — IAM access key (SDK fallback)
  *   AWS_SECRET_ACCESS_KEY  — IAM secret key (SDK fallback)
  *   AWS_REGION             — defaults to 'us-east-1'
- *   BEDROCK_MODEL_ID       — defaults to 'us.anthropic.claude-sonnet-4-6'
+ *   BEDROCK_MODEL_ID       — defaults to 'us.anthropic.claude
+ * -sonnet-4-6'
  */
 
 const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-6'

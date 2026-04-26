@@ -17,7 +17,8 @@ export default function LogVitalsModal({ onClose, onSuccess, supabase, userId }:
   const [pulse, setPulse] = useState('')
   const [spo2, setSpo2] = useState('')
   const [sugar, setSugar] = useState('')
-  
+  const [temp, setTemp] = useState('')
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -30,19 +31,18 @@ export default function LogVitalsModal({ onClose, onSuccess, supabase, userId }:
       if (pulse) payload.pulse = parseInt(pulse)
       if (spo2) payload.oxygen = parseFloat(spo2)
       if (sugar) payload.blood_sugar = parseFloat(sugar)
-      
+      if (temp) payload.temperature = parseFloat(temp)
+
       const { error } = await supabase.from('vitals').insert(payload)
-      if (!error) {
-        onSuccess()
-      }
+      if (!error) onSuccess()
     } finally {
       setSaving(false)
     }
   }
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '9px 12px', borderRadius: '8px', 
-    border: '1px solid var(--border)', fontSize: '14px', outline: 'none', 
+    width: '100%', padding: '9px 12px', borderRadius: '8px',
+    border: '1px solid var(--border)', fontSize: '14px', outline: 'none',
     background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit'
   }
 
@@ -61,7 +61,7 @@ export default function LogVitalsModal({ onClose, onSuccess, supabase, userId }:
             <input type="number" placeholder="Diastolic (e.g. 80)" value={bpDia} onChange={e => setBpDia(e.target.value)} style={inputStyle} />
           </div>
         </div>
-        
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <div>
             <label style={labelStyle}>Pulse (bpm)</label>
@@ -72,31 +72,30 @@ export default function LogVitalsModal({ onClose, onSuccess, supabase, userId }:
             <input type="number" placeholder="e.g. 98" value={spo2} onChange={e => setSpo2(e.target.value)} style={inputStyle} />
           </div>
         </div>
-        
-        <div>
-          <label style={labelStyle}>Blood sugar (mg/dL)</label>
-          <input type="number" placeholder="e.g. 95 (Fasting)" value={sugar} onChange={e => setSugar(e.target.value)} style={inputStyle} />
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div>
+            <label style={labelStyle}>Blood sugar (mg/dL)</label>
+            <input type="number" placeholder="e.g. 95 (Fasting)" value={sugar} onChange={e => setSugar(e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Temperature (°C)</label>
+            <input type="number" placeholder="e.g. 36.6" value={temp} onChange={e => setTemp(e.target.value)} style={inputStyle} />
+          </div>
         </div>
-        
+
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
-          <button 
-            onClick={onClose} 
-            style={{
-              padding: '10px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
-              background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-secondary)',
-              cursor: 'pointer', fontFamily: 'inherit'
-            }}
-          >
+          <button onClick={onClose} style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit' }}>
             Cancel
           </button>
-          <button 
+          <button
             onClick={handleSave}
-            disabled={saving || (!bpSys && !bpDia && !pulse && !spo2 && !sugar)}
+            disabled={saving || (!bpSys && !bpDia && !pulse && !spo2 && !sugar && !temp)}
             style={{
               padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
               background: 'var(--accent)', border: 'none', color: 'var(--bg-card)',
-              cursor: saving ? 'wait' : (!bpSys && !bpDia && !pulse && !spo2 && !sugar) ? 'not-allowed' : 'pointer', 
-              fontFamily: 'inherit', opacity: (!bpSys && !bpDia && !pulse && !spo2 && !sugar) ? 0.5 : 1, transition: 'opacity 0.15s'
+              cursor: saving ? 'wait' : (!bpSys && !bpDia && !pulse && !spo2 && !sugar && !temp) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', opacity: (!bpSys && !bpDia && !pulse && !spo2 && !sugar && !temp) ? 0.5 : 1, transition: 'opacity 0.15s'
             }}
           >
             {saving ? 'Saving...' : 'Save vitals'}
@@ -106,3 +105,4 @@ export default function LogVitalsModal({ onClose, onSuccess, supabase, userId }:
     </AppModal>
   )
 }
+

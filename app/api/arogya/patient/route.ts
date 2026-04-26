@@ -46,9 +46,9 @@ export async function POST(req: NextRequest) {
       case 'update_patient': {
         const { name, age, gender, weight_kg, height_cm } = body
         await db.updatePatient(user.id, {
-          ...(name      != null && { name }),
-          ...(age       != null && { age }),
-          ...(gender    != null && { gender }),
+          ...(name != null && { name }),
+          ...(age != null && { age }),
+          ...(gender != null && { gender }),
           ...(weight_kg != null && { weight_kg }),
           ...(height_cm != null && { height_cm }),
         })
@@ -74,9 +74,9 @@ export async function POST(req: NextRequest) {
         for (const med of medications) {
           await db.addMedication(user.id, {
             medicine_name: med.name,
-            dose:          med.dose ?? null,
-            frequency:     med.frequency ?? null,
-            since:         med.since ?? null,
+            dose: med.dose ?? null,
+            frequency: med.frequency ?? null,
+            since: med.since ?? null,
           })
         }
         break
@@ -98,9 +98,9 @@ export async function POST(req: NextRequest) {
 
       case 'complete_onboarding': {
         // Write to local SQLite
-        await db.updatePatient(user.id, { onboarding_complete: 1, chat_ready: 1 })
+        await db.updatePatient(user.id, { onboarding_complete: true, chat_ready: true })
         for (let s = 1; s <= 7; s++) {
-          try { await db.markStepDone(user.id, s) } catch {}
+          try { await db.markStepDone(user.id, s) } catch { }
         }
         // ✅ Also persist to Supabase profiles — this is the authoritative source of truth
         await supabase.from('profiles').upsert({

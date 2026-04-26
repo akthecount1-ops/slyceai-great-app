@@ -2,42 +2,52 @@ export const runtime = 'nodejs'
 
 import { createClient } from '@/lib/supabase/server'
 import { ai } from '@/lib/providers'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const db = require('@/server/db')
 
-const FALLBACK = {
-  greeting: "Welcome back! Let's check in on your health today.",
-  feeling: "It's a great day to focus on your well-being. Stay consistent with your health habits.",
-  health_tip: 'Remember to drink at least 8 glasses of water today and take a short walk.',
-  diet: {
-    title: "Today's Diet Suggestion",
-    meals: [
-      { time: 'Breakfast', suggestion: 'Oats porridge with nuts and banana', benefit: 'Provides sustained energy and fibre' },
-      { time: 'Lunch', suggestion: 'Dal, roti, sabzi and salad', benefit: 'Balanced nutrition with protein and vitamins' },
-      { time: 'Dinner', suggestion: 'Khichdi with ghee and curd', benefit: 'Light, warming and easy to digest' },
-      { time: 'Snacks', suggestion: 'Roasted chana or seasonal fruit', benefit: 'Healthy energy boost without refined sugar' },
-    ],
-  },
-  lifestyle: [
-    { title: 'Sleep', tip: 'Aim to sleep by 10 PM for 7-8 hours of restorative rest', emoji: '😴' },
-    { title: 'Movement', tip: 'Take a brisk 30-minute walk in the morning fresh air', emoji: '🚶' },
-    { title: 'Hydration', tip: 'Start your day with warm lemon water to kickstart digestion', emoji: '💧' },
-    { title: 'Stress', tip: 'Practice box breathing: 4s inhale, hold, exhale, hold', emoji: '🧘' },
-  ],
-  ayurveda: [
-    { herb: 'Ashwagandha', benefit: 'Reduces cortisol, boosts stamina and immune resilience', how: '1 tsp in warm milk at night', emoji: '🌿' },
-    { herb: 'Tulsi', benefit: 'Powerful adaptogen that supports immunity and respiratory health', how: '5-7 fresh leaves steeped in morning tea', emoji: '🍃' },
-    { herb: 'Triphala', benefit: 'Balances all three doshas and aids gentle detoxification', how: '1 tsp with warm water at bedtime', emoji: '🌱' },
-  ],
-  yoga: [
-    { pose: 'Anulom Vilom (Alternate Nostril Breathing)', duration: '10 minutes', benefit: 'Calms the nervous system and improves oxygen circulation', emoji: '🧘' },
-    { pose: 'Surya Namaskar (Sun Salutation)', duration: '5-10 rounds', benefit: 'Full body warm-up that energises all muscle groups', emoji: '🌅' },
-    { pose: 'Shavasana (Corpse Pose)', duration: '5-7 minutes', benefit: 'Deep relaxation and integration of practice benefits', emoji: '🙏' },
-  ],
+const FALLBACKS: Record<string, string> = {
+  tip: "Welcome back! Remember to stay hydrated today and take your medicines on time. If you have any health concerns, Slyceai is here to help.",
+  diet: "A balanced diet rich in whole grains, vegetables, and lean proteins supports your overall health. Avoid processed foods and stay well-hydrated.",
+  exercise: "Aim for at least 30 minutes of moderate activity today. Even a brisk walk improves cardiovascular health and boosts mood.",
+  dosha: "Your Ayurvedic profile helps personalise your health journey. Complete the assessment on the dashboard to get Dosha-specific recommendations.",
+}
+
+const SYSTEM_PROMPTS: Record<string, string> = {
+  tip: `You are Slyceai. Generate a personalised daily health insight for this patient.
+Be specific to their conditions, medicines, and vitals. Format: 2-3 sentences. End with one specific, actionable tip.
+Do not be generic. Reference their actual data.
+If their vitals show something notable, mention it.
+If they have active symptoms, address them.
+Never diagnose. Always recommend doctor for serious concerns.
+Keep it warm, encouraging, and under 70 words total.`,
+  diet: `You are Slyceai. Generate a personalised daily diet recommendation for this patient.
+Consider their conditions, medicines, dosha type, weight/BMI, and food preferences.
+Be specific — name actual foods, meal timing, or portion guidance.
+If they have diabetes, hypertension, or other conditions, factor that in.
+Mention Ayurvedic foods if their dosha is known.
+Never diagnose. Keep it practical and warm. Under 80 words.`,
+  exercise: `You are Slyceai. Generate a personalised daily exercise recommendation for this patient.
+Consider their BMI, conditions, current symptoms, pulse, and dosha constitution.
+Recommend specific activity type, duration, and intensity.
+If they have high BP or high pulse, recommend low-impact options.
+If Kapha dominant, recommend vigorous activity. If Vata, gentle grounding.
+Under 70 words. Actionable and specific.`,
+  dosha: `You are Slyceai. Generate a personalised Ayurvedic wellness tip for this patient based on their dosha profile.
+Mention their dominant dosha and how it applies to their current health state.
+Give one specific lifestyle, herb, or routine recommendation based on their dosha blend.
+Cross-reference with their current vitals or symptoms if relevant.
+Under 70 words. Warm and precise.`,
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—'
+  try {
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch { return '—' }
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
@@ -49,58 +59,102 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ])
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const type = (req.nextUrl.searchParams.get('type') || 'tip') as string
+  const forceRefresh = req.nextUrl.searchParams.get('force_refresh') === '1'
+  const insightType = ['tip', 'diet', 'exercise', 'dosha'].includes(type) ? type : 'tip'
+  const fallback = FALLBACKS[insightType] || FALLBACKS.tip
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // ── Fetch all from Supabase ──────────────────────────────────────────
-    const arogyaProfile = await db.getPatientFullProfile(user.id)
-    if (!arogyaProfile) {
-      return NextResponse.json(FALLBACK)
+    // ── Check cache (daily_insights table) ──────────────────────────────────
+    const today = new Date().toISOString().split('T')[0]
+
+    if (!forceRefresh) {
+      const { data: cached } = await supabase
+        .from('daily_insights')
+        .select('content')
+        .eq('user_id', user.id)
+        .eq('insight_date', today)
+        .eq('insight_type', insightType)
+        .single()
+
+      if (cached?.content) {
+        return NextResponse.json({ feeling: cached.content, content: cached.content })
+      }
     }
 
-    const { data: vitals } = await supabase.from('vitals')
-      .select('bp_systolic,bp_diastolic,pulse,oxygen,blood_sugar,recorded_at')
-      .eq('user_id', user.id).order('recorded_at', { ascending: false }).limit(3)
+    // ── Load full patient context ────────────────────────────────────────────
+    const [arogyaProfile, profileRes] = await Promise.all([
+      db.getPatientFullProfile(user.id),
+      supabase.from('profiles')
+        .select('primary_dosha, dosha_vata_score, dosha_pitta_score, dosha_kapha_score, weight_kg, height_cm')
+        .eq('id', user.id)
+        .single(),
+    ])
 
-    const { data: journal } = await supabase.from('symptom_journal')
-      .select('symptoms,pain_level,energy_level,mood_level,journal_date,notes')
-      .eq('user_id', user.id).order('journal_date', { ascending: false }).limit(5)
+    if (!arogyaProfile || !arogyaProfile.name) {
+      return NextResponse.json({ feeling: fallback, content: fallback })
+    }
 
-    // Build context strings
-    const vitalsStr = vitals?.length
-      ? vitals.map(v => `[${v.recorded_at}] BP ${v.bp_systolic}/${v.bp_diastolic}, P ${v.pulse}, O2 ${v.oxygen}%`).join(' | ')
-      : 'No recent vitals'
-
-    const medsStr = arogyaProfile.active_medications?.length
-      ? arogyaProfile.active_medications.map((m: any) => m.medicine_name).join(', ')
-      : 'None'
-
+    // Build context summary for prompt
     const mh = arogyaProfile.medical_history || {}
-    const conditionsStr = mh.known_diseases?.join(', ') || 'None'
-    
-    const userPrompt = `
-      Patient: ${arogyaProfile.name}, Age: ${arogyaProfile.age}, Gender: ${arogyaProfile.gender}
-      Conditions: ${conditionsStr}
-      Vitals: ${vitalsStr}
-      Meds: ${medsStr}
-      
-      Generate personalised health insights in JSON format.
-    `
+    const knownDiseases = (mh.known_diseases || []).join(', ') || 'None'
+    const medications = (arogyaProfile.active_medications || []).map((m: any) => m.medicine_name).join(', ') || 'None'
+    const symptoms = (arogyaProfile.all_symptoms || []).join(', ') || 'None'
+    const v = arogyaProfile.latest_vitals
+    const vitalsStr = v
+      ? `BP ${v.bp_systolic}/${v.bp_diastolic} mmHg, Pulse ${v.pulse} bpm, SpO2 ${v.oxygen}%, Sugar ${v.blood_sugar} mg/dL (logged ${formatDate(v.recorded_at)})`
+      : 'No recent vitals'
+    const bmi = arogyaProfile.bmi ? `${arogyaProfile.bmi} (${arogyaProfile.bmiCategory})` : 'Not calculated'
+    const drugInts = (arogyaProfile.drug_interactions || []).map((i: any) => `${i.medicine_a} + ${i.medicine_b}`).join(', ') || 'None'
+
+    // Dosha context
+    const pd = profileRes.data
+    const doshaStr = pd?.primary_dosha
+      ? `${pd.primary_dosha} dominant (Vata: ${pd.dosha_vata_score || 0}, Pitta: ${pd.dosha_pitta_score || 0}, Kapha: ${pd.dosha_kapha_score || 0})`
+      : 'Dosha not assessed'
+    const bmiFromProfile = (pd?.weight_kg && pd?.height_cm)
+      ? `${+(pd.weight_kg / ((pd.height_cm / 100) ** 2)).toFixed(1)}`
+      : bmi
+
+    const userPrompt = `Patient: ${arogyaProfile.name}, Age: ${arogyaProfile.age || '—'}, Gender: ${arogyaProfile.gender || '—'}
+BMI: ${bmiFromProfile}
+Known conditions: ${knownDiseases}
+Current medications: ${medications}
+Active symptoms: ${symptoms}
+Vitals: ${vitalsStr}
+Drug interactions to note: ${drugInts}
+Ayurvedic dosha: ${doshaStr}
+
+Generate a personalised ${insightType} recommendation.`
 
     const response = await withTimeout(
-      ai.chat([{ role: 'user', content: userPrompt }], 'Respond with raw JSON only.'),
-      25000
+      ai.chat([{ role: 'user', content: userPrompt }], SYSTEM_PROMPTS[insightType], { maxTokens: 220 }),
+      20000
     ) as { content: string }
 
-    let text = (response.content || '').replace(/```json/g, '').replace(/```/g, '').trim()
-    const data = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1))
+    const content = response.content?.trim() || fallback
 
-    return NextResponse.json(data)
+    // ── Cache in daily_insights ──────────────────────────────────────────────
+    try {
+      await supabase.from('daily_insights').upsert({
+        user_id: user.id,
+        insight_date: today,
+        insight_type: insightType,
+        content,
+        created_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,insight_date,insight_type' })
+    } catch (cacheErr) {
+      console.warn('[Insights] Cache write failed (non-fatal):', cacheErr)
+    }
+
+    return NextResponse.json({ feeling: content, content })
   } catch (err) {
     console.error('[Dashboard Insights]', err)
-    return NextResponse.json(FALLBACK)
+    return NextResponse.json({ feeling: fallback, content: fallback })
   }
 }
