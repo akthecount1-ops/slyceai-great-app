@@ -18,8 +18,8 @@ async function buildSystemPrompt(
     return `You are Slyceai, a compassionate AI health assistant for Indian users. Be warm, empathetic, and culturally aware. Never diagnose definitively. Always recommend consulting a doctor for serious symptoms.`
   }
 
-  const mh   = profile.medical_history || {}
-  const v    = profile.latest_vitals
+  const mh = profile.medical_history || {}
+  const v = profile.latest_vitals
   const meds = (profile.active_medications ?? []) as MedRow[]
   const journal = profile.recent_symptoms ?? []
 
@@ -42,16 +42,16 @@ async function buildSystemPrompt(
     const medSlugs = meds.map(m => m.medicine_name.toLowerCase().replace(/\s+/g, '_')) // Approximation since we don't store slug yet
     const activeMedDetails = await Promise.all(meds.map(m => db.searchMedicines(m.medicine_name)))
     const foundMeds = activeMedDetails.flat().filter(Boolean)
-    
+
     // Check drug interactions from KB
-    const interactions = await db.getMedicineInteractions(foundMeds.map((m:any) => m.slug).filter(Boolean))
+    const interactions = await db.getMedicineInteractions(foundMeds.map((m: any) => m.slug).filter(Boolean))
     if (interactions && interactions.length > 0) {
       kbContext += `\n[WARNING] Potential Drug Interactions detected in patient's active meds:\n`
       interactions.forEach((i: any) => {
         kbContext += `- Between ${i.medicine_a} and ${i.medicine_b}: ${i.interactions.join('; ')}\n`
       })
     }
-    
+
     // Add known side effects of their drugs
     foundMeds.forEach((m: any) => {
       kbContext += `\nMedicine KB for ${m.name}:\n`
@@ -69,7 +69,7 @@ async function buildSystemPrompt(
       kbContext += `\nSymptom KB for ${sx.label}:\n`
       if (sx.red_flag) kbContext += `- [RED FLAG WARNING] This is marked as a critical symptom. Always advise medical attention.\n`
       if (sx.commonly_associated_diseases?.length) kbContext += `- Associated diseases: ${sx.commonly_associated_diseases.join(', ')}\n`
-      if (sx.follow_up_questions?.length) kbContext += `- AI should ask: ${sx.follow_up_questions.slice(0,2).join(' or ')}\n`
+      if (sx.follow_up_questions?.length) kbContext += `- AI should ask: ${sx.follow_up_questions.slice(0, 2).join(' or ')}\n`
     })
   }
 
@@ -77,10 +77,10 @@ async function buildSystemPrompt(
     ? meds.map(m => `${m.medicine_name}${m.dose ? ` ${m.dose}` : ''}${m.frequency ? ` (${m.frequency})` : ''}`).join(', ')
     : 'None'
 
-  const diseases   = (mh?.known_diseases ?? []).join(', ') || 'None reported'
-  const allergies  = (mh?.allergies ?? []).join(', ') || supaProfile?.allergies?.join(', ') || 'None known'
-  const currSxStr  = currSxLabels.length ? currSxLabels.join(', ') : 'None reported'
-  const pastSxStr  = 'None reported'
+  const diseases = (mh?.known_diseases ?? []).join(', ') || 'None reported'
+  const allergies = (mh?.allergies ?? []).join(', ') || supaProfile?.allergies?.join(', ') || 'None known'
+  const currSxStr = currSxLabels.length ? currSxLabels.join(', ') : 'None reported'
+  const pastSxStr = 'None reported'
 
   return `You are Slyceai, an empathetic AI health assistant on the Arogya platform.
 
@@ -100,7 +100,9 @@ Instructions:
 - You have FULL context on this patient — NEVER ask for info already in their profile.
 - Always personalise responses based on their conditions, medications, and symptoms.
 - If the patient asks about side effects or their symptoms match known side effects from the Knowledge Base above, point it out.
-- Reference Indian dietary practices and Ayurvedic wisdom alongside modern medicine where appropriate.
+- Emulate a highly positive, motivating vibe. Provide a "positive vibe" in every response, offering motivation like "you are doing good."
+- Always show the positive effects of Ayurvedic herbs or techniques to boost the patient's mood alongside modern medicine.
+- If a condition is serious, never sound bleak. Frame it optimistically (e.g., "you have to work on this, but once you do, you will feel so much better").
 - Never diagnose definitively. For serious symptoms, always recommend consulting a doctor.
 - If asked about drug interactions, check the Knowledge Base section provided above against their current medication list.
 - Respond in the language the patient uses (Hindi or English).
@@ -113,7 +115,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { message, sessionId } = await request.json()
-  if (!message)   return NextResponse.json({ error: 'Message required' }, { status: 400 })
+  if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 })
   if (!sessionId) return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
 
   // Chat history from Supabase
@@ -142,7 +144,7 @@ export async function POST(request: NextRequest) {
     const response = await ai.chat(messages, systemPrompt)
 
     await supabase.from('chat_history').insert([
-      { user_id: user.id, session_id: sessionId, role: 'user',      content: message },
+      { user_id: user.id, session_id: sessionId, role: 'user', content: message },
       { user_id: user.id, session_id: sessionId, role: 'assistant', content: response.content },
     ])
 

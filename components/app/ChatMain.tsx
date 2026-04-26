@@ -3,12 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Send, RefreshCw, Trash2, Stethoscope, X, Paperclip, Heart, Pill, FileText, Check, Upload, ImageIcon } from 'lucide-react'
+import { Send, RefreshCw, Trash2, Stethoscope, X, Heart, Pill, FileText, Check, Upload, ImageIcon } from 'lucide-react'
 import ChatAttachMenu from '@/components/app/ChatAttachMenu'
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string; created_at: string; imagePreview?: string }
 
-const IMAGE_TYPES = ['image/jpeg','image/jpg','image/png','image/webp','image/gif']
+const IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 const isImageFile = (f: File) => IMAGE_TYPES.includes(f.type)
 
 function getGreeting(name: string) {
@@ -17,40 +17,123 @@ function getGreeting(name: string) {
 }
 
 const SUGGESTED = [
-  'Analyse my recent vitals','Check for medicine interactions',
-  'Ayurvedic tips for better sleep','Diet plan for my condition',
-  'Explain my lab report simply','Signs I should see a doctor',
+  'Analyse my recent vitals', 'Check for medicine interactions',
+  'Ayurvedic tips for better sleep', 'Diet plan for my condition',
+  'Explain my lab report simply', 'Signs I should see a doctor',
 ]
 
+// ── Clean markdown renderer ──────────────────────────────────────────────────
+function renderInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  const regex = /\*\*(.+?)\*\*|\*(.+?)\*/g
+  let last = 0, m: RegExpExecArray | null, k = 0
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index))
+    if (m[1]) parts.push(<strong key={k++} style={{ fontWeight: 700 }}>{m[1]}</strong>)
+    else if (m[2]) parts.push(<em key={k++}>{m[2]}</em>)
+    last = regex.lastIndex
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
+
+function renderMarkdown(text: string): React.ReactNode[] {
+  const lines = text.split('\n')
+  const out: React.ReactNode[] = []
+  let listBuf: string[] = []
+  const flushList = (key: string) => {
+    if (!listBuf.length) return
+    out.push(
+      <ul key={key} style={{ margin: '6px 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {listBuf.map((li, j) => (
+          <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, marginTop: 8, display: 'inline-block' }} />
+            <span style={{ flex: 1, lineHeight: 1.75 }}>{renderInline(li)}</span>
+          </li>
+        ))}
+      </ul>
+    )
+    listBuf = []
+  }
+  lines.forEach((raw, i) => {
+    const line = raw
+    if (/^#{1,2} /.test(line)) {
+      flushList(`fl-${i}`)
+      const txt = line.replace(/^#+\s*/, '')
+      out.push(<div key={i} style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginTop: i > 0 ? 18 : 0, marginBottom: 4, paddingBottom: 6, borderBottom: '1px solid var(--border)' }}>{renderInline(txt)}</div>)
+    } else if (/^### /.test(line)) {
+      flushList(`fl-${i}`)
+      out.push(<div key={i} style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginTop: 14, marginBottom: 2 }}>{renderInline(line.slice(4))}</div>)
+    } else if (/^[-*•] /.test(line)) {
+      listBuf.push(line.slice(2))
+    } else if (line.trim() === '---') {
+      flushList(`fl-${i}`)
+      out.push(<hr key={i} style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '12px 0' }} />)
+    } else if (line.trim() === '') {
+      flushList(`fl-${i}`)
+      if (i > 0 && i < lines.length - 1) out.push(<div key={i} style={{ height: 6 }} />)
+    } else {
+      flushList(`fl-${i}`)
+      out.push(<p key={i} style={{ margin: 0, marginTop: out.length > 0 ? 6 : 0, lineHeight: 1.8 }}>{renderInline(line)}</p>)
+    }
+  })
+  flushList('fl-end')
+  return out
+}
+
 export default function ChatMain() {
-  const [messages, setMessages]       = useState<Message[]>([])
-  const [input, setInput]             = useState('')
-  const [loading, setLoading]         = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(true)
-  const [userName, setUserName]       = useState('there')
+  const [userName, setUserName] = useState('there')
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
-  const [sessionId, setSessionId]     = useState('')
-  const [vitalsCtx, setVitalsCtx]     = useState<{blood_pressure:string|null;pulse:number|null;spo2:number|null;blood_sugar:number|null;recorded_at:string}|null>(null)
-  const [medsCtx, setMedsCtx]         = useState<Array<{medicine_name:string;dose:string|null;frequency:string|null}>>([])
+  const [sessionId, setSessionId] = useState('')
+  const [vitalsCtx, setVitalsCtx] = useState<{ blood_pressure: string | null; pulse: number | null; spo2: number | null; blood_sugar: number | null; recorded_at: string } | null>(null)
+  const [medsCtx, setMedsCtx] = useState<Array<{ medicine_name: string; dose: string | null; frequency: string | null }>>([])
   const [vitalsShared, setVitalsShared] = useState(false)
-  const [medsShared, setMedsShared]   = useState(false)
+  const [medsShared, setMedsShared] = useState(false)
   const [contextSent, setContextSent] = useState(false)
+  // ── Typewriter state ──────────────────────────────────────
+  const [typingMsgId, setTypingMsgId] = useState<string | null>(null)
+  const [typingDisplay, setTypingDisplay] = useState('')
+  const typingRef = useRef<{ full: string; idx: number } | null>(null)
+  const typingTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const reportInputRef = useRef<HTMLInputElement>(null)
-  const bottomRef      = useRef<HTMLDivElement>(null)
-  const textareaRef    = useRef<HTMLTextAreaElement>(null)
-  const supabase       = createClient()
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const supabase = createClient()
+
+  const startTypewriter = useCallback((msgId: string, fullText: string) => {
+    if (typingTimer.current) clearInterval(typingTimer.current)
+    typingRef.current = { full: fullText, idx: 0 }
+    setTypingMsgId(msgId)
+    setTypingDisplay('')
+    typingTimer.current = setInterval(() => {
+      if (!typingRef.current) return
+      const next = Math.min(typingRef.current.idx + 12, typingRef.current.full.length)
+      typingRef.current.idx = next
+      setTypingDisplay(typingRef.current.full.slice(0, next))
+      if (next >= typingRef.current.full.length) {
+        clearInterval(typingTimer.current!)
+        typingTimer.current = null
+        setTypingMsgId(null)
+        setTypingDisplay('')
+      }
+    }, 16)
+  }, [])
 
   const searchParams = useSearchParams()
   const urlSessionId = searchParams.get('session')
 
   useEffect(() => {
     let sid = urlSessionId
-    if (!sid) { 
+    if (!sid) {
       sid = crypto.randomUUID()
-      window.history.replaceState({}, '', `/chat?session=${sid}`) 
+      window.history.replaceState({}, '', `/chat?session=${sid}`)
     }
-    
+
     // If session actually changed, reset and load
     if (sid !== sessionId) {
       setSessionId(sid)
@@ -86,7 +169,7 @@ export default function ChatMain() {
       setMessages(histMessages)
 
       let vitalsCtxVal = null
-      let medsCtxVal: Array<{medicine_name:string;dose:string|null;frequency:string|null}> = []
+      let medsCtxVal: Array<{ medicine_name: string; dose: string | null; frequency: string | null }> = []
 
       if (patientRes.status === 'fulfilled' && patientRes.value) {
         const profile = patientRes.value.profile
@@ -161,9 +244,12 @@ export default function ChatMain() {
         fd.append('file', fileToSend)
         fd.append('message', text)
         fd.append('sessionId', sessionId)
-        const res  = await fetch('/api/chat/analyse', { method: 'POST', body: fd })
+        const res = await fetch('/api/chat/analyse', { method: 'POST', body: fd })
         const data = await res.json()
-        setMessages(p => [...p, { id: (Date.now()+1).toString(), role: 'assistant', content: data.content ?? data.error ?? 'Unable to process.', created_at: new Date().toISOString() }])
+        const aiId1 = (Date.now() + 1).toString()
+        const aiContent1 = data.content ?? data.error ?? 'Unable to process.'
+        setMessages(p => [...p, { id: aiId1, role: 'assistant', content: aiContent1, created_at: new Date().toISOString() }])
+        startTypewriter(aiId1, aiContent1)
       } catch {
         setMessages(p => [...p, { id: Date.now().toString(), role: 'assistant', content: 'Connection error. Please try again.', created_at: new Date().toISOString() }])
       } finally { setLoading(false) }
@@ -187,9 +273,12 @@ export default function ChatMain() {
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: finalText, created_at: new Date().toISOString() }
     setMessages(p => [...p, userMsg])
     try {
-      const res  = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: finalText, sessionId }) })
+      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: finalText, sessionId }) })
       const data = await res.json()
-      setMessages(p => [...p, { id: (Date.now()+1).toString(), role: 'assistant', content: data.content ?? data.error ?? 'Unable to process.', created_at: new Date().toISOString() }])
+      const aiId2 = (Date.now() + 1).toString()
+      const aiContent2 = data.content ?? data.error ?? 'Unable to process.'
+      setMessages(p => [...p, { id: aiId2, role: 'assistant', content: aiContent2, created_at: new Date().toISOString() }])
+      startTypewriter(aiId2, aiContent2)
     } catch {
       setMessages(p => [...p, { id: Date.now().toString(), role: 'assistant', content: 'Connection error. Please try again.', created_at: new Date().toISOString() }])
     } finally { setLoading(false) }
@@ -219,7 +308,7 @@ export default function ChatMain() {
   const isEmpty = !loadingHistory && messages.length === 0
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'calc(100dvh - var(--header-height))', width:'100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'calc(100dvh - var(--header-height))', width: '100%' }}>
       <style>{`
         .chat-scroll-area { scrollbar-width:none; }
         .chat-scroll-area::-webkit-scrollbar { display:none; }
@@ -228,153 +317,155 @@ export default function ChatMain() {
         @keyframes typingDot { 0%,100%{opacity:.3;transform:scale(0.85)} 50%{opacity:1;transform:scale(1)} }
         @keyframes greetIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes cardIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
       `}</style>
-      <div style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column' }} className="chat-scroll-area">
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }} className="chat-scroll-area">
         {loadingHistory && (
-          <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <RefreshCw size={18} style={{ color:'var(--text-muted)', animation:'spin 1s linear infinite' }} />
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <RefreshCw size={18} style={{ color: 'var(--text-muted)', animation: 'spin 1s linear infinite' }} />
           </div>
         )}
         {isEmpty && (
-          <div className="chat-greeting-area" style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'0 20px 60px', animation:'greetIn 0.45s ease' }}>
-            <input ref={reportInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv,.doc,.docx" style={{ display:'none' }} onChange={e => { const f=e.target.files?.[0]; if(f) handleFileSelect(f); e.target.value='' }} />
-            <div style={{ textAlign:'center', marginBottom:32 }}>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginBottom:8 }}>
-                <div style={{ width:40, height:40, borderRadius:12, background:'var(--text-primary)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <Stethoscope size={20} strokeWidth={1.5} style={{ color:'var(--accent)' }} />
+          <div className="chat-greeting-area" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 20px 60px', animation: 'greetIn 0.45s ease' }}>
+            <input ref={reportInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv,.doc,.docx" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
+            <div style={{ textAlign: 'center', marginBottom: 32 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Stethoscope size={20} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
                 </div>
-                <h1 style={{ fontSize:'clamp(22px,3.5vw,34px)', fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.025em', margin:0 }}>{getGreeting(userName)}</h1>
+                <h1 style={{ fontSize: 'clamp(22px,3.5vw,34px)', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.025em', margin: 0 }}>{getGreeting(userName)}</h1>
               </div>
-              <p style={{ fontSize:15, color:'#7a7571', margin:0, fontWeight:400 }}>Share your health context for a personalised response</p>
+              <p style={{ fontSize: 15, color: '#7a7571', margin: 0, fontWeight: 400 }}>Share your health context for a personalised response</p>
             </div>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:12, justifyContent:'center', maxWidth:680, width:'100%', marginBottom:28 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', maxWidth: 680, width: '100%', marginBottom: 28 }}>
               {/* Vitals card */}
-              <div style={{ flex:'1 1 190px', minWidth:170, maxWidth:220, borderRadius:14, padding:16, background:vitalsShared?'rgba(13,148,136,0.07)':'var(--bg-card)', border:`1.5px solid ${vitalsShared?'var(--accent)':'var(--border)'}`, boxShadow:vitalsShared?'0 0 0 3px rgba(13,148,136,0.08)':'0 1px 4px rgba(0,0,0,0.06)', transition:'all 0.18s', animation:'cardIn 0.4s ease' }}>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <div style={{ width:28, height:28, borderRadius:8, background:'var(--bg-card)1f2', display:'flex', alignItems:'center', justifyContent:'center' }}><Heart size={14} strokeWidth={1.75} style={{ color:'#be123c' }} /></div>
-                    <div><div style={{ fontSize:12.5, fontWeight:700, color:'var(--text-primary)' }}>Vitals</div><div style={{ fontSize:10.5, color:'var(--text-muted)' }}>optional</div></div>
+              <div style={{ flex: '1 1 190px', minWidth: 170, maxWidth: 220, borderRadius: 14, padding: 16, background: vitalsShared ? 'rgba(13,148,136,0.07)' : 'var(--bg-card)', border: `1.5px solid ${vitalsShared ? 'var(--accent)' : 'var(--border)'}`, boxShadow: vitalsShared ? '0 0 0 3px rgba(13,148,136,0.08)' : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.18s', animation: 'cardIn 0.4s ease' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--bg-card)1f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Heart size={14} strokeWidth={1.75} style={{ color: '#be123c' }} /></div>
+                    <div><div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Vitals</div><div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>optional</div></div>
                   </div>
-                  <button onClick={() => vitalsCtx && setVitalsShared(v=>!v)} disabled={!vitalsCtx} style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px', borderRadius:20, border:'none', cursor:vitalsCtx?'pointer':'not-allowed', background:vitalsShared?'var(--accent)':'#f0ede8', color:vitalsShared?'var(--bg-card)':'#5a5652', fontSize:11, fontWeight:600, fontFamily:'inherit' }}>
-                    {vitalsShared?<><Check size={10}/> Shared</>:'Share'}
+                  <button onClick={() => vitalsCtx && setVitalsShared(v => !v)} disabled={!vitalsCtx} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, border: 'none', cursor: vitalsCtx ? 'pointer' : 'not-allowed', background: vitalsShared ? 'var(--accent)' : '#f0ede8', color: vitalsShared ? 'var(--bg-card)' : '#5a5652', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
+                    {vitalsShared ? <><Check size={10} /> Shared</> : 'Share'}
                   </button>
                 </div>
-                {vitalsCtx?(<div style={{ fontSize:11.5, color:'#5a5652', lineHeight:1.6 }}><div>BP <strong style={{ color:'var(--text-primary)' }}>{vitalsCtx.blood_pressure || '—'}</strong></div><div>Pulse <strong style={{ color:'var(--text-primary)' }}>{vitalsCtx.pulse || '—'}</strong> bpm · SpO₂ <strong style={{ color:'var(--text-primary)' }}>{vitalsCtx.spo2 || '—'}%</strong></div><div>Sugar <strong style={{ color:'var(--text-primary)' }}>{vitalsCtx.blood_sugar || '—'}</strong> mg/dL</div></div>):(<p style={{ fontSize:11.5, color:'#b5b0a8', margin:0 }}>No vitals recorded yet</p>)}
+                {vitalsCtx ? (<div style={{ fontSize: 11.5, color: '#5a5652', lineHeight: 1.6 }}><div>BP <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.blood_pressure || '—'}</strong></div><div>Pulse <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.pulse || '—'}</strong> bpm · SpO₂ <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.spo2 || '—'}%</strong></div><div>Sugar <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.blood_sugar || '—'}</strong> mg/dL</div></div>) : (<p style={{ fontSize: 11.5, color: '#b5b0a8', margin: 0 }}>No vitals recorded yet</p>)}
               </div>
               {/* Medicines card */}
-              <div style={{ flex:'1 1 190px', minWidth:170, maxWidth:220, borderRadius:14, padding:16, background:medsShared?'rgba(13,148,136,0.07)':'var(--bg-card)', border:`1.5px solid ${medsShared?'var(--accent)':'var(--border)'}`, boxShadow:medsShared?'0 0 0 3px rgba(13,148,136,0.08)':'0 1px 4px rgba(0,0,0,0.06)', transition:'all 0.18s', animation:'cardIn 0.5s ease' }}>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <div style={{ width:28, height:28, borderRadius:8, background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center' }}><Pill size={14} strokeWidth={1.75} style={{ color:'#16a34a' }} /></div>
-                    <div style={{ fontSize:12.5, fontWeight:700, color:'var(--text-primary)' }}>Medicines</div>
+              <div style={{ flex: '1 1 190px', minWidth: 170, maxWidth: 220, borderRadius: 14, padding: 16, background: medsShared ? 'rgba(13,148,136,0.07)' : 'var(--bg-card)', border: `1.5px solid ${medsShared ? 'var(--accent)' : 'var(--border)'}`, boxShadow: medsShared ? '0 0 0 3px rgba(13,148,136,0.08)' : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.18s', animation: 'cardIn 0.5s ease' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Pill size={14} strokeWidth={1.75} style={{ color: '#16a34a' }} /></div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Medicines</div>
                   </div>
-                  <button onClick={() => medsCtx.length>0 && setMedsShared(v=>!v)} disabled={medsCtx.length===0} style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px', borderRadius:20, border:'none', cursor:medsCtx.length>0?'pointer':'not-allowed', background:medsShared?'var(--accent)':'#f0ede8', color:medsShared?'var(--bg-card)':'#5a5652', fontSize:11, fontWeight:600, fontFamily:'inherit' }}>
-                    {medsShared?<><Check size={10}/> Shared</>:'Share'}
+                  <button onClick={() => medsCtx.length > 0 && setMedsShared(v => !v)} disabled={medsCtx.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, border: 'none', cursor: medsCtx.length > 0 ? 'pointer' : 'not-allowed', background: medsShared ? 'var(--accent)' : '#f0ede8', color: medsShared ? 'var(--bg-card)' : '#5a5652', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
+                    {medsShared ? <><Check size={10} /> Shared</> : 'Share'}
                   </button>
                 </div>
-                {medsCtx.length>0?(<div style={{ fontSize:11.5, color:'#5a5652', lineHeight:1.6 }}><div><strong style={{ color:'var(--text-primary)' }}>{medsCtx.length}</strong> active medication{medsCtx.length!==1?'s':''}</div><div style={{ color:'var(--text-muted)', marginTop:2, overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis' }}>{medsCtx.slice(0,2).map(m=>m.medicine_name).join(', ')}{medsCtx.length>2?` +${medsCtx.length-2} more`:''}</div></div>):(<p style={{ fontSize:11.5, color:'#b5b0a8', margin:0 }}>No active medications</p>)}
+                {medsCtx.length > 0 ? (<div style={{ fontSize: 11.5, color: '#5a5652', lineHeight: 1.6 }}><div><strong style={{ color: 'var(--text-primary)' }}>{medsCtx.length}</strong> active medication{medsCtx.length !== 1 ? 's' : ''}</div><div style={{ color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{medsCtx.slice(0, 2).map(m => m.medicine_name).join(', ')}{medsCtx.length > 2 ? ` +${medsCtx.length - 2} more` : ''}</div></div>) : (<p style={{ fontSize: 11.5, color: '#b5b0a8', margin: 0 }}>No active medications</p>)}
               </div>
               {/* Upload report */}
-              <div style={{ flex:'1 1 190px', minWidth:170, maxWidth:220, borderRadius:14, padding:16, background:attachedFile?'rgba(13,148,136,0.07)':'var(--bg-card)', border:`1.5px solid ${attachedFile?'var(--accent)':'var(--border)'}`, boxShadow:attachedFile?'0 0 0 3px rgba(13,148,136,0.08)':'0 1px 4px rgba(0,0,0,0.06)', transition:'all 0.18s', animation:'cardIn 0.6s ease' }}>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    <div style={{ width:28, height:28, borderRadius:8, background:'#eff6ff', display:'flex', alignItems:'center', justifyContent:'center' }}><FileText size={14} strokeWidth={1.75} style={{ color:'#2563eb' }} /></div>
-                    <div style={{ fontSize:12.5, fontWeight:700, color:'var(--text-primary)' }}>Report</div>
+              <div style={{ flex: '1 1 190px', minWidth: 170, maxWidth: 220, borderRadius: 14, padding: 16, background: attachedFile ? 'rgba(13,148,136,0.07)' : 'var(--bg-card)', border: `1.5px solid ${attachedFile ? 'var(--accent)' : 'var(--border)'}`, boxShadow: attachedFile ? '0 0 0 3px rgba(13,148,136,0.08)' : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.18s', animation: 'cardIn 0.6s ease' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={14} strokeWidth={1.75} style={{ color: '#2563eb' }} /></div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Report</div>
                   </div>
-                  <button onClick={() => attachedFile?(setAttachedFile(null),setInput('')):reportInputRef.current?.click()} style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px', borderRadius:20, border:'none', cursor:'pointer', background:attachedFile?'var(--accent)':'#f0ede8', color:attachedFile?'var(--bg-card)':'#5a5652', fontSize:11, fontWeight:600, fontFamily:'inherit' }}>
-                    {attachedFile?<><Check size={10}/> Attached</>:<><Upload size={10}/> Upload</>}
+                  <button onClick={() => attachedFile ? (setAttachedFile(null), setInput('')) : reportInputRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, border: 'none', cursor: 'pointer', background: attachedFile ? 'var(--accent)' : '#f0ede8', color: attachedFile ? 'var(--bg-card)' : '#5a5652', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
+                    {attachedFile ? <><Check size={10} /> Attached</> : <><Upload size={10} /> Upload</>}
                   </button>
                 </div>
-                {attachedFile?(<div style={{ fontSize:11.5, color:'#5a5652', overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis' }}><strong style={{ color:'var(--text-primary)' }}>{attachedFile.name}</strong></div>):(<p style={{ fontSize:11.5, color:'#b5b0a8', margin:0 }}>Lab report, prescription or scan</p>)}
+                {attachedFile ? (<div style={{ fontSize: 11.5, color: '#5a5652', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}><strong style={{ color: 'var(--text-primary)' }}>{attachedFile.name}</strong></div>) : (<p style={{ fontSize: 11.5, color: '#b5b0a8', margin: 0 }}>Lab report, prescription or scan</p>)}
               </div>
             </div>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:8, justifyContent:'center', maxWidth:600 }}>
-              {SUGGESTED.map(q=>(
-                <button key={q} onClick={()=>sendMessage(q)} style={{ padding:'9px 18px', borderRadius:100, border:'1px solid var(--border)', background:'rgba(255,255,255,0.7)', color:'#3d3d3d', fontSize:13.5, fontWeight:450, cursor:'pointer', transition:'all 0.15s', fontFamily:'inherit', backdropFilter:'blur(4px)' }}
-                  onMouseEnter={e=>{e.currentTarget.style.background='var(--bg-card)';e.currentTarget.style.borderColor='var(--accent)';e.currentTarget.style.color='#0d7a72'}}
-                  onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.7)';e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='#3d3d3d'}}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 600 }}>
+              {SUGGESTED.map(q => (
+                <button key={q} onClick={() => sendMessage(q)} style={{ padding: '9px 18px', borderRadius: 100, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.7)', color: '#3d3d3d', fontSize: 13.5, fontWeight: 450, cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', backdropFilter: 'blur(4px)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = '#0d7a72' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = '#3d3d3d' }}>
                   {q}
                 </button>
               ))}
             </div>
           </div>
         )}
-        {!loadingHistory && messages.length>0 && (
-          <div className="chat-messages-area" style={{ flex:1, width:'100%', maxWidth:760, margin:'0 auto', padding:'40px 28px 24px', display:'flex', flexDirection:'column' }}>
-            <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:24 }}>
-              <button onClick={clearChat} disabled={loading} style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 10px', borderRadius:8, border:'none', background:'transparent', color:'#c4bfb7', fontSize:12, fontWeight:500, cursor:'pointer', fontFamily:'inherit' }}
-                onMouseEnter={e=>{e.currentTarget.style.color='#dc2626';e.currentTarget.style.background='rgba(220,38,38,0.06)'}}
-                onMouseLeave={e=>{e.currentTarget.style.color='#c4bfb7';e.currentTarget.style.background='transparent'}}>
-                <Trash2 size={12}/> Clear
+        {!loadingHistory && messages.length > 0 && (
+          <div className="chat-messages-area" style={{ flex: 1, width: '100%', maxWidth: 760, margin: '0 auto', padding: '40px 28px 24px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
+              <button onClick={clearChat} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 8, border: 'none', background: 'transparent', color: '#c4bfb7', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.background = 'rgba(220,38,38,0.06)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#c4bfb7'; e.currentTarget.style.background = 'transparent' }}>
+                <Trash2 size={12} /> Clear
               </button>
             </div>
-            {messages.map(msg=>(
-              <div key={msg.id} style={{ animation:'msgIn 0.22s ease', marginBottom:32 }}>
-                {msg.role==='user'?(
-                  <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                    <div className="chat-bubble-user" style={{ maxWidth:'72%', padding:'12px 18px', borderRadius:'20px 4px 20px 20px', background:'var(--text-primary)', color:'#f0eeeb', fontSize:15, lineHeight:1.7 }}>
-                      {msg.imagePreview && <img src={msg.imagePreview} alt="attachment" style={{ width:'100%', maxWidth:260, borderRadius:10, marginBottom:8, objectFit:'cover', display:'block' }}/>}
-                      {msg.content.split('\n').map((l,i)=><p key={i} style={{ margin:i>0?'4px 0 0':0 }}>{l}</p>)}
-                      <div style={{ fontSize:10.5, marginTop:6, opacity:0.4, textAlign:'right' }}>{new Date(msg.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+            {messages.map(msg => (
+              <div key={msg.id} style={{ animation: 'msgIn 0.22s ease', marginBottom: 32 }}>
+                {msg.role === 'user' ? (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <div className="chat-bubble-user" style={{ maxWidth: '72%', padding: '12px 18px', borderRadius: '20px 4px 20px 20px', background: 'var(--text-primary)', color: '#f0eeeb', fontSize: 15, lineHeight: 1.7 }}>
+                      {msg.imagePreview && <img src={msg.imagePreview} alt="attachment" style={{ width: '100%', maxWidth: 260, borderRadius: 10, marginBottom: 8, objectFit: 'cover', display: 'block' }} />}
+                      {msg.content.split('\n').map((l, i) => <p key={i} style={{ margin: i > 0 ? '4px 0 0' : 0 }}>{l}</p>)}
+                      <div style={{ fontSize: 10.5, marginTop: 6, opacity: 0.4, textAlign: 'right' }}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     </div>
                   </div>
-                ):(
-                  <div style={{ display:'flex', alignItems:'flex-start', gap:14 }}>
-                    <div style={{ width:32, height:32, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--text-primary)', color:'var(--accent)', marginTop:2 }}><Stethoscope size={15} strokeWidth={1.75}/></div>
-                    <div style={{ flex:1, paddingTop:4 }}>
-                      <div style={{ fontSize:15, lineHeight:1.8, color:'var(--text-primary)' }}>
-                        {msg.content.split('\n').map((l,i)=>l.trim()?<p key={i} style={{ margin:i>0?'8px 0 0':0 }}>{l}</p>:<br key={i}/>)}
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--text-primary)', color: 'var(--accent)', marginTop: 2 }}><Stethoscope size={15} strokeWidth={1.75} /></div>
+                    <div style={{ flex: 1, paddingTop: 4 }}>
+                      <div style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--text-primary)', wordBreak: 'break-word' }}>
+                        {renderMarkdown(msg.id === typingMsgId ? typingDisplay : msg.content)}
+                        {msg.id === typingMsgId && <span style={{ display: 'inline-block', width: 2, height: '1em', background: 'var(--accent)', marginLeft: 2, verticalAlign: 'middle', animation: 'cursor-blink 0.7s infinite' }} />}
                       </div>
-                      <div style={{ fontSize:10.5, marginTop:8, color:'#c4bfb7' }}>{new Date(msg.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+                      {msg.id !== typingMsgId && <div style={{ fontSize: 10.5, marginTop: 8, color: '#c4bfb7' }}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>}
                     </div>
                   </div>
                 )}
               </div>
             ))}
-            {loading&&(
-              <div style={{ display:'flex', alignItems:'flex-start', gap:14, marginBottom:32 }}>
-                <div style={{ width:32, height:32, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--text-primary)', color:'var(--accent)', flexShrink:0 }}><Stethoscope size={15} strokeWidth={1.75}/></div>
-                <div style={{ paddingTop:10, display:'flex', gap:5, alignItems:'center' }}>
-                  {[0,1,2].map(i=><div key={i} style={{ width:7, height:7, borderRadius:'50%', background:'#c4bfb7', animation:`typingDot 1.3s ${i*0.22}s infinite ease-in-out` }}/>)}
+            {loading && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 32 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--text-primary)', color: 'var(--accent)', flexShrink: 0 }}><Stethoscope size={15} strokeWidth={1.75} /></div>
+                <div style={{ paddingTop: 10, display: 'flex', gap: 5, alignItems: 'center' }}>
+                  {[0, 1, 2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#c4bfb7', animation: `typingDot 1.3s ${i * 0.22}s infinite ease-in-out` }} />)}
                 </div>
               </div>
             )}
-            <div ref={bottomRef}/>
+            <div ref={bottomRef} />
           </div>
         )}
       </div>
       {/* Input zone */}
-      <div className="chat-input-wrapper" style={{ flexShrink:0, padding:'8px 28px 20px', display:'flex', flexDirection:'column', alignItems:'center' }}>
-        <div style={{ width:'100%', maxWidth:760 }}>
-          {attachedFile&&(
-            <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 12px', borderRadius:8, marginBottom:8, background:'#e6faf8', border:'1px solid #99d6d0', fontSize:12.5, fontWeight:500, color:'#0d7a72', maxWidth:'100%' }}>
+      <div className="chat-input-wrapper" style={{ flexShrink: 0, padding: '8px 28px max(20px, env(safe-area-inset-bottom, 20px))', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 760 }}>
+          {attachedFile && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px', borderRadius: 8, marginBottom: 8, background: '#e6faf8', border: '1px solid #99d6d0', fontSize: 12.5, fontWeight: 500, color: '#0d7a72', maxWidth: '100%' }}>
               {imagePreviewUrl
-                ? <img src={imagePreviewUrl} alt="preview" style={{ width:24, height:24, borderRadius:4, objectFit:'cover', flexShrink:0 }}/>
-                : isImageFile(attachedFile) ? <ImageIcon size={12}/> : <FileText size={12}/>}
-              <span style={{ overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis', maxWidth:240 }}>{attachedFile.name}</span>
-              <span style={{ fontSize:10.5, opacity:0.65, flexShrink:0 }}>({(attachedFile.size/1024).toFixed(0)} KB)</span>
-              <button onClick={()=>{setAttachedFile(null);setImagePreviewUrl(null);setInput('')}} style={{ background:'none', border:'none', cursor:'pointer', color:'#0d7a72', display:'flex', padding:0, flexShrink:0 }}><X size={12}/></button>
+                ? <img src={imagePreviewUrl} alt="preview" style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
+                : isImageFile(attachedFile) ? <ImageIcon size={12} /> : <FileText size={12} />}
+              <span style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: 240 }}>{attachedFile.name}</span>
+              <span style={{ fontSize: 10.5, opacity: 0.65, flexShrink: 0 }}>({(attachedFile.size / 1024).toFixed(0)} KB)</span>
+              <button onClick={() => { setAttachedFile(null); setImagePreviewUrl(null); setInput('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0d7a72', display: 'flex', padding: 0, flexShrink: 0 }}><X size={12} /></button>
             </div>
           )}
-          <div style={{ background:'var(--bg-card)', borderRadius:16, border:'1px solid var(--border)', boxShadow:'0 2px 12px rgba(0,0,0,0.07)' }}
-            onFocusCapture={e=>{(e.currentTarget as HTMLDivElement).style.borderColor='var(--accent)';(e.currentTarget as HTMLDivElement).style.boxShadow='0 0 0 3px rgba(13,148,136,0.1),0 2px 12px rgba(0,0,0,0.07)'}}
-            onBlurCapture={e=>{(e.currentTarget as HTMLDivElement).style.borderColor='var(--border)';(e.currentTarget as HTMLDivElement).style.boxShadow='0 2px 12px rgba(0,0,0,0.07)'}}>
-            <textarea ref={textareaRef} id="chat-input" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={handleKey} placeholder="Message Arogya AI…" rows={1}
-              style={{ display:'block', width:'100%', padding:'16px 20px 4px', background:'transparent', border:'none', outline:'none', resize:'none', fontSize:15, lineHeight:1.65, fontFamily:'inherit', color:'var(--text-primary)', minHeight:52, maxHeight:180, overflowY:'auto' }}/>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 14px 12px' }}>
-              <ChatAttachMenu onInjectText={handleInjectText} onFileSelect={handleFileSelect}/>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                {input.length>0&&<span style={{ fontSize:11, color:'#c4bfb7' }}>{input.length}</span>}
-                <button id="chat-send-btn" onClick={()=>sendMessage()} disabled={loading||(!input.trim()&&!attachedFile)}
-                  style={{ width:34, height:34, borderRadius:10, border:'none', background:(input.trim()||attachedFile)&&!loading?'var(--accent)':'var(--border)', color:(input.trim()||attachedFile)&&!loading?'var(--bg-card)':'var(--text-muted)', display:'flex', alignItems:'center', justifyContent:'center', cursor:(input.trim()||attachedFile)&&!loading?'pointer':'not-allowed', transition:'all 0.15s', flexShrink:0 }}
-                  onMouseEnter={e=>{if((input.trim()||attachedFile)&&!loading){e.currentTarget.style.background='#0b7a70';e.currentTarget.style.transform='scale(1.05)'}}}
-                  onMouseLeave={e=>{if((input.trim()||attachedFile)&&!loading){e.currentTarget.style.background='var(--accent)';e.currentTarget.style.transform='scale(1)'}}}>
-                  <Send size={15} strokeWidth={2} style={{ transform:'translateX(1px)' }}/>
+          <div style={{ background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}
+            onFocusCapture={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(13,148,136,0.1),0 2px 12px rgba(0,0,0,0.07)' }}
+            onBlurCapture={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.07)' }}>
+            <textarea ref={textareaRef} id="chat-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey} placeholder="Message Arogya AI…" rows={1}
+              style={{ display: 'block', width: '100%', padding: '16px 20px 4px', background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontSize: 15, lineHeight: 1.65, fontFamily: 'inherit', color: 'var(--text-primary)', minHeight: 52, maxHeight: 180, overflowY: 'auto' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px 12px' }}>
+              <ChatAttachMenu onInjectText={handleInjectText} onFileSelect={handleFileSelect} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {input.length > 0 && <span style={{ fontSize: 11, color: '#c4bfb7' }}>{input.length}</span>}
+                <button id="chat-send-btn" onClick={() => sendMessage()} disabled={loading || (!input.trim() && !attachedFile)}
+                  style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: (input.trim() || attachedFile) && !loading ? 'var(--accent)' : 'var(--border)', color: (input.trim() || attachedFile) && !loading ? 'var(--bg-card)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (input.trim() || attachedFile) && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s', flexShrink: 0 }}
+                  onMouseEnter={e => { if ((input.trim() || attachedFile) && !loading) { e.currentTarget.style.background = '#0b7a70'; e.currentTarget.style.transform = 'scale(1.05)' } }}
+                  onMouseLeave={e => { if ((input.trim() || attachedFile) && !loading) { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.transform = 'scale(1)' } }}>
+                  <Send size={15} strokeWidth={2} style={{ transform: 'translateX(1px)' }} />
                 </button>
               </div>
             </div>
           </div>
-          <p style={{ textAlign:'center', fontSize:11.5, color:'#b5b0a8', margin:'10px 0 0', lineHeight:1.5 }}>
+          <p style={{ textAlign: 'center', fontSize: 11.5, color: '#b5b0a8', margin: '10px 0 0', lineHeight: 1.5 }}>
             Arogya AI provides general health information. Always consult a qualified physician for medical decisions.
           </p>
         </div>

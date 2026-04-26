@@ -10,32 +10,79 @@
   --animate-fade-in-up: fadeInUp 0.3s ease forwards;
 
   @keyframes heart-beat {
-    0% { transform: scale(1); }
-    14% { transform: scale(1.3); }
-    28% { transform: scale(1); }
-    42% { transform: scale(1.3); }
-    70% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+
+    14% {
+      transform: scale(1.3);
+    }
+
+    28% {
+      transform: scale(1);
+    }
+
+    42% {
+      transform: scale(1.3);
+    }
+
+    70% {
+      transform: scale(1);
+    }
   }
 
   @keyframes sugar-flow {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    33% { transform: translateY(-4px) rotate(3deg); }
-    66% { transform: translateY(4px) rotate(-3deg); }
+
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    33% {
+      transform: translateY(-4px) rotate(3deg);
+    }
+
+    66% {
+      transform: translateY(4px) rotate(-3deg);
+    }
   }
 
   @keyframes o2-breath {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.85; }
+
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    50% {
+      transform: scale(1.1);
+      opacity: 0.85;
+    }
   }
 
   @keyframes pulse-rate {
-    from { opacity: 0.7; transform: scale(0.97); }
-    to { opacity: 1; transform: scale(1.03); }
+    from {
+      opacity: 0.7;
+      transform: scale(0.97);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1.03);
+    }
   }
 
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -98,16 +145,33 @@
   }
 }
 
-.mobile-only { display: none; }
-@media (max-width: 768px) { .mobile-only { display: block; } }
-.desktop-only { display: block; }
-@media (max-width: 768px) { .desktop-only { display: none; } }
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+}
+
+.desktop-only {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+}
 
 /* ================================================
    BASE STYLES
    ================================================ */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -127,7 +191,8 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   line-height: 1.6;
-  font-size: 15px;   /* base text — readable for all ages */
+  font-size: 15px;
+  /* base text — readable for all ages */
   font-weight: 400;
 }
 
@@ -139,12 +204,19 @@ body {
   width: 6px;
   height: 6px;
 }
-::-webkit-scrollbar-track { background: transparent; }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ::-webkit-scrollbar-thumb {
   background: rgba(13, 148, 136, 0.25);
   border-radius: 100px;
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(13, 148, 136, 0.5); }
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(13, 148, 136, 0.5);
+}
 
 /* ================================================
    COMPONENT UTILITIES
@@ -179,7 +251,8 @@ body {
   letter-spacing: 0.03em;
   cursor: pointer;
   transition: all var(--transition-smooth);
-  min-height: 48px; /* touch-friendly */
+  min-height: 48px;
+  /* touch-friendly */
 }
 
 .btn-brand:hover {
@@ -196,14 +269,17 @@ body {
   padding: 13px 18px;
   border-radius: var(--radius-lg);
   color: var(--text-muted);
-  font-size: 14px;         /* was 11px — now clearly readable */
+  font-size: 14px;
+  /* was 11px — now clearly readable */
   font-weight: 600;
-  letter-spacing: 0.01em;  /* removed excessive tracking */
+  letter-spacing: 0.01em;
+  /* removed excessive tracking */
   cursor: pointer;
   transition: all var(--transition-smooth);
   text-decoration: none;
   line-height: 1.3;
-  min-height: 48px;         /* touch-friendly */
+  min-height: 48px;
+  /* touch-friendly */
 }
 
 .sidebar-item:hover {
@@ -224,7 +300,8 @@ body {
   border-radius: var(--radius-lg);
   padding: 14px 20px;
   color: var(--text-primary);
-  font-size: 16px;    /* accessible input size */
+  font-size: 16px;
+  /* accessible input size */
   font-family: inherit;
   transition: all var(--transition-smooth);
   outline: none;
@@ -242,7 +319,8 @@ body {
   gap: 6px;
   padding: 5px 14px;
   border-radius: 100px;
-  font-size: 12px;    /* was 9px */
+  font-size: 12px;
+  /* was 9px */
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -255,10 +333,12 @@ body {
 
 /* ── SECTION LABELS (replaces matrix-label) ── */
 .section-label {
-  font-size: 13px;       /* was 9px — now accessible */
+  font-size: 13px;
+  /* was 9px — now accessible */
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em; /* reduced from 0.3em */
+  letter-spacing: 0.06em;
+  /* reduced from 0.3em */
   color: var(--text-muted);
 }
 
@@ -281,8 +361,13 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-slide-up {
@@ -290,13 +375,26 @@ body {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Hide scrollbar but keep scrollable */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* ── MOBILE LAYOUT ── */
 @media (max-width: 768px) {
@@ -321,7 +419,8 @@ body {
   padding-right: 16px;
   padding-bottom: 8px;
 }
-.carousel-track > * {
+
+.carousel-track>* {
   scroll-snap-align: start;
   flex-shrink: 0;
 }
@@ -360,25 +459,37 @@ body {
 
 /* Chat Mobile Adjustments */
 @media (max-width: 768px) {
+
+  /* Lock the main scroll container to the visible viewport so the chat
+     never leaves blank whitespace below the input on mobile browsers. */
+  .chat-page-main {
+    height: calc(100dvh - 56px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
   .chat-input-wrapper {
-    padding: 8px 16px 12px !important;
+    /* env(safe-area-inset-bottom) handles iPhone home-bar gap */
+    padding: 8px 16px max(12px, env(safe-area-inset-bottom, 12px)) !important;
     position: sticky !important;
     bottom: 0 !important;
     background: var(--bg-page) !important;
     z-index: 10 !important;
     width: 100% !important;
+    flex-shrink: 0 !important;
   }
-  
+
   .chat-messages-area {
     padding: 24px 16px 24px !important;
   }
-  
+
   .chat-bubble-user {
     max-width: 88% !important;
     padding: 10px 14px !important;
     border-radius: 18px 4px 18px 18px !important;
   }
-  
+
   .chat-greeting-area {
     padding: 0 16px 40px !important;
   }
@@ -404,4 +515,3 @@ body {
     grid-template-columns: 1fr;
   }
 }
-

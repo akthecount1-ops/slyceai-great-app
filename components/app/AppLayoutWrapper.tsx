@@ -37,22 +37,21 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
   return (
     <div style={{
       display: 'flex',
-      minHeight: '100dvh',
+      height: '100vh',
       background: 'var(--bg-page)',
       position: 'relative',
       overflow: 'hidden',
     }}>
 
-      {/* ── Desktop sidebar — stays in normal flow ── */}
+      {/* ── Desktop sidebar — fixed/sticky ── */}
       {!isMobile && (
         <div style={{
           width: 'var(--sidebar-width)',
           flexShrink: 0,
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-          overflowY: 'auto',
+          background: 'var(--bg-card)',
           borderRight: '0.5px solid var(--border)',
+          height: '100%',
+          overflowY: 'auto'
         }}>
           <AppSidebar onMobileClose={() => setIsSidebarOpen(false)} />
         </div>
@@ -119,12 +118,15 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
         )}
 
         {/* Page content */}
-        <main style={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch',
-        } as React.CSSProperties}>
+        <main
+          className={isMobile ? 'chat-page-main' : ''}
+          style={{
+            flex: 1,
+            overflowY: isMobile ? 'hidden' : 'auto',
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+          } as React.CSSProperties}
+        >
           {children}
         </main>
 

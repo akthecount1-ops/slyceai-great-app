@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   Stethoscope, LogOut, User, LayoutGrid, PlusCircle, Plus, FileText,
@@ -39,15 +39,17 @@ function ChatSkeleton() {
 }
 
 export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => void }) {
-  const pathname  = usePathname()
-  const router    = useRouter()
-  const [supabase] = useState(() => createClient())
+  const pathname     = usePathname()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const [supabase]   = useState(() => createClient())
 
   const [recentChats,    setRecentChats   ] = useState<RecentChat[]>([])
   const [userName,       setUserName      ] = useState('')
   const [initials,       setInitials      ] = useState('U')
   const [loadingHistory, setLoadingHistory] = useState(true)
-  const [activeSession,  setActiveSession ] = useState<string | null>(null)
+  
+  const activeSession = searchParams.get('session')
   
   const [menuOpen,        setMenuOpen      ] = useState<string | null>(null) // session_id
   const [renamingSession, setRenamingSession] = useState<string | null>(null) // session_id
@@ -55,12 +57,6 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
   
   const recentChatsRef = useRef<RecentChat[]>([])
   const userIdRef      = useRef<string | null>(null)
-
-  // ── Sync activeSession from URL whenever pathname changes ────
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    setActiveSession(params.get('session'))
-  }, [pathname])
 
   // ── Initial data load ────────────────────────────────────────
   useEffect(() => {
@@ -259,9 +255,9 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
         {/* New Chat */}
         <Link href="/chat"
           onClick={() => { if (onMobileClose) onMobileClose() }}
-          style={navItem(isActive('/chat'))}
-          onMouseEnter={e => { if (!isActive('/chat')) { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = 'var(--text-primary)' } }}
-          onMouseLeave={e => { if (!isActive('/chat')) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#5a5652' } }}
+          style={navItem(isActive('/chat') && (!activeSession || !recentChats.some(c => c.session_id === activeSession)))}
+          onMouseEnter={e => { if (!(isActive('/chat') && (!activeSession || !recentChats.some(c => c.session_id === activeSession)))) { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = 'var(--text-primary)' } }}
+          onMouseLeave={e => { if (!(isActive('/chat') && (!activeSession || !recentChats.some(c => c.session_id === activeSession)))) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#5a5652' } }}
         >
           <PlusCircle size={15} strokeWidth={1.75} style={{ opacity: 0.75, flexShrink: 0 }} />
           New Chat
