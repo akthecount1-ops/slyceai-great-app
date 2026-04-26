@@ -556,12 +556,12 @@ export default function DashboardPage() {
       )}
 
       {/* ── Dash Content ─────────────────────────────────────── */}
-      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+      <div className="dash-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
 
 
 
         {/* ── Row 1: 4 Metric Cards ───────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+        <div className="grid-4col" style={{ gap: '12px' }}>
           {/* Health Score */}
           <div style={card}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -607,7 +607,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Row 2: Vitals detail (left) + Medicines (right) ─── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div className="grid-2col" style={{ gap: '12px' }}>
 
           {/* Today's vitals detail */}
           <div style={card}>
@@ -721,7 +721,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Row 3: Symptoms + Journal + Daily Insight ──────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+        <div className="grid-3col" style={{ gap: '12px' }}>
 
           {/* Current symptoms */}
           <div style={card}>

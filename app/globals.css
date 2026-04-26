@@ -303,12 +303,6 @@ body {
   :root {
     --header-height: 56px;
   }
-
-  /* Pages that manage their own padding */
-  main > div {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
 }
 
 /* Safe area bottom inset for iPhone home bar */
@@ -336,5 +330,46 @@ body {
 .touch-target {
   min-height: 48px;
   min-width: 48px;
+}
+
+/* ── Dashboard responsive grids ── */
+.dash-content {
+  padding: 20px 24px;
+}
+
+.grid-4col {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+  .dash-content {
+    padding: 12px 12px;
+  }
+
+  /* 4-column → 2-column on mobile */
+  .grid-4col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* 2-column → single column on mobile */
+  .grid-2col {
+    grid-template-columns: 1fr;
+  }
+
+  /* 3-column → single column on mobile */
+  .grid-3col {
+    grid-template-columns: 1fr;
+  }
 }
 

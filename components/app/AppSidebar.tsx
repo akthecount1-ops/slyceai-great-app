@@ -211,7 +211,7 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
 
   return (
     <aside style={{
-      width: 'var(--sidebar-width)', height: '100%',
+      width: '100%', height: '100%',
       display: 'flex', flexDirection: 'column',
       background: 'var(--bg-card)',
       borderRight: '0.5px solid var(--border)',
