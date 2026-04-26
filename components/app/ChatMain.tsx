@@ -67,35 +67,66 @@ export default function ChatMain() {
     ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 180) + 'px'
   }, [input])
 
+  const REFRESH_EVERY = 7 // sessions
+
   const loadData = async (sid: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Run history + patient profile in parallel; patient API failure should not block history
-      const [histRes, patientRes] = await Promise.allSettled([
+      // Run history + patient profile + past session count in parallel
+      const [histRes, patientRes, sessionCountRes] = await Promise.allSettled([
         supabase.from('chat_history').select('*').eq('user_id', user.id).eq('session_id', sid).order('created_at', { ascending: true }).limit(60),
         fetch('/api/arogya/patient').then(r => r.json()).catch(() => null),
+        // Count distinct past sessions (exclude current)
+        supabase.from('chat_history').select('session_id', { count: 'exact', head: false }).eq('user_id', user.id).neq('session_id', sid).limit(1000),
       ])
 
-      if (histRes.status === 'fulfilled' && histRes.value.data) {
-        setMessages(histRes.value.data as Message[])
-      }
+      const histMessages = histRes.status === 'fulfilled' && histRes.value.data ? histRes.value.data as Message[] : []
+      setMessages(histMessages)
+
+      let vitalsCtxVal = null
+      let medsCtxVal: Array<{medicine_name:string;dose:string|null;frequency:string|null}> = []
 
       if (patientRes.status === 'fulfilled' && patientRes.value) {
         const profile = patientRes.value.profile
         if (profile) {
           setUserName(profile.name?.split(' ')[0] || 'there')
-          if (profile.latest_vitals) setVitalsCtx(profile.latest_vitals)
-          if (profile.active_medications) setMedsCtx(profile.active_medications)
+          if (profile.latest_vitals) { setVitalsCtx(profile.latest_vitals); vitalsCtxVal = profile.latest_vitals }
+          if (profile.active_medications) { setMedsCtx(profile.active_medications); medsCtxVal = profile.active_medications }
         }
       }
 
       // Fallback: load profile name directly from Supabase if patient API failed
       if (patientRes.status === 'rejected' || (patientRes.status === 'fulfilled' && !patientRes.value?.profile)) {
-        const { data: pData } = await supabase.from('profiles').select('name').eq('id', user.id).single()
+        const { data: pData } = await supabase.from('profiles').select('name').eq('user_id', user.id).single()
         if (pData?.name) setUserName(pData.name.split(' ')[0])
       }
+
+      // ── Periodic refresh trigger ───────────────────────────────────
+      // If this is a brand-new empty session AND the user has had prior sessions,
+      // check if it's time to ask for a health details refresh (every 7 sessions)
+      if (histMessages.length === 0 && sessionCountRes.status === 'fulfilled') {
+        const rawData = sessionCountRes.value.data ?? []
+        const distinctSessions = new Set(rawData.map((r: { session_id: string }) => r.session_id)).size
+        const isRefreshSession = distinctSessions > 0 && distinctSessions % REFRESH_EVERY === 0
+
+        if (isRefreshSession) {
+          const vitalsAge = vitalsCtxVal
+            ? Math.floor((Date.now() - new Date((vitalsCtxVal as any).recorded_at).getTime()) / (1000 * 60 * 60 * 24))
+            : null
+          const daysSince = vitalsAge !== null ? ` Your vitals were last logged ${vitalsAge} day${vitalsAge !== 1 ? 's' : ''} ago.` : ''
+
+          const refreshMsg: Message = {
+            id: `ai-refresh-${Date.now()}`,
+            role: 'assistant',
+            content: `Hey! It's been a while since we catchup on your health details.${daysSince} Would you like to share any updated vitals (BP, pulse, SpO₂, blood sugar) or any new symptoms? You can also update everything from the Dashboard.\n\nOr just ask me anything — I'm here to help! 🩺`,
+            created_at: new Date().toISOString(),
+          }
+          setMessages([refreshMsg])
+        }
+      }
+
     } catch (err) {
       console.error('Failed to load chat data:', err)
     } finally {
