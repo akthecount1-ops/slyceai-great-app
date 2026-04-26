@@ -39,24 +39,24 @@ function ChatSkeleton() {
 }
 
 export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => void }) {
-  const pathname     = usePathname()
-  const router       = useRouter()
+  const pathname = usePathname()
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const [supabase]   = useState(() => createClient())
+  const [supabase] = useState(() => createClient())
 
-  const [recentChats,    setRecentChats   ] = useState<RecentChat[]>([])
-  const [userName,       setUserName      ] = useState('')
-  const [initials,       setInitials      ] = useState('U')
+  const [recentChats, setRecentChats] = useState<RecentChat[]>([])
+  const [userName, setUserName] = useState('')
+  const [initials, setInitials] = useState('U')
   const [loadingHistory, setLoadingHistory] = useState(true)
-  
+
   const activeSession = searchParams.get('session')
-  
-  const [menuOpen,        setMenuOpen      ] = useState<string | null>(null) // session_id
+
+  const [menuOpen, setMenuOpen] = useState<string | null>(null) // session_id
   const [renamingSession, setRenamingSession] = useState<string | null>(null) // session_id
-  const [newName,         setNewName        ] = useState('')
-  
+  const [newName, setNewName] = useState('')
+
   const recentChatsRef = useRef<RecentChat[]>([])
-  const userIdRef      = useRef<string | null>(null)
+  const userIdRef = useRef<string | null>(null)
 
   // ── Initial data load ────────────────────────────────────────
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
         setUserName(n)
         setInitials(n.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2))
       }
-      
+
       setLoadingHistory(false)
 
       if (!active) return
@@ -139,7 +139,7 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
       active = false
       if (channel) supabase.removeChannel(channel)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleLogout = async () => {
@@ -181,7 +181,7 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
   }
 
   const isActive = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href + '/'))
-  const truncate  = (s: string, n = 30) => s.length > n ? s.slice(0, n).trimEnd() + '…' : s
+  const truncate = (s: string, n = 30) => s.length > n ? s.slice(0, n).trimEnd() + '…' : s
 
   const navItem = (active: boolean): React.CSSProperties => ({
     display: 'flex', alignItems: 'center', gap: '10px',
@@ -313,11 +313,11 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
                       outline: 'none', color: 'var(--text-primary)'
                     }}
                   />
-                  <button onClick={() => submitRename(chat.session_id)} style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--accent)' }}><Check size={14}/></button>
-                  <button onClick={() => setRenamingSession(null)} style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14}/></button>
+                  <button onClick={() => submitRename(chat.session_id)} style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--accent)' }}><Check size={14} /></button>
+                  <button onClick={() => setRenamingSession(null)} style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={14} /></button>
                 </div>
               ) : (
-                <div 
+                <div
                   data-group-header="true"
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -325,15 +325,11 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
                     background: isCurrentSession ? 'var(--bg-page)' : 'transparent',
                     cursor: 'pointer', transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => { 
+                  onMouseEnter={e => {
                     if (!isCurrentSession) e.currentTarget.style.background = 'rgba(0,0,0,0.035)'
-                    const moreBtn = e.currentTarget.querySelector('.more-btn') as HTMLElement
-                    if (moreBtn) moreBtn.style.opacity = '1'
                   }}
-                  onMouseLeave={e => { 
+                  onMouseLeave={e => {
                     if (!isCurrentSession) e.currentTarget.style.background = 'transparent'
-                    const moreBtn = e.currentTarget.querySelector('.more-btn') as HTMLElement
-                    if (moreBtn && menuOpen !== chat.session_id) moreBtn.style.opacity = '0'
                   }}
                   onClick={() => { window.location.href = `/chat?session=${chat.session_id}` }}
                 >
@@ -347,12 +343,12 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
                       {truncate(displayTitle, 30)}
                     </span>
                   </div>
-                  
+
                   <button
                     className="more-btn"
                     onClick={(e) => { e.stopPropagation(); setMenuOpen(isMenuOpen ? null : chat.session_id) }}
                     style={{
-                      opacity: isMenuOpen ? 1 : 0, padding: '4px', border: 'none', background: 'transparent',
+                      opacity: 1, padding: '4px', border: 'none', background: 'transparent',
                       cursor: 'pointer', color: 'var(--text-muted)', transition: 'opacity 0.15s'
                     }}
                   >
@@ -364,38 +360,32 @@ export default function AppSidebar({ onMobileClose }: { onMobileClose?: () => vo
               {/* Dropdown Menu */}
               {isMenuOpen && (
                 <>
-                  <div 
-                    style={{ position: 'fixed', inset: 0, zIndex: 10 }} 
-                    onClick={() => setMenuOpen(null)} 
+                  <div
+                    style={{ position: 'fixed', inset: 0, zIndex: 10 }}
+                    onClick={() => setMenuOpen(null)}
                   />
                   <div style={{
                     position: 'absolute', top: '34px', right: '12px', width: '160px',
                     background: 'var(--bg-card)', borderRadius: '10px', boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
                     border: '0.5px solid var(--border)', zIndex: 11, padding: '4px'
                   }}>
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleStar(chat.session_id, !!chat.is_starred) }}
                       style={menuItem}
                     >
                       <Star size={14} style={{ opacity: 0.7 }} fill={chat.is_starred ? 'currentColor' : 'none'} />
                       {chat.is_starred ? 'Unstar' : 'Star'}
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); startRename(chat) }}
                       style={menuItem}
                     >
                       <Edit2 size={14} style={{ opacity: 0.7 }} />
                       Rename
                     </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setMenuOpen(null) }}
-                      style={menuItem}
-                    >
-                      <FolderPlus size={14} style={{ opacity: 0.7 }} />
-                      Add to project
-                    </button>
+
                     <div style={{ height: '0.5px', background: 'var(--border)', margin: '4px' }} />
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); handleDelete(chat.session_id) }}
                       style={{ ...menuItem, color: '#dc2626' }}
                     >

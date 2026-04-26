@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MessageSquare, X, FileText } from 'lucide-react'
+import { MessageSquare, X, FileText, ChevronLeft } from 'lucide-react'
 import LogVitalsModal from '@/components/app/LogVitalsModal'
 import AddMedicineModal from '@/components/app/AddMedicineModal'
 import AddSymptomModal from '@/components/app/AddSymptomModal'
@@ -24,11 +24,11 @@ interface SymptomEntry { id: string; symptoms: string[] | null; notes: string | 
 interface JournalEntry { id: string; notes: string | null; journal_date: string }
 interface Profile {
   name: string | null
-  onboarding_complete: boolean
+  onboarding_complete: number | null
   date_of_birth: string | null
   gender: string | null
-  weight?: number | null
-  height?: number | null
+  weight_kg?: number | null
+  height_cm?: number | null
 }
 
 /* ─── Badge helpers ──────────────────────────────────────── */
@@ -67,90 +67,196 @@ function getSugarStatus(s: number | null): 'green' | 'amber' | 'red' {
   return 'red'
 }
 
-/* ─── Onboarding Modal ───────────────────────────────────── */
-type Step = 1 | 2 | 3 | 4
-
-interface OnboardingModalProps {
-  step: Step
-  onClose: () => void
-  onComplete: () => void
-  onSkip: () => void
-  onNext: (nextStep: Step) => void
-  userId: string
-  supabase: ReturnType<typeof createClient>
+/* ─── Toast ──────────────────────────────────────────────── */
+function Toast({ message, onDone }: { message: string; onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 3500)
+    return () => clearTimeout(t)
+  }, [onDone])
+  return (
+    <div style={{
+      position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+      background: 'var(--text-primary)', color: 'var(--bg-card)',
+      padding: '12px 24px', borderRadius: 12, fontSize: 13.5, fontWeight: 500,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.22)', zIndex: 9999,
+      animation: 'toastIn 0.3s ease',
+    }}>
+      <style>{`@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`}</style>
+      ✅ {message}
+    </div>
+  )
 }
 
-function OnboardingModal({ step, onClose, onComplete, onSkip, onNext, userId, supabase }: OnboardingModalProps) {
+/* ─── Chip helper ────────────────────────────────────────── */
+function Chip({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
+  return (
+    <button onClick={onToggle} style={{
+      padding: '5px 13px', borderRadius: 100, fontSize: 12.5, fontWeight: 500,
+      fontFamily: 'inherit',
+      border: `1.5px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+      background: active ? 'rgba(13,148,136,0.08)' : 'var(--bg-secondary)',
+      color: active ? '#0b7a70' : 'var(--text-secondary)',
+      cursor: 'pointer', transition: 'all 0.12s',
+    }}>
+      {label}
+    </button>
+  )
+}
+
+/* ─── Onboarding Modal ───────────────────────────────────── */
+type OBStep = 1 | 2 | 3 | 4
+
+const KNOWN_CONDITIONS = [
+  'Diabetes Type 2', 'Hypertension', 'Hypothyroidism', 'PCOD/PCOS', 'Asthma',
+  'Anemia', 'Anxiety', 'Depression', 'Arthritis', 'Heart disease',
+  'Kidney disease', 'Liver disease', 'Thyroid disorder', 'High Cholesterol',
+  'Migraine', 'Obesity', 'Osteoporosis',
+]
+
+const COMMON_SYMPTOMS = [
+  'Fatigue', 'Headache', 'Dizziness', 'Cough', 'Chest Pain', 'Nausea',
+  'Vomiting', 'Back Pain', 'Joint Pain', 'Fever', 'Shortness of breath',
+  'Palpitations', 'Insomnia', 'Skin rash', 'Swelling', 'Weakness',
+]
+
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+const GENDERS = ['Male', 'Female', 'Other']
+
+interface MedRow { name: string; dose: string; frequency: string }
+
+interface OnboardingModalProps {
+  initialStep: OBStep
+  userId: string
+  supabase: ReturnType<typeof createClient>
+  onClose: () => void
+  onComplete: () => void
+}
+
+function OnboardingModal({ initialStep, userId, supabase, onClose, onComplete }: OnboardingModalProps) {
+  const [step, setStep] = useState<OBStep>(initialStep)
   const [saving, setSaving] = useState(false)
-  // Step 1 — Account (already done if we're on dashboard)
-  // Step 2 — Body measurements + vitals
+
+  // Step 1 — Basic Info
+  const [fullName, setFullName] = useState('')
+  const [dob, setDob] = useState('')
+  const [gender, setGender] = useState('')
+  const [phone, setPhone] = useState('')
+
+  // Step 2 — Body Measurements
   const [weight, setWeight] = useState('')
   const [height, setHeight] = useState('')
   const [bloodGroup, setBloodGroup] = useState('')
-  const [age, setAge] = useState('')
-  const [bp, setBp] = useState('')
-  const [pulse, setPulse] = useState('')
-  const [spo2, setSpo2] = useState('')
-  const [sugar, setSugar] = useState('')
-  // Step 3 — Conditions + medicines
-  const [conditions, setConditions] = useState<string[]>([])
-  const [condInput, setCondInput] = useState('')
-  const [medName, setMedName] = useState('')
-  const [medDose, setMedDose] = useState('')
-  // Step 4 — Symptoms
-  const [symptoms, setSymptoms] = useState<string[]>([])
-  const COMMON_SYMPTOMS = ['Fatigue', 'Headache', 'Nausea', 'Dizziness', 'Back pain', 'Chest pain', 'Shortness of breath', 'Muscle weakness', 'Fever', 'Cough']
 
-  const saveStep2 = async () => {
+  // Step 3 — Medicines
+  const [medRows, setMedRows] = useState<MedRow[]>([{ name: '', dose: '', frequency: '' }])
+
+  // Step 4 — Conditions + Symptoms
+  const [conditions, setConditions] = useState<string[]>([])
+  const [condFreeText, setCondFreeText] = useState('')
+  const [symptoms, setSymptoms] = useState<string[]>([])
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '8px 11px', borderRadius: '7px',
+    border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none',
+    background: 'var(--bg-page)', color: 'var(--text-primary)',
+    fontFamily: 'inherit', boxSizing: 'border-box',
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px', fontWeight: 500,
+  }
+
+  const saveStep1 = async () => {
+    if (!fullName.trim() || !dob || !gender) return
     setSaving(true)
     try {
-      const updates: Record<string, unknown> = { id: userId, updated_at: new Date().toISOString() }
-      if (weight) updates.weight = parseFloat(weight)
-      if (height) updates.height = parseFloat(height)
-      await supabase.from('profiles').upsert(updates)
-
-      if (bp || pulse || spo2 || sugar) {
-        const bpParts = bp.split('/')
-        await supabase.from('vitals').insert({
-          user_id: userId,
-          bp_systolic: bpParts[0] ? parseInt(bpParts[0]) : null,
-          bp_diastolic: bpParts[1] ? parseInt(bpParts[1]) : null,
-          pulse: pulse ? parseInt(pulse) : null,
-          oxygen: spo2 ? parseFloat(spo2) : null,
-          blood_sugar: sugar ? parseFloat(sugar) : null,
-          recorded_at: new Date().toISOString(),
-        })
-      }
+      await supabase.from('profiles').upsert({
+        id: userId,
+        name: fullName.trim(),
+        date_of_birth: dob,
+        gender: gender.toLowerCase(),
+        ...(phone ? { phone } : {}),
+        updated_at: new Date().toISOString(),
+      })
     } finally { setSaving(false) }
-    onNext(3)
+    setStep(2)
+  }
+
+  const saveStep2 = async () => {
+    if (!weight || !height) return
+    setSaving(true)
+    try {
+      await supabase.from('profiles').upsert({
+        id: userId,
+        weight_kg: parseFloat(weight),
+        height_cm: parseFloat(height),
+        ...(bloodGroup ? { blood_group: bloodGroup } : {}),
+        updated_at: new Date().toISOString(),
+      })
+    } finally { setSaving(false) }
+    setStep(3)
   }
 
   const saveStep3 = async () => {
     setSaving(true)
     try {
-      if (medName) {
-        await supabase.from('medicines').insert({
-          user_id: userId,
-          medicine_name: medName,
-          dose: medDose || null,
-          is_active: true,
-        })
+      const validMeds = medRows.filter(r => r.name.trim())
+      if (validMeds.length > 0) {
+        await supabase.from('medicines').insert(
+          validMeds.map(m => ({
+            user_id: userId,
+            medicine_name: m.name.trim(),
+            dose: m.dose.trim() || null,
+            time_of_day: m.frequency ? [m.frequency.trim()] : null,
+            is_active: true,
+          }))
+        )
       }
     } finally { setSaving(false) }
-    onNext(4)
+    setStep(4)
   }
 
   const saveStep4 = async () => {
     setSaving(true)
     try {
+      // Save conditions by combining with existing medical history
+      const allConditions = [...conditions]
+      if (condFreeText.trim()) {
+        allConditions.push(...condFreeText.split(',').map(s => s.trim()).filter(Boolean))
+      }
+
       if (symptoms.length > 0) {
         await supabase.from('symptom_journal').insert({
           user_id: userId,
           symptoms,
+          notes: allConditions.length > 0 ? allConditions.join(', ') : null,
           journal_date: new Date().toISOString().split('T')[0],
-          notes: conditions.join(', ') || null,
+        })
+      } else if (allConditions.length > 0) {
+        // Save conditions even if no symptoms
+        await supabase.from('symptom_journal').insert({
+          user_id: userId,
+          symptoms: [],
+          notes: allConditions.join(', '),
+          journal_date: new Date().toISOString().split('T')[0],
         })
       }
+
+      // Mark onboarding complete
+      await supabase.from('profiles').upsert({
+        id: userId,
+        onboarding_complete: 1,
+        chat_ready: 1,
+        updated_at: new Date().toISOString(),
+      })
+    } finally { setSaving(false) }
+    onComplete()
+  }
+
+  const skipStep3 = () => setStep(4)
+  const skipStep4 = async () => {
+    setSaving(true)
+    try {
       await supabase.from('profiles').upsert({
         id: userId,
         onboarding_complete: true,
@@ -160,189 +266,239 @@ function OnboardingModal({ step, onClose, onComplete, onSkip, onNext, userId, su
     onComplete()
   }
 
-  const titles: Record<Step, string> = {
-    1: 'Account created',
+  const titles: Record<OBStep, string> = {
+    1: 'Basic information',
     2: 'Body measurements',
-    3: 'Conditions & medicines',
-    4: 'Current symptoms',
-  }
-  const subs: Record<Step, string> = {
-    1: 'Your account is set up.',
-    2: 'This helps Slyceai personalise diet, dosage context, and health scores for you.',
-    3: 'Tell us about any conditions you manage and medicines you take.',
-    4: 'What symptoms are you currently experiencing?',
+    3: 'Current medicines',
+    4: 'Conditions & symptoms',
   }
 
-  const pill = (label: string, active: boolean, onClick: () => void) => (
-    <button key={label} onClick={onClick} style={{
-      fontSize: '12px', padding: '5px 12px', borderRadius: '20px',
-      border: active ? '0.5px solid var(--accent)' : '0.5px solid var(--border)',
-      background: active ? 'var(--badge-green-bg)' : 'var(--bg-secondary)',
-      color: active ? 'var(--badge-green-text)' : 'var(--text-secondary)',
-      cursor: 'pointer', transition: 'all 0.12s',
-    }}>{label}</button>
-  )
+  const step1Valid = fullName.trim() && dob && gender
+  const step2Valid = weight && height
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-    }}>
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+      }}
+    // NO onClick on backdrop — modal cannot be closed by clicking outside
+    >
       <div style={{
-        background: 'var(--bg-card)', borderRadius: '12px',
-        border: '0.5px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-        padding: '24px', width: '460px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto',
+        background: 'var(--bg-card)', borderRadius: '14px',
+        border: '0.5px solid var(--border)', boxShadow: '0 12px 48px rgba(0,0,0,0.18)',
+        padding: '28px', width: '500px', maxWidth: '96vw', maxHeight: '90vh', overflowY: 'auto',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Step {step} of 4</p>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: '4px' }}>
-            <X size={16} />
-          </button>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '6px' }}>
+          <div>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 4px', fontWeight: 500 }}>
+              Step {step} of 4
+            </p>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{titles[step]}</h2>
+          </div>
+          {/* Step indicator dots */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingTop: 2 }}>
+            {([1, 2, 3, 4] as OBStep[]).map(n => (
+              <div key={n} style={{
+                width: n === step ? 18 : 8, height: 8, borderRadius: 100,
+                background: n < step ? 'var(--accent)' : n === step ? 'var(--accent)' : 'var(--border)',
+                opacity: n < step ? 0.5 : 1, transition: 'all 0.25s',
+              }} />
+            ))}
+          </div>
         </div>
-        <h2 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>{titles[step]}</h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: 1.5 }}>{subs[step]}</p>
 
-        {/* Step 1 — just info */}
+        <div style={{ borderTop: '0.5px solid var(--border)', marginBottom: '20px', paddingTop: '0px' }} />
+
+        {/* ── Step 1: Basic Info ── */}
         {step === 1 && (
-          <div style={{ textAlign: 'center', padding: '16px 0' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>✓</div>
-            <p style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-              Great! Your account is ready. Let&apos;s fill in a few health details to personalise your experience.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label style={labelStyle}>Full name <span style={{ color: '#d97706' }}>*</span></label>
+              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+                placeholder="e.g. Priya Sharma" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Date of birth <span style={{ color: '#d97706' }}>*</span></label>
+              <input type="date" value={dob} onChange={e => setDob(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Gender <span style={{ color: '#d97706' }}>*</span></label>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {GENDERS.map(g => (
+                  <button key={g} onClick={() => setGender(g)} style={{
+                    padding: '7px 20px', borderRadius: 100, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
+                    border: `1.5px solid ${gender === g ? 'var(--accent)' : 'var(--border)'}`,
+                    background: gender === g ? 'rgba(13,148,136,0.08)' : 'var(--bg-secondary)',
+                    color: gender === g ? '#0b7a70' : 'var(--text-secondary)',
+                    fontWeight: gender === g ? 600 : 400, transition: 'all 0.12s',
+                  }}>{g}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label style={labelStyle}>Phone <span style={{ color: 'var(--text-muted)' }}>optional</span></label>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                placeholder="e.g. 9876543210" style={inputStyle} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 2: Body Measurements ── */}
+        {step === 2 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={labelStyle}>Weight (kg) <span style={{ color: '#d97706' }}>*</span></label>
+                <input type="number" value={weight} onChange={e => setWeight(e.target.value)}
+                  placeholder="e.g. 68" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Height (cm) <span style={{ color: '#d97706' }}>*</span></label>
+                <input type="number" value={height} onChange={e => setHeight(e.target.value)}
+                  placeholder="e.g. 168" style={inputStyle} />
+              </div>
+            </div>
+            <div>
+              <label style={labelStyle}>Blood group <span style={{ color: 'var(--text-muted)' }}>optional</span></label>
+              <select value={bloodGroup} onChange={e => setBloodGroup(e.target.value)} style={inputStyle}>
+                <option value="">Select blood group</option>
+                {BLOOD_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+              This helps Slyceai personalise diet, dosage, and health scores.
             </p>
           </div>
         )}
 
-        {/* Step 2 — measurements + vitals */}
-        {step === 2 && (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
-              {[
-                { label: 'Weight (kg)', val: weight, set: setWeight, type: 'number', ph: 'e.g. 72', req: true },
-                { label: 'Height (cm)', val: height, set: setHeight, type: 'number', ph: 'e.g. 175', req: true },
-                { label: 'Age', val: age, set: setAge, type: 'number', ph: 'e.g. 28', req: false },
-              ].map(f => (
-                <div key={f.label}>
-                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
-                    {f.label} {f.req && <span style={{ color: '#d97706' }}>required</span>}
-                  </label>
-                  <input
-                    type={f.type} value={f.val} onChange={e => f.set(e.target.value)}
-                    placeholder={f.ph}
-                    style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}
-                  />
-                </div>
-              ))}
-              <div>
-                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Blood group <span style={{ color: 'var(--text-muted)' }}>optional</span></label>
-                <select value={bloodGroup} onChange={e => setBloodGroup(e.target.value)}
-                  style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}>
-                  <option value="">Select</option>
-                  {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g}>{g}</option>)}
-                </select>
-              </div>
-            </div>
-            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '8px', marginTop: '10px' }}>Current vitals <span style={{ color: 'var(--text-muted)' }}>(optional — fill if you have a reading)</span></p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              {[
-                { label: 'Blood pressure', val: bp, set: setBp, ph: 'e.g. 120/80', type: 'text' },
-                { label: 'Pulse (bpm)', val: pulse, set: setPulse, ph: 'e.g. 78', type: 'number' },
-                { label: 'SpO2 (%)', val: spo2, set: setSpo2, ph: 'e.g. 98', type: 'number' },
-                { label: 'Blood sugar (mg/dL)', val: sugar, set: setSugar, ph: 'e.g. 95', type: 'number' },
-              ].map(f => (
-                <div key={f.label}>
-                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>{f.label}</label>
-                  <input
-                    type={f.type} value={f.val} onChange={e => f.set(e.target.value)}
-                    placeholder={f.ph}
-                    style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Step 3 — conditions + medicines */}
+        {/* ── Step 3: Medicines ── */}
         {step === 3 && (
-          <>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>Known conditions</p>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-              <input
-                type="text" value={condInput}
-                onChange={e => setCondInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && condInput.trim()) { setConditions(p => [...p, condInput.trim()]); setCondInput('') } }}
-                placeholder="Type and press Enter"
-                style={{ flex: 1, padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }}
-              />
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
-              {conditions.map(c => (
-                <span key={c} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '20px', background: 'var(--badge-green-bg)', color: 'var(--badge-green-text)', border: '0.5px solid var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {c}
-                  <button onClick={() => setConditions(p => p.filter(x => x !== c))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--badge-green-text)', lineHeight: 1, fontSize: '14px' }}>×</button>
-                </span>
-              ))}
-            </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>Add a medicine <span style={{ color: 'var(--text-muted)' }}>(optional)</span></p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              <div>
-                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Medicine name</label>
-                <input type="text" value={medName} onChange={e => setMedName(e.target.value)} placeholder="e.g. Metformin"
-                  style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+              Add medicines you currently take. Slyceai will check for interactions.
+            </p>
+            {medRows.map((row, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, alignItems: 'end' }}>
+                <div>
+                  {i === 0 && <label style={labelStyle}>Medicine name</label>}
+                  <input type="text" value={row.name} onChange={e => {
+                    const rows = [...medRows]; rows[i] = { ...rows[i], name: e.target.value }; setMedRows(rows)
+                  }} placeholder="e.g. Metformin" style={inputStyle} />
+                </div>
+                <div>
+                  {i === 0 && <label style={labelStyle}>Dose</label>}
+                  <input type="text" value={row.dose} onChange={e => {
+                    const rows = [...medRows]; rows[i] = { ...rows[i], dose: e.target.value }; setMedRows(rows)
+                  }} placeholder="500mg" style={inputStyle} />
+                </div>
+                <div>
+                  {i === 0 && <label style={labelStyle}>Frequency</label>}
+                  <input type="text" value={row.frequency} onChange={e => {
+                    const rows = [...medRows]; rows[i] = { ...rows[i], frequency: e.target.value }; setMedRows(rows)
+                  }} placeholder="Twice daily" style={inputStyle} />
+                </div>
+                <button onClick={() => {
+                  if (medRows.length === 1) { setMedRows([{ name: '', dose: '', frequency: '' }]) }
+                  else { setMedRows(medRows.filter((_, idx) => idx !== i)) }
+                }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '8px 4px', alignSelf: 'end' }}>
+                  <X size={14} />
+                </button>
               </div>
-              <div>
-                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Dose</label>
-                <input type="text" value={medDose} onChange={e => setMedDose(e.target.value)} placeholder="e.g. 500mg morning"
-                  style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '0.5px solid var(--border)', fontSize: '13px', outline: 'none', background: 'var(--bg-page)', color: 'var(--text-primary)', fontFamily: 'inherit' }} />
-              </div>
-            </div>
-          </>
+            ))}
+            <button onClick={() => setMedRows([...medRows, { name: '', dose: '', frequency: '' }])} style={{
+              background: 'transparent', border: '0.5px dashed var(--border)', borderRadius: 7,
+              padding: '8px', fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer',
+              fontFamily: 'inherit', width: '100%',
+            }}>+ Add another medicine</button>
+          </div>
         )}
 
-        {/* Step 4 — symptoms */}
+        {/* ── Step 4: Conditions + Symptoms ── */}
         {step === 4 && (
-          <>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {COMMON_SYMPTOMS.map(s => pill(s, symptoms.includes(s), () =>
-                setSymptoms(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s])
-              ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <p style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>Known conditions</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                {KNOWN_CONDITIONS.map(c => (
+                  <Chip key={c} label={c} active={conditions.includes(c)}
+                    onToggle={() => setConditions(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c])} />
+                ))}
+              </div>
+              <input type="text" value={condFreeText} onChange={e => setCondFreeText(e.target.value)}
+                placeholder="Other conditions (comma separated)" style={inputStyle} />
             </div>
-            {symptoms.length > 0 && (
-              <p style={{ fontSize: '12px', color: 'var(--badge-green-text)', marginTop: '12px' }}>
-                {symptoms.length} symptom{symptoms.length > 1 ? 's' : ''} selected
-              </p>
-            )}
-          </>
+            <div>
+              <p style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>Current symptoms</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {COMMON_SYMPTOMS.map(s => (
+                  <Chip key={s} label={s} active={symptoms.includes(s)}
+                    onToggle={() => setSymptoms(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s])} />
+                ))}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '20px' }}>
-          <button onClick={onSkip} style={{
-            background: 'transparent', border: '0.5px solid var(--border)',
-            padding: '7px 14px', borderRadius: '6px', fontSize: '12px',
-            cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
-          }}>Skip</button>
-          {step < 4 ? (
-            <button disabled={saving}
-              onClick={step === 1 ? () => onNext(2) : step === 2 ? saveStep2 : saveStep3}
-              style={{
-                background: 'var(--accent)', border: 'none', padding: '7px 14px',
-                borderRadius: '6px', fontSize: '12px', cursor: saving ? 'wait' : 'pointer',
-                color: 'var(--bg-card)', fontWeight: 500, fontFamily: 'inherit',
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 24, alignItems: 'center' }}>
+          {/* Back button */}
+          <div>
+            {step > 1 && (
+              <button onClick={() => setStep((step - 1) as OBStep)} style={{
+                background: 'transparent', border: '0.5px solid var(--border)',
+                padding: '8px 14px', borderRadius: '7px', fontSize: '12.5px',
+                cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}>
+                <ChevronLeft size={13} /> Back
+              </button>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            {/* Skip (steps 3 & 4 only) */}
+            {(step === 3 || step === 4) && (
+              <button onClick={step === 3 ? skipStep3 : skipStep4} disabled={saving} style={{
+                background: 'transparent', border: '0.5px solid var(--border)',
+                padding: '8px 14px', borderRadius: '7px', fontSize: '12.5px',
+                cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
+              }}>Skip for now</button>
+            )}
+
+            {/* Dismiss/close (only steps 1-4, sets dismissed flag) */}
+            <button onClick={onClose} style={{
+              background: 'transparent', border: '0.5px solid var(--border)',
+              padding: '8px 14px', borderRadius: '7px', fontSize: '12.5px',
+              cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'inherit',
+            }}>Later</button>
+
+            {/* Next / Complete */}
+            {step < 4 ? (
+              <button
+                disabled={saving || (step === 1 && !step1Valid) || (step === 2 && !step2Valid)}
+                onClick={step === 1 ? saveStep1 : step === 2 ? saveStep2 : saveStep3}
+                style={{
+                  background: 'var(--accent)', border: 'none', padding: '8px 18px',
+                  borderRadius: '7px', fontSize: '12.5px', cursor: saving ? 'wait' : 'pointer',
+                  color: 'var(--bg-card)', fontWeight: 600, fontFamily: 'inherit',
+                  opacity: (saving || (step === 1 && !step1Valid) || (step === 2 && !step2Valid)) ? 0.55 : 1,
+                  transition: 'opacity 0.15s',
+                }}>
+                {saving ? 'Saving…' : 'Save & continue →'}
+              </button>
+            ) : (
+              <button disabled={saving} onClick={saveStep4} style={{
+                background: 'var(--accent)', border: 'none', padding: '8px 18px',
+                borderRadius: '7px', fontSize: '12.5px', cursor: saving ? 'wait' : 'pointer',
+                color: 'var(--bg-card)', fontWeight: 600, fontFamily: 'inherit',
                 opacity: saving ? 0.7 : 1,
               }}>
-              {saving ? 'Saving…' : 'Save & continue →'}
-            </button>
-          ) : (
-            <button disabled={saving} onClick={saveStep4} style={{
-              background: 'var(--accent)', border: 'none', padding: '7px 14px',
-              borderRadius: '6px', fontSize: '12px', cursor: saving ? 'wait' : 'pointer',
-              color: 'var(--bg-card)', fontWeight: 500, fontFamily: 'inherit',
-              opacity: saving ? 0.7 : 1,
-            }}>
-              {saving ? 'Saving…' : 'Complete setup ✓'}
-            </button>
-          )}
+                {saving ? 'Saving…' : 'Complete setup ✓'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -364,9 +520,15 @@ export default function DashboardPage() {
   const [insight, setInsight] = useState<string>('')
 
   // Onboarding state
-  const [onboardStep, setOnboardStep] = useState<Step | null>(null)
+  const [onboardStep, setOnboardStep] = useState<OBStep | null>(null)
   const [onboardDone, setOnboardDone] = useState(false)
-  const [completedSteps, setCompletedSteps] = useState<number[]>([1]) // step 1 (account) always done
+  const autoOpenRef = useRef(false)
+
+  // Vitals nudge state
+  const [showVitalsNudge, setShowVitalsNudge] = useState(false)
+
+  // Toast
+  const [toast, setToast] = useState<string | null>(null)
 
   // Modal states
   const [showVitalsModal, setShowVitalsModal] = useState(false)
@@ -385,18 +547,39 @@ export default function DashboardPage() {
     const todayStr = new Date().toISOString().split('T')[0]
 
     const [profileRes, vitalsRes, medsRes, symptomRes, journalRes] = await Promise.all([
-      supabase.from('profiles').select('name, onboarding_complete, date_of_birth, gender').eq('id', user.id).single(),
+      supabase.from('profiles').select('name, onboarding_complete, date_of_birth, gender, weight_kg, height_cm').eq('id', user.id).single(),
       supabase.from('vitals').select('bp_systolic, bp_diastolic, pulse, oxygen, blood_sugar, recorded_at').eq('user_id', user.id).order('recorded_at', { ascending: false }).limit(1).single(),
       supabase.from('medicines').select('id, medicine_name, dose, time_of_day').eq('user_id', user.id).eq('is_active', true).order('created_at', { ascending: false }).limit(5),
       supabase.from('symptom_journal').select('id, symptoms, notes, journal_date').eq('user_id', user.id).order('journal_date', { ascending: false }).limit(1).single(),
       supabase.from('symptom_journal').select('id, notes, journal_date').eq('user_id', user.id).order('journal_date', { ascending: false }).limit(2),
     ])
 
-    if (profileRes.data) {
-      setProfile(profileRes.data as Profile)
-      setOnboardDone(!!profileRes.data.onboarding_complete)
+    const profileData = profileRes.data as Profile | null
+    if (profileData) {
+      setProfile(profileData)
+      const done = profileData.onboarding_complete === 1
+      setOnboardDone(done)
+
+      // Auto-open logic: if not complete and haven't auto-shown in this browser
+      if (!done && !autoOpenRef.current) {
+        autoOpenRef.current = true
+        const dismissKey = `onboarding_dismissed_${user.id}`
+        if (!localStorage.getItem(dismissKey)) {
+          setOnboardStep(1)
+        }
+      }
     }
-    if (vitalsRes.data) setVitals(vitalsRes.data as DashVitals)
+
+    if (vitalsRes.data) {
+      setVitals(vitalsRes.data as DashVitals)
+      // Vitals nudge: check if >= 2 days old
+      const lastVitalsDate = new Date(vitalsRes.data.recorded_at!)
+      const daysSince = (Date.now() - lastVitalsDate.getTime()) / (1000 * 60 * 60 * 24)
+      const nudgeDismissKey = `vitals_nudge_${todayStr}`
+      if (daysSince >= 2 && !localStorage.getItem(nudgeDismissKey)) {
+        setShowVitalsNudge(true)
+      }
+    }
 
     // Get medicine logs for today
     const medIds = medsRes.data?.map(m => m.id) ?? []
@@ -436,43 +619,31 @@ export default function DashboardPage() {
     }, { onConflict: 'medicine_id,user_id,log_date' })
   }
 
-  /* ── Onboarding helpers ──────────────────────────── */
-  const handleOnboardSkip = () => {
-    setOnboardStep(prev => {
-      if (!prev) return null
-      const next = (prev + 1) as Step
-      if (next > 4) { setOnboardDone(true); return null }
-      setCompletedSteps(p => [...new Set([...p, prev])])
-      return null // just close modal, let them re-open
-    })
+  /* ── Onboarding handlers ─────────────────────────── */
+  const handleOnboardClose = () => {
+    if (userId) {
+      localStorage.setItem(`onboarding_dismissed_${userId}`, 'true')
+    }
+    setOnboardStep(null)
   }
-  const handleOnboardNext = (next: Step) => {
-    setCompletedSteps(p => [...new Set([...p, onboardStep ?? 1])])
-    setOnboardStep(next)
-  }
+
   const handleOnboardComplete = () => {
-    setCompletedSteps([1, 2, 3, 4])
     setOnboardDone(true)
     setOnboardStep(null)
+    setToast('Profile complete! Slyceai now knows your health context.')
     loadData()
   }
 
   /* ── Computed values ─────────────────────────────── */
-  const rawScore = Math.min(
-    (completedSteps.length / 4) * 30 +
+  const healthScore = Math.min(
+    (onboardDone ? 30 : 10) +
     (vitals ? 30 : 0) +
     (medicines.length > 0 ? 20 : 0) +
     (medicines.filter(m => m.taken).length / Math.max(medicines.length, 1)) * 20,
     100
-  ) || (onboardDone ? 60 : 10)
-
-  // Artificially boost the health score for a positive, motivational vibe
-  const healthScore = Math.min(Math.round(rawScore + 15), 100)
-
-  const scoreColor = healthScore >= 70 ? 'var(--accent)' : healthScore >= 40 ? '#BA7517' : 'var(--badge-red-text)'
-  const bpDisplay = vitals?.bp_systolic
-    ? `${vitals.bp_systolic}/${vitals.bp_diastolic ?? '?'}`
-    : '—'
+  )
+  const boostedScore = Math.min(Math.round(healthScore + 15), 100)
+  const scoreColor = boostedScore >= 70 ? 'var(--accent)' : boostedScore >= 40 ? '#BA7517' : 'var(--badge-red-text)'
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
 
   /* ── Style helpers ───────────────────────────────── */
@@ -491,18 +662,6 @@ export default function DashboardPage() {
   const cardLink: React.CSSProperties = {
     fontSize: '11px', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'none',
   }
-  const stepDot = (n: number): React.CSSProperties => ({
-    width: '20px', height: '20px', borderRadius: '50%',
-    border: completedSteps.includes(n) ? 'none' : onboardStep === n ? '1.5px solid var(--accent)' : '0.5px solid var(--border)',
-    background: completedSteps.includes(n) ? 'var(--accent)' : 'transparent',
-    color: completedSteps.includes(n) ? 'var(--bg-card)' : onboardStep === n ? 'var(--accent)' : 'var(--text-muted)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '10px', fontWeight: 600, flexShrink: 0,
-  })
-  const stepLine = (n: number): React.CSSProperties => ({
-    width: '16px', height: '0.5px',
-    background: completedSteps.includes(n) ? 'var(--accent)' : 'var(--border)',
-  })
 
   if (loading) {
     return (
@@ -511,8 +670,6 @@ export default function DashboardPage() {
       </div>
     )
   }
-
-  const firstName = profile?.name?.split(' ')[0] ?? 'there'
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-page)', display: 'flex', flexDirection: 'column' }}>
@@ -534,27 +691,47 @@ export default function DashboardPage() {
               Takes 2 minutes — helps Slyceai give you accurate, personalised answers
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Step indicators */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              {([1, 2, 3, 4] as Step[]).map((n, i) => (
-                <div key={n} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <div style={stepDot(n)}>
-                    {completedSteps.includes(n) ? '✓' : n}
-                  </div>
-                  {i < 3 && <div style={stepLine(n)} />}
-                </div>
-              ))}
+          <button
+            onClick={() => setOnboardStep(1)}
+            style={{
+              background: 'var(--accent)', color: 'var(--bg-card)', border: 'none',
+              padding: '8px 16px', borderRadius: '6px',
+              fontSize: '13px', cursor: 'pointer', fontWeight: 500,
+              fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}>
+            Continue setup
+          </button>
+        </div>
+      )}
+
+      {/* ── Vitals Nudge Card ─────────────────────────────────── */}
+      {showVitalsNudge && onboardDone && (
+        <div style={{
+          margin: '12px 24px 0', background: 'var(--badge-green-bg)',
+          border: '1px solid var(--accent)', borderRadius: '10px',
+          padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        }}>
+          <div>
+            <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 3 }}>Vitals reminder</div>
+            <div style={{ fontSize: '13px', color: 'var(--insight-text)' }}>
+              Time for a quick vitals check — it only takes a minute.
             </div>
-            <button
-              onClick={() => setOnboardStep(completedSteps.length >= 4 ? 1 : (Math.min(completedSteps.length + 1, 4)) as Step)}
-              style={{
-                background: 'var(--accent)', color: 'var(--bg-card)', border: 'none',
-                padding: '8px 16px', borderRadius: '6px',
-                fontSize: '13px', cursor: 'pointer', fontWeight: 500,
-                fontFamily: 'inherit', whiteSpace: 'nowrap',
-              }}>
-              Continue setup
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <button onClick={() => setShowVitalsModal(true)} style={{
+              background: 'var(--accent)', color: 'var(--bg-card)', border: 'none',
+              padding: '7px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer',
+              fontWeight: 600, fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}>+ Log vitals</button>
+            <button onClick={() => {
+              const today = new Date().toISOString().split('T')[0]
+              localStorage.setItem(`vitals_nudge_${today}`, 'dismissed')
+              setShowVitalsNudge(false)
+            }} style={{
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              color: 'var(--accent)', display: 'flex', padding: 4,
+            }}>
+              <X size={14} />
             </button>
           </div>
         </div>
@@ -563,17 +740,15 @@ export default function DashboardPage() {
       {/* ── Dash Content ─────────────────────────────────────── */}
       <div className="dash-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
 
-
-
         {/* ── Row 1: 4 Metric Cards ───────────────────────────── */}
         <div className="grid-4col" style={{ gap: '12px' }}>
           {/* Health Score */}
           <div style={card}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
               <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Health score</span>
-              {badge(healthScore >= 70 ? 'Good' : healthScore >= 40 ? 'Low' : 'Poor', healthScore >= 70 ? 'green' : healthScore >= 40 ? 'amber' : 'red')}
+              {badge(boostedScore >= 70 ? 'Good' : boostedScore >= 40 ? 'Low' : 'Poor', boostedScore >= 70 ? 'green' : boostedScore >= 40 ? 'amber' : 'red')}
             </div>
-            <div style={{ fontSize: '28px', fontWeight: 500, color: scoreColor, lineHeight: 1 }}>{Math.round(healthScore)}</div>
+            <div style={{ fontSize: '28px', fontWeight: 500, color: scoreColor, lineHeight: 1 }}>{boostedScore}</div>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>{onboardDone ? `You are doing good!` : 'Complete profile to improve'}</div>
           </div>
 
@@ -638,9 +813,9 @@ export default function DashboardPage() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {[
-                { name: 'SpO2', val: vitals?.oxygen ? `${vitals.oxygen}` : '99', unit: '%' },
+                { name: 'SpO2', val: vitals?.oxygen ? `${vitals.oxygen}` : '—', unit: '%' },
                 { name: 'Temperature', val: '—', unit: '' },
-                { name: 'Weight', val: profile?.weight ? `${profile.weight}` : '—', unit: 'kg' },
+                { name: 'Weight', val: profile?.weight_kg ? `${profile.weight_kg}` : '—', unit: 'kg' },
                 { name: 'Blood group', val: '—', unit: '' },
               ].map(v => (
                 <div key={v.name} style={{
@@ -712,7 +887,6 @@ export default function DashboardPage() {
                   </div>
                 ))
               )}
-              {/* Add medicine row */}
               {medicines.length > 0 && (
                 <button onClick={() => setShowMedicineModal(true)} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%',
@@ -819,7 +993,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <button
-              onClick={() => router.push('/chat')}
+              onClick={() => router.push('/chat?context=dashboard')}
               style={{
                 width: '100%', background: '#111', color: 'var(--bg-card)', border: 'none',
                 padding: '11px', borderRadius: '6px', fontSize: '13px',
@@ -850,13 +1024,11 @@ export default function DashboardPage() {
       {/* ── Onboarding Modal ──────────────────────────────────── */}
       {onboardStep !== null && (
         <OnboardingModal
-          step={onboardStep}
-          onClose={() => setOnboardStep(null)}
-          onComplete={handleOnboardComplete}
-          onSkip={handleOnboardSkip}
-          onNext={handleOnboardNext}
+          initialStep={onboardStep}
           userId={userId}
           supabase={supabase}
+          onClose={handleOnboardClose}
+          onComplete={handleOnboardComplete}
         />
       )}
 
@@ -865,7 +1037,7 @@ export default function DashboardPage() {
         <LogVitalsModal
           supabase={supabase} userId={userId}
           onClose={() => setShowVitalsModal(false)}
-          onSuccess={() => { setShowVitalsModal(false); loadData(); }}
+          onSuccess={() => { setShowVitalsModal(false); setShowVitalsNudge(false); loadData(); }}
         />
       )}
       {showMedicineModal && (
@@ -893,7 +1065,9 @@ export default function DashboardPage() {
         <UploadReportModal onClose={() => setShowUploadReportModal(false)} />
       )}
 
+      {/* ── Toast ──────────────────────────────────────────────── */}
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
+
     </div>
   )
 }
-

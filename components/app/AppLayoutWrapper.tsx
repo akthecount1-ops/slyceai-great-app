@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 
 const AppSidebar = dynamic(() => import('./AppSidebar'), {
@@ -33,6 +34,9 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
     }
     return () => { document.body.style.overflow = '' }
   }, [isSidebarOpen])
+
+  const pathname = usePathname()
+  const isChatPage = pathname.startsWith('/chat')
 
   return (
     <div style={{
@@ -87,7 +91,7 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
       )}
 
       {/* ── Main content column ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: '100dvh' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
 
         {/* Mobile top bar with hamburger */}
         {isMobile && (
@@ -119,10 +123,10 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
 
         {/* Page content */}
         <main
-          className={isMobile ? 'chat-page-main' : ''}
+          className={isMobile && isChatPage ? 'chat-page-main' : ''}
           style={{
             flex: 1,
-            overflowY: isMobile ? 'hidden' : 'auto',
+            overflowY: (isMobile && isChatPage) ? 'hidden' : 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
           } as React.CSSProperties}

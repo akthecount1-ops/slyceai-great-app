@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { 
-  FileText, 
-  Image as ImageIcon, 
-  Trash2, 
-  BrainCircuit, 
-  UploadCloud, 
-  ShieldCheck, 
-  Clock, 
+import {
+  FileText,
+  Image as ImageIcon,
+  Trash2,
+  BrainCircuit,
+  UploadCloud,
+  ShieldCheck,
+  Clock,
   Search,
   Filter,
   MoreVertical,
@@ -87,8 +87,8 @@ export default function DocumentsPage() {
             <Filter size={20} />
           </button>
           <button onClick={() => fileRef.current?.click()}
-                  disabled={uploading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-medical-navy text-white rounded-xl font-bold text-sm shadow-lg shadow-medical-navy/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
+            disabled={uploading}
+            className="flex items-center gap-2 px-5 py-2.5 bg-medical-navy text-white rounded-xl font-bold text-sm shadow-lg shadow-medical-navy/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
             {uploading ? (
               <><UploadCloud size={18} className="animate-bounce" /> Processing...</>
             ) : (
@@ -96,8 +96,8 @@ export default function DocumentsPage() {
             )}
           </button>
           <input ref={fileRef} type="file" className="hidden"
-                 accept=".pdf,.jpg,.jpeg,.png,.webp"
-                 onChange={handleUpload} />
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
+            onChange={handleUpload} />
         </div>
       </div>
 
@@ -140,10 +140,10 @@ export default function DocumentsPage() {
                       {isPdf ? <FileText size={24} /> : <ImageIcon size={24} />}
                     </div>
                     <div className="flex items-center gap-1">
-                       <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-slate-50 text-slate-500 border border-slate-100 italic">
+                      <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-slate-50 text-slate-500 border border-slate-100 italic">
                         {d.document_category ?? 'Archival'}
                       </span>
-                      <button className="p-1 px-2 text-slate-300 hover:text-slate-600 transition-colors">
+                      <button className="p-1 px-2 text-slate-500 hover:text-slate-800 transition-colors">
                         <MoreVertical size={16} />
                       </button>
                     </div>
@@ -178,13 +178,13 @@ export default function DocumentsPage() {
                         {d.ai_analysis}
                       </p>
                       <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent opacity-0 group-hover/analysis:opacity-100 transition-opacity flex items-end justify-center p-2">
-                         <span className="text-[9px] font-bold text-medical-teal uppercase tracking-widest">View Full Interpretation</span>
+                        <span className="text-[9px] font-bold text-medical-teal uppercase tracking-widest">View Full Interpretation</span>
                       </div>
                     </div>
                   ) : (
                     <button onClick={() => handleAnalyse(d.id)}
-                            disabled={analysing === d.id}
-                            className="w-full py-4 rounded-xl border border-dashed border-medical-teal/30 bg-medical-teal/[0.02] text-medical-teal group/analyse hover:bg-medical-teal/5 transition-all text-center flex flex-col items-center justify-center gap-1">
+                      disabled={analysing === d.id}
+                      className="w-full py-4 rounded-xl border border-dashed border-medical-teal/30 bg-medical-teal/[0.02] text-medical-teal group/analyse hover:bg-medical-teal/5 transition-all text-center flex flex-col items-center justify-center gap-1">
                       {analysing === d.id ? (
                         <>
                           <BrainCircuit size={20} className="animate-spin" />
@@ -205,7 +205,7 @@ export default function DocumentsPage() {
                     <Download size={12} /> Download
                   </button>
                   <button onClick={() => handleDelete(d.id, d.file_path)}
-                          className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-600 transition-colors">
+                    className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-600 transition-colors">
                     <Trash2 size={12} /> Erase
                   </button>
                 </div>
@@ -228,7 +228,7 @@ export default function DocumentsPage() {
             Protocol Security Active <CheckCircle2 size={14} className="text-emerald-500" />
           </h4>
           <p className="text-xs font-medium text-slate-500 mt-1 max-w-2xl leading-relaxed">
-            All documents are stored in encrypted buckets with AES-256 protocol. AI analysis is performed in a stateless environment using Nemotron-3. Your data remains your property and is never used for external training. 
+            All documents are stored in encrypted buckets with AES-256 protocol. AI analysis is performed in a stateless environment using Nemotron-3. Your data remains your property and is never used for external training.
             <span className="text-medical-teal font-bold hover:underline cursor-pointer ml-1 inline-flex items-center gap-0.5 whitespace-nowrap">
               Review Security Manifesto <Info size={12} />
             </span>

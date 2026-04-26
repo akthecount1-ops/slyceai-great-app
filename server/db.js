@@ -85,11 +85,12 @@ async function updatePatient(userId, data) {
 }
 
 async function getPatientFullProfile(userId) {
-  const [profileRes, vitalsRes, medsRes, journalRes] = await Promise.all([
+  const [profileRes, vitalsRes, medsRes, journalRes, docsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', userId).single(),
     supabase.from('vitals').select('*').eq('user_id', userId).order('recorded_at', { ascending: false }).limit(1),
     supabase.from('medicines').select('*').eq('user_id', userId).eq('is_active', true),
-    supabase.from('symptom_journal').select('*').eq('user_id', userId).order('journal_date', { ascending: false }).limit(5)
+    supabase.from('symptom_journal').select('*').eq('user_id', userId).order('journal_date', { ascending: false }).limit(5),
+    supabase.from('documents').select('filename, document_category, ai_analysis').eq('user_id', userId).order('created_at', { ascending: false }).limit(3)
   ]);
   const profile = profileRes.data;
   if (!profile) return null;
@@ -100,6 +101,7 @@ async function getPatientFullProfile(userId) {
     latest_vitals: vitalsRes.data?.[0] || null,
     active_medications: medsRes.data || [],
     recent_symptoms: journalRes.data || [],
+    reports: docsRes.data || [],
     onboarding: profile.onboarding_progress || { current_step: 1 },
     chat_ready: profile.chat_ready || 0
   };
@@ -147,13 +149,13 @@ async function markStepDone(userId, step) {
   const prog = profile?.onboarding_progress || { current_step: 1 };
   prog[`step_${step}_done`] = true;
   prog.current_step = Math.max(prog.current_step, step + 1);
-  
+
   const updates = { onboarding_progress: prog };
   if (prog.current_step >= 7) {
     updates.chat_ready = 1;
     updates.onboarding_complete = 1;
   }
-  
+
   await supabase.from('profiles').update(updates).eq('id', userId);
 }
 

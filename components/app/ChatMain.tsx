@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Send, RefreshCw, Trash2, Stethoscope, X, Heart, Pill, FileText, Check, Upload, ImageIcon } from 'lucide-react'
+import { Send, RefreshCw, Trash2, Stethoscope, X, FileText, ImageIcon } from 'lucide-react'
 import ChatAttachMenu from '@/components/app/ChatAttachMenu'
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string; created_at: string; imagePreview?: string }
@@ -81,7 +81,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
   return out
 }
 
-export default function ChatMain() {
+export default function ChatMain({ onboardingComplete }: { onboardingComplete: boolean }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -90,11 +90,6 @@ export default function ChatMain() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState('')
-  const [vitalsCtx, setVitalsCtx] = useState<{ blood_pressure: string | null; pulse: number | null; spo2: number | null; blood_sugar: number | null; recorded_at: string } | null>(null)
-  const [medsCtx, setMedsCtx] = useState<Array<{ medicine_name: string; dose: string | null; frequency: string | null }>>([])
-  const [vitalsShared, setVitalsShared] = useState(false)
-  const [medsShared, setMedsShared] = useState(false)
-  const [contextSent, setContextSent] = useState(false)
   // ── Typewriter state ──────────────────────────────────────
   const [typingMsgId, setTypingMsgId] = useState<string | null>(null)
   const [typingDisplay, setTypingDisplay] = useState('')
@@ -126,6 +121,14 @@ export default function ChatMain() {
 
   const searchParams = useSearchParams()
   const urlSessionId = searchParams.get('session')
+  const urlContext = searchParams.get('context')
+
+  // Pre-fill input if coming from dashboard
+  useEffect(() => {
+    if (urlContext === 'dashboard') {
+      setInput("Slyceai, based on my current vitals and health data, how am I doing today?")
+    }
+  }, [urlContext])
 
   useEffect(() => {
     let sid = urlSessionId
@@ -133,8 +136,6 @@ export default function ChatMain() {
       sid = crypto.randomUUID()
       window.history.replaceState({}, '', `/chat?session=${sid}`)
     }
-
-    // If session actually changed, reset and load
     if (sid !== sessionId) {
       setSessionId(sid)
       setMessages([])
@@ -150,64 +151,30 @@ export default function ChatMain() {
     ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 180) + 'px'
   }, [input])
 
-  const REFRESH_EVERY = 7 // sessions
-
   const loadData = async (sid: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Run history + patient profile + past session count in parallel
-      const [histRes, patientRes, sessionCountRes] = await Promise.allSettled([
+      const [histRes, patientRes] = await Promise.allSettled([
         supabase.from('chat_history').select('*').eq('user_id', user.id).eq('session_id', sid).order('created_at', { ascending: true }).limit(60),
         fetch('/api/arogya/patient').then(r => r.json()).catch(() => null),
-        // Count distinct past sessions (exclude current)
-        supabase.from('chat_history').select('session_id', { count: 'exact', head: false }).eq('user_id', user.id).neq('session_id', sid).limit(1000),
       ])
 
       const histMessages = histRes.status === 'fulfilled' && histRes.value.data ? histRes.value.data as Message[] : []
       setMessages(histMessages)
 
-      let vitalsCtxVal = null
-      let medsCtxVal: Array<{ medicine_name: string; dose: string | null; frequency: string | null }> = []
-
       if (patientRes.status === 'fulfilled' && patientRes.value) {
         const profile = patientRes.value.profile
         if (profile) {
           setUserName(profile.name?.split(' ')[0] || 'there')
-          if (profile.latest_vitals) { setVitalsCtx(profile.latest_vitals); vitalsCtxVal = profile.latest_vitals }
-          if (profile.active_medications) { setMedsCtx(profile.active_medications); medsCtxVal = profile.active_medications }
         }
       }
 
-      // Fallback: load profile name directly from Supabase if patient API failed
+      // Fallback name load
       if (patientRes.status === 'rejected' || (patientRes.status === 'fulfilled' && !patientRes.value?.profile)) {
-        const { data: pData } = await supabase.from('profiles').select('name').eq('user_id', user.id).single()
+        const { data: pData } = await supabase.from('profiles').select('name').eq('id', user.id).single()
         if (pData?.name) setUserName(pData.name.split(' ')[0])
-      }
-
-      // ── Periodic refresh trigger ───────────────────────────────────
-      // If this is a brand-new empty session AND the user has had prior sessions,
-      // check if it's time to ask for a health details refresh (every 7 sessions)
-      if (histMessages.length === 0 && sessionCountRes.status === 'fulfilled') {
-        const rawData = sessionCountRes.value.data ?? []
-        const distinctSessions = new Set(rawData.map((r: { session_id: string }) => r.session_id)).size
-        const isRefreshSession = distinctSessions > 0 && distinctSessions % REFRESH_EVERY === 0
-
-        if (isRefreshSession) {
-          const vitalsAge = vitalsCtxVal
-            ? Math.floor((Date.now() - new Date((vitalsCtxVal as any).recorded_at).getTime()) / (1000 * 60 * 60 * 24))
-            : null
-          const daysSince = vitalsAge !== null ? ` Your vitals were last logged ${vitalsAge} day${vitalsAge !== 1 ? 's' : ''} ago.` : ''
-
-          const refreshMsg: Message = {
-            id: `ai-refresh-${Date.now()}`,
-            role: 'assistant',
-            content: `Hey! It's been a while since we catchup on your health details.${daysSince} Would you like to share any updated vitals (BP, pulse, SpO₂, blood sugar) or any new symptoms? You can also update everything from the Dashboard.\n\nOr just ask me anything — I'm here to help! 🩺`,
-            created_at: new Date().toISOString(),
-          }
-          setMessages([refreshMsg])
-        }
       }
 
     } catch (err) {
@@ -219,7 +186,6 @@ export default function ChatMain() {
 
   const sendMessage = useCallback(async (overrideText?: string) => {
     const text = (overrideText ?? input).trim()
-    // Allow sending with just a file and no text
     if ((!text && !attachedFile) || loading || !sessionId) return
 
     const fileToSend = attachedFile
@@ -257,23 +223,10 @@ export default function ChatMain() {
     }
 
     // ── Plain text path ───────────────────────────────────────
-    let finalText = text
-    if (messages.length === 0 && !contextSent && (vitalsShared || medsShared)) {
-      let prefix = ''
-      if (vitalsShared && vitalsCtx) {
-        const d = new Date(vitalsCtx.recorded_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-        prefix += `[My vitals as of ${d} — BP: ${vitalsCtx.blood_pressure ?? '—'}, Pulse: ${vitalsCtx.pulse ?? '—'} bpm, SpO₂: ${vitalsCtx.spo2 ?? '—'}%, Sugar: ${vitalsCtx.blood_sugar ?? '—'} mg/dL]\n`
-      }
-      if (medsShared && medsCtx.length > 0) {
-        prefix += `[Active medications: ${medsCtx.map(m => `${m.medicine_name}${m.dose ? ` (${m.dose})` : ''}`).join(', ')}]\n`
-      }
-      if (prefix) finalText = prefix + '\n' + text
-      setContextSent(true)
-    }
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: finalText, created_at: new Date().toISOString() }
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text, created_at: new Date().toISOString() }
     setMessages(p => [...p, userMsg])
     try {
-      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: finalText, sessionId }) })
+      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, sessionId }) })
       const data = await res.json()
       const aiId2 = (Date.now() + 1).toString()
       const aiContent2 = data.content ?? data.error ?? 'Unable to process.'
@@ -282,7 +235,7 @@ export default function ChatMain() {
     } catch {
       setMessages(p => [...p, { id: Date.now().toString(), role: 'assistant', content: 'Connection error. Please try again.', created_at: new Date().toISOString() }])
     } finally { setLoading(false) }
-  }, [input, attachedFile, imagePreviewUrl, loading, sessionId, messages.length, contextSent, vitalsShared, medsShared, vitalsCtx, medsCtx])
+  }, [input, attachedFile, imagePreviewUrl, loading, sessionId])
 
   const clearChat = async () => {
     if (!confirm('Clear your entire chat history?')) return
@@ -294,7 +247,6 @@ export default function ChatMain() {
   const handleKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }
   const handleFileSelect = (file: File) => {
     setAttachedFile(file)
-    // Generate preview URL for images
     if (isImageFile(file)) {
       const url = URL.createObjectURL(file)
       setImagePreviewUrl(url)
@@ -316,9 +268,31 @@ export default function ChatMain() {
         @keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
         @keyframes typingDot { 0%,100%{opacity:.3;transform:scale(0.85)} 50%{opacity:1;transform:scale(1)} }
         @keyframes greetIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes cardIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes bannerIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
+
+      {/* ── Onboarding banner (soft, non-blocking) ── */}
+      {!onboardingComplete && (
+        <div style={{
+          flexShrink: 0, padding: '10px 28px', background: 'rgba(217,119,6,0.06)',
+          borderBottom: '1px solid rgba(217,119,6,0.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, animation: 'bannerIn 0.3s ease',
+        }}>
+          <span style={{ fontSize: 13, color: '#92400e' }}>
+            Complete your health profile on the Dashboard for more personalised answers.
+          </span>
+          <a href="/dashboard" style={{
+            fontSize: 12.5, color: '#b45309', fontWeight: 600, textDecoration: 'none',
+            whiteSpace: 'nowrap', padding: '4px 12px', borderRadius: 20,
+            background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.25)',
+          }}>
+            Go to Dashboard →
+          </a>
+        </div>
+      )}
+
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }} className="chat-scroll-area">
         {loadingHistory && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -328,55 +302,14 @@ export default function ChatMain() {
         {isEmpty && (
           <div className="chat-greeting-area" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 20px 60px', animation: 'greetIn 0.45s ease' }}>
             <input ref={reportInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv,.doc,.docx" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
-            <div style={{ textAlign: 'center', marginBottom: 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{ textAlign: 'center', marginBottom: 36 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 10 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Stethoscope size={20} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
                 </div>
                 <h1 style={{ fontSize: 'clamp(22px,3.5vw,34px)', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.025em', margin: 0 }}>{getGreeting(userName)}</h1>
               </div>
-              <p style={{ fontSize: 15, color: '#7a7571', margin: 0, fontWeight: 400 }}>Share your health context for a personalised response</p>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', maxWidth: 680, width: '100%', marginBottom: 28 }}>
-              {/* Vitals card */}
-              <div style={{ flex: '1 1 190px', minWidth: 170, maxWidth: 220, borderRadius: 14, padding: 16, background: vitalsShared ? 'rgba(13,148,136,0.07)' : 'var(--bg-card)', border: `1.5px solid ${vitalsShared ? 'var(--accent)' : 'var(--border)'}`, boxShadow: vitalsShared ? '0 0 0 3px rgba(13,148,136,0.08)' : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.18s', animation: 'cardIn 0.4s ease' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--bg-card)1f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Heart size={14} strokeWidth={1.75} style={{ color: '#be123c' }} /></div>
-                    <div><div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Vitals</div><div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>optional</div></div>
-                  </div>
-                  <button onClick={() => vitalsCtx && setVitalsShared(v => !v)} disabled={!vitalsCtx} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, border: 'none', cursor: vitalsCtx ? 'pointer' : 'not-allowed', background: vitalsShared ? 'var(--accent)' : '#f0ede8', color: vitalsShared ? 'var(--bg-card)' : '#5a5652', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
-                    {vitalsShared ? <><Check size={10} /> Shared</> : 'Share'}
-                  </button>
-                </div>
-                {vitalsCtx ? (<div style={{ fontSize: 11.5, color: '#5a5652', lineHeight: 1.6 }}><div>BP <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.blood_pressure || '—'}</strong></div><div>Pulse <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.pulse || '—'}</strong> bpm · SpO₂ <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.spo2 || '—'}%</strong></div><div>Sugar <strong style={{ color: 'var(--text-primary)' }}>{vitalsCtx.blood_sugar || '—'}</strong> mg/dL</div></div>) : (<p style={{ fontSize: 11.5, color: '#b5b0a8', margin: 0 }}>No vitals recorded yet</p>)}
-              </div>
-              {/* Medicines card */}
-              <div style={{ flex: '1 1 190px', minWidth: 170, maxWidth: 220, borderRadius: 14, padding: 16, background: medsShared ? 'rgba(13,148,136,0.07)' : 'var(--bg-card)', border: `1.5px solid ${medsShared ? 'var(--accent)' : 'var(--border)'}`, boxShadow: medsShared ? '0 0 0 3px rgba(13,148,136,0.08)' : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.18s', animation: 'cardIn 0.5s ease' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Pill size={14} strokeWidth={1.75} style={{ color: '#16a34a' }} /></div>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Medicines</div>
-                  </div>
-                  <button onClick={() => medsCtx.length > 0 && setMedsShared(v => !v)} disabled={medsCtx.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, border: 'none', cursor: medsCtx.length > 0 ? 'pointer' : 'not-allowed', background: medsShared ? 'var(--accent)' : '#f0ede8', color: medsShared ? 'var(--bg-card)' : '#5a5652', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
-                    {medsShared ? <><Check size={10} /> Shared</> : 'Share'}
-                  </button>
-                </div>
-                {medsCtx.length > 0 ? (<div style={{ fontSize: 11.5, color: '#5a5652', lineHeight: 1.6 }}><div><strong style={{ color: 'var(--text-primary)' }}>{medsCtx.length}</strong> active medication{medsCtx.length !== 1 ? 's' : ''}</div><div style={{ color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{medsCtx.slice(0, 2).map(m => m.medicine_name).join(', ')}{medsCtx.length > 2 ? ` +${medsCtx.length - 2} more` : ''}</div></div>) : (<p style={{ fontSize: 11.5, color: '#b5b0a8', margin: 0 }}>No active medications</p>)}
-              </div>
-              {/* Upload report */}
-              <div style={{ flex: '1 1 190px', minWidth: 170, maxWidth: 220, borderRadius: 14, padding: 16, background: attachedFile ? 'rgba(13,148,136,0.07)' : 'var(--bg-card)', border: `1.5px solid ${attachedFile ? 'var(--accent)' : 'var(--border)'}`, boxShadow: attachedFile ? '0 0 0 3px rgba(13,148,136,0.08)' : '0 1px 4px rgba(0,0,0,0.06)', transition: 'all 0.18s', animation: 'cardIn 0.6s ease' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={14} strokeWidth={1.75} style={{ color: '#2563eb' }} /></div>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Report</div>
-                  </div>
-                  <button onClick={() => attachedFile ? (setAttachedFile(null), setInput('')) : reportInputRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, border: 'none', cursor: 'pointer', background: attachedFile ? 'var(--accent)' : '#f0ede8', color: attachedFile ? 'var(--bg-card)' : '#5a5652', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
-                    {attachedFile ? <><Check size={10} /> Attached</> : <><Upload size={10} /> Upload</>}
-                  </button>
-                </div>
-                {attachedFile ? (<div style={{ fontSize: 11.5, color: '#5a5652', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}><strong style={{ color: 'var(--text-primary)' }}>{attachedFile.name}</strong></div>) : (<p style={{ fontSize: 11.5, color: '#b5b0a8', margin: 0 }}>Lab report, prescription or scan</p>)}
-              </div>
+              <p style={{ fontSize: 15, color: '#7a7571', margin: 0, fontWeight: 400 }}>Ask me anything about your health</p>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 600 }}>
               {SUGGESTED.map(q => (
@@ -434,6 +367,7 @@ export default function ChatMain() {
           </div>
         )}
       </div>
+
       {/* Input zone */}
       <div className="chat-input-wrapper" style={{ flexShrink: 0, padding: '8px 28px max(20px, env(safe-area-inset-bottom, 20px))', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ width: '100%', maxWidth: 760 }}>
@@ -450,7 +384,9 @@ export default function ChatMain() {
           <div style={{ background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}
             onFocusCapture={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(13,148,136,0.1),0 2px 12px rgba(0,0,0,0.07)' }}
             onBlurCapture={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.07)' }}>
-            <textarea ref={textareaRef} id="chat-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey} placeholder="Message Arogya AI…" rows={1}
+            <textarea ref={textareaRef} id="chat-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}
+              placeholder="Ask Slyceai anything about your health…"
+              rows={1}
               style={{ display: 'block', width: '100%', padding: '16px 20px 4px', background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontSize: 15, lineHeight: 1.65, fontFamily: 'inherit', color: 'var(--text-primary)', minHeight: 52, maxHeight: 180, overflowY: 'auto' }} />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px 12px' }}>
               <ChatAttachMenu onInjectText={handleInjectText} onFileSelect={handleFileSelect} />

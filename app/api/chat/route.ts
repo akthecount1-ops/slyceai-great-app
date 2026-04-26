@@ -10,103 +10,111 @@ const db = require('@/server/db')
 
 type MedRow = { medicine_name: string; dose: string | null; frequency: string | null; slug?: string }
 
+// ── Vitals extractor — regex-based, fast & accurate ──────────────
+interface ExtractedVitals {
+  bp_systolic: number | null
+  bp_diastolic: number | null
+  pulse: number | null
+  oxygen: number | null
+  blood_sugar: number | null
+  temperature: number | null
+  weight_kg: number | null
+}
+
+function extractVitalsFromMessage(msg: string): ExtractedVitals | null {
+  const t = msg.toLowerCase()
+  const bp = t.match(/\b(?:bp|blood\s*pressure)[:\s]*([0-9]{2,3})[/\\s]+([0-9]{2,3})\b/)
+  const pulse = t.match(/\b(?:pulse|heart\s*rate|hr)[:\s]*([0-9]{2,3})\b/)
+  const spo2 = t.match(/\bsp?o2[:\s]*([0-9]{2,3})\b/)
+  const sugar = t.match(/\b(?:sugar|blood\s*sugar|glucose)[:\s]*([0-9]{2,4})\b/)
+  const temp = t.match(/\b(?:temp(?:erature)?)[:\s]*([0-9]{2,3}(?:\.[0-9])?)\b/)
+  const wt = t.match(/\b(?:weight)[:\s]*([0-9]{2,3}(?:\.[0-9]?)?)\s*kg\b/)
+
+  if (!bp && !pulse && !spo2 && !sugar && !temp && !wt) return null
+
+  return {
+    bp_systolic: bp ? parseInt(bp[1]) : null,
+    bp_diastolic: bp ? parseInt(bp[2]) : null,
+    pulse: pulse ? parseInt(pulse[1]) : null,
+    oxygen: spo2 ? parseFloat(spo2[1]) : null,
+    blood_sugar: sugar ? parseFloat(sugar[1]) : null,
+    temperature: temp ? parseFloat(temp[1]) : null,
+    weight_kg: wt ? parseFloat(wt[1]) : null,
+  }
+}
+
+function describeExtractedVitals(v: ExtractedVitals): string {
+  const parts: string[] = []
+  if (v.bp_systolic && v.bp_diastolic) parts.push(`BP ${v.bp_systolic}/${v.bp_diastolic}`)
+  if (v.pulse) parts.push(`Pulse ${v.pulse} bpm`)
+  if (v.oxygen) parts.push(`SpO₂ ${v.oxygen}%`)
+  if (v.blood_sugar) parts.push(`Blood sugar ${v.blood_sugar} mg/dL`)
+  if (v.temperature) parts.push(`Temperature ${v.temperature}°C`)
+  if (v.weight_kg) parts.push(`Weight ${v.weight_kg} kg`)
+  return parts.join(', ')
+}
+
 async function buildSystemPrompt(
   profile: any,
-  supaProfile: { name?: string; gender?: string; food_preference?: string; allergies?: string[]; state?: string; region?: string } | null
+  supaProfile: any
 ): Promise<string> {
-  if (!profile) {
-    return `You are Slyceai, a compassionate AI health assistant for Indian users. Be warm, empathetic, and culturally aware. Never diagnose definitively. Always recommend consulting a doctor for serious symptoms.`
-  }
-
-  const mh = profile.medical_history || {}
-  const v = profile.latest_vitals
-  const meds = (profile.active_medications ?? []) as MedRow[]
-  const journal = profile.recent_symptoms ?? []
-
-  // Extract all recent symptoms from journal
-  const allSxLabels = new Set<string>()
-  for (const entry of journal) {
-    if (entry.symptoms && Array.isArray(entry.symptoms)) {
-      entry.symptoms.forEach((s: string) => allSxLabels.add(s))
-    }
-  }
-  const currSxLabels = Array.from(allSxLabels)
-
-  const vitalsStr = v
-    ? `BP ${v.bp_systolic ?? '—'}/${v.bp_diastolic ?? '—'}, Pulse ${v.pulse ?? '—'} bpm, SpO₂ ${v.oxygen ?? '—'}%, Blood Sugar ${v.blood_sugar ?? '—'} mg/dL`
-    : 'Not recorded'
-
-  // Enrich medications from Knowledge Base
-  let kbContext = ''
-  if (meds.length > 0) {
-    const medSlugs = meds.map(m => m.medicine_name.toLowerCase().replace(/\s+/g, '_')) // Approximation since we don't store slug yet
-    const activeMedDetails = await Promise.all(meds.map(m => db.searchMedicines(m.medicine_name)))
-    const foundMeds = activeMedDetails.flat().filter(Boolean)
-
-    // Check drug interactions from KB
-    const interactions = await db.getMedicineInteractions(foundMeds.map((m: any) => m.slug).filter(Boolean))
-    if (interactions && interactions.length > 0) {
-      kbContext += `\n[WARNING] Potential Drug Interactions detected in patient's active meds:\n`
-      interactions.forEach((i: any) => {
-        kbContext += `- Between ${i.medicine_a} and ${i.medicine_b}: ${i.interactions.join('; ')}\n`
-      })
-    }
-
-    // Add known side effects of their drugs
-    foundMeds.forEach((m: any) => {
-      kbContext += `\nMedicine KB for ${m.name}:\n`
-      if (m.side_effects_common?.length) kbContext += `- Common side ex: ${m.side_effects_common.join(', ')}\n`
-      if (m.food_interactions?.length) kbContext += `- Food to avoid: ${m.food_interactions.join(', ')}\n`
-    })
-  }
-
-  // Enrich symptoms from Knowledge Base
-  if (currSxLabels.length > 0) {
-    const sxSearches = await Promise.all(currSxLabels.map(label => db.searchSymptoms(label)))
-    const activeSxDetails = sxSearches.map(res => res && res[0]).filter(Boolean)
-
-    activeSxDetails.forEach((sx: any) => {
-      kbContext += `\nSymptom KB for ${sx.label}:\n`
-      if (sx.red_flag) kbContext += `- [RED FLAG WARNING] This is marked as a critical symptom. Always advise medical attention.\n`
-      if (sx.commonly_associated_diseases?.length) kbContext += `- Associated diseases: ${sx.commonly_associated_diseases.join(', ')}\n`
-      if (sx.follow_up_questions?.length) kbContext += `- AI should ask: ${sx.follow_up_questions.slice(0, 2).join(' or ')}\n`
-    })
-  }
-
-  const medsStr = meds.length
-    ? meds.map(m => `${m.medicine_name}${m.dose ? ` ${m.dose}` : ''}${m.frequency ? ` (${m.frequency})` : ''}`).join(', ')
+  const name = profile?.name || supaProfile?.name || 'Patient'
+  const age = profile?.age || '—'
+  const gender = profile?.gender || '—'
+  const weight = profile?.weight_kg || '—'
+  const height = profile?.height_cm || '—'
+  const blood_group = profile?.blood_group || '—'
+  const known_diseases = (profile?.medical_history?.known_diseases || []).join(', ') || 'None'
+  const medications = (profile?.active_medications || []) as MedRow[]
+  const medications_list = medications.length
+    ? medications.map(m => `${m.medicine_name}${m.dose ? ` ${m.dose}` : ''}${m.frequency ? ` (${m.frequency})` : ''}`).join(', ')
     : 'None'
 
-  const diseases = (mh?.known_diseases ?? []).join(', ') || 'None reported'
-  const allergies = (mh?.allergies ?? []).join(', ') || supaProfile?.allergies?.join(', ') || 'None known'
-  const currSxStr = currSxLabels.length ? currSxLabels.join(', ') : 'None reported'
-  const pastSxStr = 'None reported'
+  const journal = profile?.recent_symptoms ?? []
+  const current_symptoms = journal.length
+    ? [...new Set(journal.flatMap((j: any) => j.symptoms || []))].join(', ')
+    : 'None reported'
 
-  return `You are Slyceai, an empathetic AI health assistant on the Arogya platform.
+  const v = profile?.latest_vitals
+  const bp = v ? `${v.bp_systolic}/${v.bp_diastolic}` : '—'
+  const pulse = v ? `${v.pulse} bpm` : '—'
+  const spo2 = v ? `${v.oxygen}%` : '—'
+  const blood_sugar = v ? `${v.blood_sugar} mg/dL` : '—'
+  const vitals_date = v ? new Date(v.recorded_at).toLocaleDateString('en-IN') : 'None recorded'
 
-Patient Profile:
-- Name: ${profile.name ?? supaProfile?.name ?? 'Patient'}, Age: ${profile.age ?? '—'}, Gender: ${profile.gender ?? supaProfile?.gender ?? '—'}, Weight: ${profile.weight_kg ?? '—'} kg, Height: ${profile.height_cm ?? '—'} cm
-- Known conditions: ${diseases}
-- Allergies: ${allergies}
-- Current medications: ${medsStr}
-- Current symptoms: ${currSxStr}
-- Past symptoms: ${pastSxStr}
-- Latest vitals: ${vitalsStr}
-- Diet: ${supaProfile?.food_preference ?? 'Not specified'}, Location: ${supaProfile?.state ?? supaProfile?.region ?? 'India'}
+  return `You are Slyceai, a warm and knowledgeable AI health assistant on the Arogya platform.
+You already have this patient's full health profile — use it silently to personalise
+every response. Never ask the patient to repeat information that is already in their profile.
 
-${kbContext ? `\n--- KNOWN MEDICINE INTERACTIONS & PRECAUTIONS ---\nThe following matches were found in our clinical Knowledge Base for the patient's current medications:${kbContext}\n----------------------------------------------\n` : ''}
+PATIENT PROFILE:
+Name: ${name}
+Age: ${age} | Gender: ${gender} | Weight: ${weight}kg | Height: ${height}cm
+Blood group: ${blood_group}
+Known conditions: ${known_diseases}
+Current medications: ${medications_list}
+Active symptoms: ${current_symptoms}
+Latest vitals: BP ${bp}, Pulse ${pulse}, SpO2 ${spo2}, Sugar ${blood_sugar}
+Last vitals logged: ${vitals_date}
 
-Instructions:
-- You have FULL context on this patient — NEVER ask for info already in their profile.
-- Always personalise responses based on their conditions, medications, and symptoms.
-- If the patient asks about side effects or their symptoms match known side effects from the Knowledge Base above, point it out.
-- Emulate a highly positive, motivating vibe. Provide a "positive vibe" in every response, offering motivation like "you are doing good."
-- Always show the positive effects of Ayurvedic herbs or techniques to boost the patient's mood alongside modern medicine.
-- If a condition is serious, never sound bleak. Frame it optimistically (e.g., "you have to work on this, but once you do, you will feel so much better").
-- Never diagnose definitively. For serious symptoms, always recommend consulting a doctor.
-- If asked about drug interactions, check the Knowledge Base section provided above against their current medication list.
-- Respond in the language the patient uses (Hindi or English).
-- Be warm, concise, and use bullet points for clarity.`
+MEDICINE KNOWLEDGE:
+You have access to detailed information about all medicines in this patient's profile.
+For each medicine, you know: uses, mechanism, side effects, drug interactions, 
+contraindications, and what to avoid.
+Cross-reference this when answering questions about medicines.
+
+SYMPTOM KNOWLEDGE:
+You have the patient's symptom history and a medical symptom database.
+If a patient describes a red-flag symptom, recommend immediate medical attention.
+
+RULES:
+1. Never give a definitive diagnosis
+2. Always recommend consulting a doctor for serious concerns
+3. Be warm, clear, and use simple language (many patients are elderly or non-technical)
+4. If the patient writes in Hindi, respond fully in Hindi
+5. If asked about medicines, always mention interactions with their current medicines
+6. Keep responses concise — 3-4 sentences max unless the patient asks for detail
+7. Never ask for information already in the profile above
+8. If vitals are more than 3 days old, you may gently mention it once per session`
 }
 
 export async function POST(request: NextRequest) {
@@ -118,6 +126,35 @@ export async function POST(request: NextRequest) {
   if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 })
   if (!sessionId) return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
 
+  // ── STEP 1: Extract vitals from message ──────────────────────
+  let vitalsSavedNote = ''
+  const extractedVitals = extractVitalsFromMessage(message)
+  if (extractedVitals) {
+    try {
+      const insertRow: Record<string, unknown> = {
+        user_id: user.id,
+        recorded_at: new Date().toISOString(),
+      }
+      if (extractedVitals.bp_systolic) insertRow.bp_systolic = extractedVitals.bp_systolic
+      if (extractedVitals.bp_diastolic) insertRow.bp_diastolic = extractedVitals.bp_diastolic
+      if (extractedVitals.pulse) insertRow.pulse = extractedVitals.pulse
+      if (extractedVitals.oxygen) insertRow.oxygen = extractedVitals.oxygen
+      if (extractedVitals.blood_sugar) insertRow.blood_sugar = extractedVitals.blood_sugar
+      if (extractedVitals.temperature) insertRow.temperature = extractedVitals.temperature
+      if (extractedVitals.weight_kg) insertRow.weight_kg = extractedVitals.weight_kg
+
+      const { error: vitalsErr } = await supabase.from('vitals').insert(insertRow)
+      if (!vitalsErr) {
+        const desc = describeExtractedVitals(extractedVitals)
+        vitalsSavedNote = `\n\n[SYSTEM NOTE: The patient just shared vitals in this message. You have ALREADY saved these to their profile: ${desc}. Acknowledge that you saved them and comment on the values in your response.]`
+        console.log('Vitals auto-saved from chat:', desc)
+      }
+    } catch (vitalsErr) {
+      console.error('Vitals save failed:', vitalsErr)
+    }
+  }
+
+  // ── STEP 2: Load context + build system prompt ───────────────
   // Chat history from Supabase
   const { data: history } = await supabase
     .from('chat_history').select('role, content')
@@ -133,13 +170,14 @@ export async function POST(request: NextRequest) {
   // Load full profile from Supabase
   const arogyaProfile = await db.getPatientFullProfile(user.id)
 
-  const systemPrompt = await buildSystemPrompt(arogyaProfile, supaProfile)
+  const systemPrompt = (await buildSystemPrompt(arogyaProfile, supaProfile)) + vitalsSavedNote
 
   const messages = [
     ...(history ?? []).reverse().map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     { role: 'user' as const, content: message },
   ]
 
+  // ── STEP 3: Call AI ──────────────────────────────────────────
   try {
     const response = await ai.chat(messages, systemPrompt)
 
