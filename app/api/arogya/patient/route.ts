@@ -97,10 +97,17 @@ export async function POST(req: NextRequest) {
       }
 
       case 'complete_onboarding': {
+        // Write to local SQLite
         await db.updatePatient(user.id, { onboarding_complete: 1, chat_ready: 1 })
         for (let s = 1; s <= 7; s++) {
           try { await db.markStepDone(user.id, s) } catch {}
         }
+        // ✅ Also persist to Supabase profiles — this is the authoritative source of truth
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          onboarding_complete: true,
+          updated_at: new Date().toISOString(),
+        })
         break
       }
 
