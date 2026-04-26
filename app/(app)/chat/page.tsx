@@ -7,16 +7,21 @@ import ChatMain from '@/components/app/ChatMain'
 export default function ChatPage() {
   const [status, setStatus] = useState<'loading' | 'onboarding' | 'ready'>('loading')
 
-  const checkStatus = () => {
+  useEffect(() => {
+    // Check if we are opening a specific session from history
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('session')) {
+      setStatus('ready')
+      return
+    }
+
     fetch('/api/arogya/patient')
       .then(r => r.json())
       .then(({ profile }) => {
         setStatus(profile?.chat_ready ? 'ready' : 'onboarding')
       })
       .catch(() => setStatus('onboarding'))
-  }
-
-  useEffect(() => { checkStatus() }, [])
+  }, [])
 
   if (status === 'loading') {
     return (
