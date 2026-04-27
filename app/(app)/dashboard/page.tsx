@@ -336,6 +336,170 @@ interface MedRow {
   frequency: string;
 }
 
+/* ─── Update Body Stats Modal ────────────────────────────── */
+interface UpdateBodyStatsModalProps {
+  supabase: ReturnType<typeof createClient>;
+  userId: string;
+  currentWeight: number | null;
+  currentHeight: number | null;
+  currentBloodGroup: string | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function UpdateBodyStatsModal({
+  supabase,
+  userId,
+  currentWeight,
+  currentHeight,
+  currentBloodGroup,
+  onClose,
+  onSuccess,
+}: UpdateBodyStatsModalProps) {
+  const [weight, setWeight] = useState(currentWeight ? String(currentWeight) : "");
+  const [height, setHeight] = useState(currentHeight ? String(currentHeight) : "");
+  const [temperature, setTemperature] = useState("");
+  const [bloodGroup, setBloodGroup] = useState(currentBloodGroup || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const bmiInfo = calcBMI(weight, height);
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "8px 11px", borderRadius: "7px",
+    border: "0.5px solid var(--border)", fontSize: "13px", outline: "none",
+    background: "var(--bg-page)", color: "var(--text-primary)",
+    fontFamily: "inherit", boxSizing: "border-box",
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: "11px", color: "var(--text-secondary)", display: "block",
+    marginBottom: "4px", fontWeight: 500,
+  };
+
+  const handleSave = async () => {
+    setError("");
+    const w = parseFloat(weight);
+    const h = parseFloat(height);
+    if (weight && (isNaN(w) || w < 20 || w > 300)) {
+      setError("Enter a valid weight (20–300 kg)."); return;
+    }
+    if (height && (isNaN(h) || h < 50 || h > 250)) {
+      setError("Enter a valid height (50–250 cm)."); return;
+    }
+    const t = parseFloat(temperature);
+    if (temperature && (isNaN(t) || t < 30 || t > 45)) {
+      setError("Enter a valid temperature (30–45 °C)."); return;
+    }
+
+    setSaving(true);
+    try {
+      // Update profile with weight, height, blood group
+      const profileUpdate: Record<string, unknown> = { id: userId, updated_at: new Date().toISOString() };
+      if (weight) profileUpdate.weight_kg = w;
+      if (height) profileUpdate.height_cm = h;
+      if (bloodGroup) profileUpdate.blood_group = bloodGroup;
+      await supabase.from("profiles").upsert(profileUpdate);
+
+      // Save temperature as a new vitals entry if provided
+      if (temperature) {
+        await supabase.from("vitals").insert({
+          user_id: userId,
+          temperature: t,
+          recorded_at: new Date().toISOString(),
+        });
+      }
+      onSuccess();
+    } catch {
+      setError("Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: "var(--bg-card)", borderRadius: "14px", border: "0.5px solid var(--border)", boxShadow: "0 12px 48px rgba(0,0,0,0.22)", padding: "28px", width: "440px", maxWidth: "96vw", maxHeight: "90vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div>
+            <h2 style={{ fontSize: "17px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Update body stats</h2>
+            <p style={{ fontSize: "11.5px", color: "var(--text-secondary)", margin: "4px 0 0" }}>
+              Keep your profile current — only the latest values are used.
+            </p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 4 }}><X size={16} /></button>
+        </div>
+
+        <div style={{ borderTop: "0.5px solid var(--border)", marginBottom: "20px" }} />
+
+        {error && (
+          <div style={{ background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.25)", borderRadius: "6px", padding: "8px 12px", marginBottom: "14px", fontSize: "12.5px", color: "#dc2626" }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Weight (kg)</label>
+              <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={currentWeight ? `${currentWeight}` : "e.g. 68"} style={inputStyle} min="20" max="300" />
+            </div>
+            <div>
+              <label style={labelStyle}>Height (cm)</label>
+              <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder={currentHeight ? `${currentHeight}` : "e.g. 168"} style={inputStyle} min="50" max="250" />
+            </div>
+          </div>
+
+          {/* BMI preview */}
+          {bmiInfo && (
+            <div style={{ background: "var(--bg-secondary)", border: "0.5px solid var(--border)", borderRadius: "7px", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>BMI:</span>
+              <span style={{ fontSize: "15px", fontWeight: 700, color: bmiInfo.color }}>{bmiInfo.bmi}</span>
+              <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "4px", fontWeight: 600, background: bmiInfo.color + "15", color: bmiInfo.color }}>{bmiInfo.cat}</span>
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Temperature (°C) <span style={{ color: "var(--text-muted)" }}>optional</span></label>
+              <input type="number" value={temperature} onChange={(e) => setTemperature(e.target.value)} placeholder="e.g. 36.6" style={inputStyle} min="30" max="45" step="0.1" />
+            </div>
+            <div>
+              <label style={labelStyle}>Blood group <span style={{ color: "var(--text-muted)" }}>optional</span></label>
+              <select value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} style={inputStyle}>
+                <option value="">Select</option>
+                {BLOOD_GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
+            Slyceai uses the latest values you submit. Previous entries are kept for your records.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 24 }}>
+          <button onClick={onClose} style={{ background: "transparent", border: "0.5px solid var(--border)", padding: "8px 14px", borderRadius: "7px", fontSize: "12.5px", cursor: "pointer", color: "var(--text-secondary)", fontFamily: "inherit" }}>
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || (!weight && !height && !temperature && !bloodGroup)}
+            style={{ background: "var(--accent)", border: "none", padding: "8px 18px", borderRadius: "7px", fontSize: "12.5px", cursor: saving ? "wait" : "pointer", color: "var(--bg-card)", fontWeight: 600, fontFamily: "inherit", opacity: saving || (!weight && !height && !temperature && !bloodGroup) ? 0.55 : 1, transition: "opacity 0.15s" }}
+          >
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface OnboardingModalProps {
   initialStep: OBStep;
   userId: string;
@@ -1574,9 +1738,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [insight, setInsight] = useState<string>("");
   const [insightLoading, setInsightLoading] = useState(true);
-  const [insightTab, setInsightTab] = useState<
-    "tip" | "diet" | "exercise" | "dosha"
-  >("tip");
   const [insightCache, setInsightCache] = useState<Record<string, string>>({});
 
   // Onboarding state
@@ -1599,6 +1760,7 @@ export default function DashboardPage() {
   const [showJournalModal, setShowJournalModal] = useState(false);
   const [showAyurvedaModal, setShowAyurvedaModal] = useState(false);
   const [showUploadReportModal, setShowUploadReportModal] = useState(false);
+  const [showBodyStatsModal, setShowBodyStatsModal] = useState(false);
 
   // Medicine edit state
   const [editingMedId, setEditingMedId] = useState<string | null>(null);
@@ -1849,11 +2011,6 @@ export default function DashboardPage() {
     },
     [insightCache],
   );
-
-  useEffect(() => {
-    fetchInsightForTab(insightTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [insightTab]);
 
   useEffect(() => {
     // Prefetch all three panels on mount so Ayurvedic row is ready
@@ -2291,9 +2448,9 @@ export default function DashboardPage() {
 
         {/* ── Row 2: Insight Panel (left) + Vitals detail (right) ─── */}
         <div className="grid-2col" style={{ gap: "12px" }}>
-          {/* Dosha + Tabbed Insight Panel */}
+          {/* Daily Tip Insight Panel */}
           <div style={card}>
-            {/* ---- Tabbed insight panel ---- */}
+            {/* ---- Header ---- */}
             <div style={{ ...cardHeader, marginBottom: "10px" }}>
               <span style={cardTitle}>Slyceai insights</span>
               {insightLoading && (
@@ -2311,78 +2468,74 @@ export default function DashboardPage() {
             </div>
             <style>{`@keyframes insightPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}`}</style>
 
-            {/* Tab row */}
-            <div
-              style={{
-                display: "flex",
-                gap: 0,
-                borderBottom: "0.5px solid var(--border)",
-                marginBottom: 12,
-              }}
-            >
-              {(["tip", "diet", "exercise"] as const).map((t) => {
-                const labels: Record<string, string> = {
-                  tip: "Daily",
-                  diet: "Diet",
-                  exercise: "Exercise",
-                };
-                return (
-                  <button
-                    key={t}
-                    onClick={() => setInsightTab(t)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      fontSize: "11px",
-                      padding: "5px 12px",
-                      color:
-                        insightTab === t
-                          ? "var(--accent)"
-                          : "var(--text-muted)",
-                      borderBottom:
-                        insightTab === t
-                          ? "2px solid var(--accent)"
-                          : "2px solid transparent",
-                      fontWeight: insightTab === t ? 600 : 400,
-                      letterSpacing: "0.01em",
-                      marginBottom: "-0.5px",
-                    }}
-                  >
-                    {labels[t]}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Daily tip label */}
+            <div style={{ fontSize: "10px", fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Daily Health Tip</div>
 
-            {/* Insight content */}
+            {/* Insight content — daily tip only */}
             <div
               style={{
                 background: "rgba(29, 158, 117, 0.04)",
                 border: "1px solid rgba(29, 158, 117, 0.15)",
                 borderLeft: "4px solid var(--accent)",
                 borderRadius: "8px",
-                padding: "12px 14px",
+                padding: "14px 16px",
                 marginBottom: 14,
-                minHeight: 72,
+                minHeight: 80,
               }}
             >
               <div
                 style={{
-                  fontSize: "12.5px",
+                  fontSize: "13px",
                   color: "var(--insight-text)",
-                  lineHeight: 1.6,
+                  lineHeight: 1.7,
                 }}
               >
                 {insightLoading
-                  ? "Generating your personalised insight…"
-                  : insight ||
+                  ? "Generating your personalised daily tip…"
+                  : (insightCache["tip"] || insight) ||
                   "Log your vitals and health data to unlock personalised insights."}
               </div>
             </div>
 
-            {/* Dosha mini-card removed — now a separate Ayurvedic Wellness section below */}
+            {/* Quick links to full dedicated pages */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+              <button
+                onClick={() => router.push("/diet")}
+                style={{
+                  flex: 1,
+                  background: "rgba(29,158,117,0.06)",
+                  border: "1px solid rgba(29,158,117,0.2)",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  color: "var(--accent)",
+                  fontWeight: 600,
+                  fontFamily: "inherit",
+                  textAlign: "center",
+                }}
+              >
+                View full Diet Plan →
+              </button>
+              <button
+                onClick={() => router.push("/journey")}
+                style={{
+                  flex: 1,
+                  background: "rgba(29,158,117,0.06)",
+                  border: "1px solid rgba(29,158,117,0.2)",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  color: "var(--accent)",
+                  fontWeight: 600,
+                  fontFamily: "inherit",
+                  textAlign: "center",
+                }}
+              >
+                View full Exercise Plan →
+              </button>
+            </div>
 
             {/* Action buttons */}
             <button
@@ -2402,7 +2555,6 @@ export default function DashboardPage() {
                 justifyContent: "center",
                 gap: "7px",
                 fontFamily: "inherit",
-                marginTop: 14,
               }}
             >
               <MessageSquare size={14} />
@@ -2436,17 +2588,31 @@ export default function DashboardPage() {
           <div style={card}>
             <div style={cardHeader}>
               <span style={cardTitle}>Today&apos;s vitals</span>
-              <button
-                onClick={() => setShowVitalsModal(true)}
-                style={{
-                  ...cardLink,
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                }}
-              >
-                + Log vitals
-              </button>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <button
+                  onClick={() => setShowBodyStatsModal(true)}
+                  style={{
+                    ...cardLink,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    fontSize: "11px",
+                  }}
+                >
+                  Update stats
+                </button>
+                <button
+                  onClick={() => setShowVitalsModal(true)}
+                  style={{
+                    ...cardLink,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                  }}
+                >
+                  + Log vitals
+                </button>
+              </div>
             </div>
             {/* Tabs (visual) */}
             <div
@@ -2721,18 +2887,23 @@ export default function DashboardPage() {
           <div style={card}>
             <div style={{ ...cardHeader, marginBottom: 8 }}>
               <span style={cardTitle}>Diet Today</span>
-              {insightLoading && insightTab === "diet" && (
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "var(--accent)",
-                    display: "inline-block",
-                    animation: "insightPulse 1.4s ease-in-out infinite",
-                  }}
-                />
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {!insightCache["diet"] && (
+                  <span
+                    style={{
+                      width: 6, height: 6, borderRadius: "50%",
+                      background: "var(--accent)", display: "inline-block",
+                      animation: "insightPulse 1.4s ease-in-out infinite",
+                    }}
+                  />
+                )}
+                <button
+                  onClick={() => router.push("/diet")}
+                  style={{ ...cardLink, background: "none", border: "none", padding: 0, fontSize: 11 }}
+                >
+                  Full plan →
+                </button>
+              </div>
             </div>
             <div
               style={{
@@ -2744,45 +2915,36 @@ export default function DashboardPage() {
                 minHeight: 80,
                 fontSize: "12.5px",
                 color: "var(--insight-text)",
-                lineHeight: 1.65,
+                lineHeight: 1.7,
               }}
             >
-              {insightCache["diet"] || "Loading personalised diet recommendation..."}
+              {insightCache["diet"] || (
+                <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>Generating personalised diet recommendation…</span>
+              )}
             </div>
-            <button
-              onClick={() => { setInsightTab("diet"); fetchInsightForTab("diet"); }}
-              style={{
-                marginTop: 10,
-                fontSize: 11,
-                color: "var(--accent)",
-                fontWeight: 500,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-                fontFamily: "inherit",
-              }}
-            >
-              Refresh recommendation
-            </button>
           </div>
 
           {/* Exercise Card */}
           <div style={card}>
             <div style={{ ...cardHeader, marginBottom: 8 }}>
               <span style={cardTitle}>Exercise Today</span>
-              {insightLoading && insightTab === "exercise" && (
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "var(--accent)",
-                    display: "inline-block",
-                    animation: "insightPulse 1.4s ease-in-out infinite",
-                  }}
-                />
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {!insightCache["exercise"] && (
+                  <span
+                    style={{
+                      width: 6, height: 6, borderRadius: "50%",
+                      background: "var(--accent)", display: "inline-block",
+                      animation: "insightPulse 1.4s ease-in-out infinite",
+                    }}
+                  />
+                )}
+                <button
+                  onClick={() => router.push("/journey")}
+                  style={{ ...cardLink, background: "none", border: "none", padding: 0, fontSize: 11 }}
+                >
+                  Full plan →
+                </button>
+              </div>
             </div>
             <div
               style={{
@@ -2794,27 +2956,13 @@ export default function DashboardPage() {
                 minHeight: 80,
                 fontSize: "12.5px",
                 color: "var(--insight-text)",
-                lineHeight: 1.65,
+                lineHeight: 1.7,
               }}
             >
-              {insightCache["exercise"] || "Loading personalised exercise plan..."}
+              {insightCache["exercise"] || (
+                <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>Generating personalised exercise recommendation…</span>
+              )}
             </div>
-            <button
-              onClick={() => { setInsightTab("exercise"); fetchInsightForTab("exercise"); }}
-              style={{
-                marginTop: 10,
-                fontSize: 11,
-                color: "var(--accent)",
-                fontWeight: 500,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-                fontFamily: "inherit",
-              }}
-            >
-              Refresh recommendation
-            </button>
           </div>
         </div>
 
@@ -3297,6 +3445,23 @@ export default function DashboardPage() {
           supabase={supabase}
           onComplete={handleOnboardComplete}
           initialProgress={onboardProgress}
+        />
+      )}
+
+      {/* ── Update Body Stats Modal ───────────────────────────── */}
+      {showBodyStatsModal && (
+        <UpdateBodyStatsModal
+          supabase={supabase}
+          userId={userId}
+          currentWeight={profile?.weight_kg ?? null}
+          currentHeight={profile?.height_cm ?? null}
+          currentBloodGroup={profile?.blood_group ?? null}
+          onClose={() => setShowBodyStatsModal(false)}
+          onSuccess={() => {
+            setShowBodyStatsModal(false);
+            loadData();
+            setToast("Body stats updated successfully.");
+          }}
         />
       )}
 

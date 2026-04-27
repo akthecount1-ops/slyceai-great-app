@@ -21,12 +21,14 @@ const SYSTEM_PROMPTS: Record<string, string> = {
 Reference their ACTUAL data — conditions, medicines, vitals, or symptoms. Never be generic.
 No emojis. No disclaimers at start. Clinical yet warm tone suited for a high-achieving individual.
 End with a single actionable directive. If data is limited, focus on their most pressing known issue.`,
-  diet: `You are Slyceai. Write a precise, personalised daily diet recommendation in 50-60 words.
-Name specific Indian or Western foods. Factor dosha, BMI, conditions, and medications. 
-No emojis. No hedging. Confident, specific, premium tone.`,
-  exercise: `You are Slyceai. Write a focused exercise recommendation in 50-60 words.
-Tailor to BMI, conditions, pulse, dosha, and symptoms. Name specific activities, duration, intensity.
-No emojis. Confident, elite coaching tone.`,
+  diet: `You are Slyceai. Write a detailed, personalised daily diet plan in 80-100 words.
+Structure it as morning intake (specific foods + portions), midday meal (specific items), and evening dinner.
+Name specific Indian or Western foods by name. Factor dosha, BMI, conditions, and medications.
+Include one hydration note. No emojis. No hedging. Confident, specific, premium tone. Flowing prose, no headers.`,
+  exercise: `You are Slyceai. Write a detailed, structured daily exercise plan in 80-100 words.
+Include: a warm-up routine (specific stretches), main activity (name, duration, intensity), and cool-down.
+Tailor to BMI, conditions, pulse, dosha, and symptoms. Name specific exercises and activities.
+No emojis. Confident, elite coaching tone. Flowing prose, no headers or bullet points.`,
   dosha: `You are Slyceai. In 50-70 words, describe this patient's Ayurvedic dosha constitution in detail.
 Cover: dominant dosha traits, physical tendencies, psychological traits, seasonal vulnerabilities, and one key lifestyle practice to maintain balance.
 Cross-reference their vitals or symptoms where relevant. No emojis. Precise, authoritative Ayurvedic language.`,
@@ -122,8 +124,8 @@ Ayurvedic dosha: ${doshaStr}
 Generate a personalised ${insightType} recommendation.`
 
     const response = await withTimeout(
-      ai.chat([{ role: 'user', content: userPrompt }], SYSTEM_PROMPTS[insightType], { maxTokens: 220 }),
-      20000
+      ai.chat([{ role: 'user', content: userPrompt }], SYSTEM_PROMPTS[insightType], { maxTokens: 350 }),
+      25000
     ) as { content: string }
 
     const content = response.content?.trim() || fallback
