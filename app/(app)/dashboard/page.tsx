@@ -501,10 +501,10 @@ function OnboardingModal({
             prev.some((r) => r.name.trim())
               ? prev
               : existingMeds.map((m: any) => ({
-                  name: m.medicine_name ?? "",
-                  dose: m.dose ?? "",
-                  frequency: m.frequency ?? "",
-                })),
+                name: m.medicine_name ?? "",
+                dose: m.dose ?? "",
+                frequency: m.frequency ?? "",
+              })),
           );
         }
       } catch (err) {
@@ -805,7 +805,7 @@ function OnboardingModal({
         justifyContent: "center",
         zIndex: 1000,
       }}
-      // NO onClick on backdrop — modal cannot be closed by clicking outside
+    // NO onClick on backdrop — modal cannot be closed by clicking outside
     >
       <div
         style={{
@@ -1519,8 +1519,8 @@ function OnboardingModal({
                   fontFamily: "inherit",
                   opacity:
                     saving ||
-                    (step === 1 && !step1Valid) ||
-                    (step === 2 && !step2Valid)
+                      (step === 1 && !step1Valid) ||
+                      (step === 2 && !step2Valid)
                       ? 0.55
                       : 1,
                   transition: "opacity 0.15s",
@@ -1709,11 +1709,11 @@ export default function DashboardPage() {
     const logsRes =
       medIds.length > 0
         ? await supabase
-            .from("medicine_logs")
-            .select("medicine_id, taken")
-            .eq("user_id", user.id)
-            .eq("log_date", todayStr)
-            .in("medicine_id", medIds)
+          .from("medicine_logs")
+          .select("medicine_id, taken")
+          .eq("user_id", user.id)
+          .eq("log_date", todayStr)
+          .in("medicine_id", medIds)
         : { data: [] };
     const logsMap = new Map(
       (logsRes.data ?? []).map((l) => [l.medicine_id, l.taken]),
@@ -1803,11 +1803,11 @@ export default function DashboardPage() {
       prev.map((m) =>
         m.id === medId
           ? {
-              ...m,
-              medicine_name: editMedName.trim(),
-              dose: editMedDose.trim() || null,
-              frequency: editMedFreq.trim() || null,
-            }
+            ...m,
+            medicine_name: editMedName.trim(),
+            dose: editMedDose.trim() || null,
+            frequency: editMedFreq.trim() || null,
+          }
           : m,
       ),
     );
@@ -1856,18 +1856,21 @@ export default function DashboardPage() {
   }, [insightTab]);
 
   useEffect(() => {
+    // Prefetch all three panels on mount so Ayurvedic row is ready
     fetchInsightForTab("tip");
+    fetchInsightForTab("diet");
+    fetchInsightForTab("exercise");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ── Computed values ─────────────────────────────── */
   const healthScore = Math.min(
     (onboardDone ? 30 : 10) +
-      (vitals ? 30 : 0) +
-      (medicines.length > 0 ? 20 : 0) +
-      (medicines.filter((m) => m.taken).length /
-        Math.max(medicines.length, 1)) *
-        20,
+    (vitals ? 30 : 0) +
+    (medicines.length > 0 ? 20 : 0) +
+    (medicines.filter((m) => m.taken).length /
+      Math.max(medicines.length, 1)) *
+    20,
     100,
   );
   const boostedScore = Math.min(Math.round(healthScore + 15), 100);
@@ -2156,9 +2159,9 @@ export default function DashboardPage() {
                 ) === "green"
                   ? "Normal"
                   : getBpStatus(
-                        vitals?.bp_systolic ?? null,
-                        vitals?.bp_diastolic ?? null,
-                      ) === "amber"
+                    vitals?.bp_systolic ?? null,
+                    vitals?.bp_diastolic ?? null,
+                  ) === "amber"
                     ? "Elevated"
                     : "High",
                 getBpStatus(
@@ -2317,12 +2320,11 @@ export default function DashboardPage() {
                 marginBottom: 12,
               }}
             >
-              {(["tip", "diet", "exercise", "dosha"] as const).map((t) => {
+              {(["tip", "diet", "exercise"] as const).map((t) => {
                 const labels: Record<string, string> = {
-                  tip: "💡 Daily",
-                  diet: "🥗 Diet",
-                  exercise: "🏃 Exercise",
-                  dosha: "🌿 Dosha",
+                  tip: "Daily",
+                  diet: "Diet",
+                  exercise: "Exercise",
                 };
                 return (
                   <button
@@ -2334,7 +2336,7 @@ export default function DashboardPage() {
                       cursor: "pointer",
                       fontFamily: "inherit",
                       fontSize: "11px",
-                      padding: "5px 10px",
+                      padding: "5px 12px",
                       color:
                         insightTab === t
                           ? "var(--accent)"
@@ -2344,6 +2346,7 @@ export default function DashboardPage() {
                           ? "2px solid var(--accent)"
                           : "2px solid transparent",
                       fontWeight: insightTab === t ? 600 : 400,
+                      letterSpacing: "0.01em",
                       marginBottom: "-0.5px",
                     }}
                   >
@@ -2375,174 +2378,11 @@ export default function DashboardPage() {
                 {insightLoading
                   ? "Generating your personalised insight…"
                   : insight ||
-                    "Log your vitals and health data to unlock personalised insights."}
+                  "Log your vitals and health data to unlock personalised insights."}
               </div>
             </div>
 
-            {/* ---- Dosha mini-card ---- */}
-            {(() => {
-              const v = profile?.dosha_vata_score || 0;
-              const p = profile?.dosha_pitta_score || 0;
-              const k = profile?.dosha_kapha_score || 0;
-              const hasDosha = v > 0 || p > 0 || k > 0;
-              const doshaColors: Record<string, string> = {
-                vata: "#a78bfa",
-                pitta: "#f97316",
-                kapha: "#22c55e",
-              };
-              const total = v + p + k || 1;
-              if (!hasDosha)
-                return (
-                  <div
-                    style={{
-                      padding: "12px",
-                      background: "var(--bg-secondary)",
-                      borderRadius: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 10,
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: "var(--text-primary)",
-                          marginBottom: 2,
-                        }}
-                      >
-                        Ayurvedic profile not set
-                      </div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                        Take the 3-min quiz to discover your Dosha
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowAyurvedaModal(true)}
-                      style={{
-                        fontSize: 11,
-                        color: "var(--accent)",
-                        fontWeight: 600,
-                        textDecoration: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        background: "rgba(29,158,117,0.08)",
-                        padding: "5px 10px",
-                        borderRadius: 6,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Start quiz →
-                    </button>
-                  </div>
-                );
-              return (
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    background: "var(--bg-secondary)",
-                    borderRadius: 8,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 8,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      Your Dosha blend
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        color: "var(--text-muted)",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {profile?.primary_dosha} dominant
-                    </span>
-                  </div>
-                  {[
-                    { label: "Vata", score: v, color: doshaColors.vata },
-                    { label: "Pitta", score: p, color: doshaColors.pitta },
-                    { label: "Kapha", score: k, color: doshaColors.kapha },
-                  ].map((d) => (
-                    <div key={d.label} style={{ marginBottom: 6 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: 3,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 10,
-                            color: "var(--text-secondary)",
-                          }}
-                        >
-                          {d.label}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 600,
-                            color: d.color,
-                          }}
-                        >
-                          {Math.round((d.score / total) * 100)}%
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          height: 5,
-                          background: "var(--border)",
-                          borderRadius: 99,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div
-                          style={{
-                            height: "100%",
-                            width: `${(d.score / total) * 100}%`,
-                            background: d.color,
-                            borderRadius: 99,
-                            transition: "width 0.6s ease",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => setShowAyurvedaModal(true)}
-                    style={{
-                      fontSize: 10,
-                      color: "var(--text-muted)",
-                      textDecoration: "none",
-                      display: "block",
-                      marginTop: 6,
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
-                  >
-                    Retake assessment →
-                  </button>
-                </div>
-              );
-            })()}
+            {/* Dosha mini-card removed — now a separate Ayurvedic Wellness section below */}
 
             {/* Action buttons */}
             <button
@@ -2666,38 +2506,55 @@ export default function DashboardPage() {
                         ? "#f97316"
                         : "#dc2626"
                   : "var(--text-muted)";
-                return [
+
+                const rows = [
                   {
-                    name: "SpO₂",
-                    val: vitals?.oxygen ? `${vitals.oxygen}` : "—",
-                    unit: "%",
+                    name: "SpO2",
+                    val: vitals?.oxygen ? `${vitals.oxygen}` : "No data",
+                    unit: vitals?.oxygen ? "%" : "",
+                    dim: !vitals?.oxygen,
                   },
                   {
                     name: "Temperature",
-                    val: vitals?.temperature ? `${vitals.temperature}` : "—",
-                    unit: "°C",
+                    val: vitals?.temperature ? `${vitals.temperature}` : "No data",
+                    unit: vitals?.temperature ? "°C" : "",
+                    dim: !vitals?.temperature,
                   },
-                  { name: "Weight", val: w ? `${w}` : "—", unit: "kg" },
-                  { name: "Height", val: h ? `${h}` : "—", unit: "cm" },
+                  {
+                    name: "Weight",
+                    val: w ? `${w}` : "Not set",
+                    unit: w ? "kg" : "",
+                    dim: !w,
+                  },
+                  {
+                    name: "Height",
+                    val: h ? `${h}` : "Not set",
+                    unit: h ? "cm" : "",
+                    dim: !h,
+                  },
                   {
                     name: "BMI",
-                    val: bmi ? `${bmi}` : "—",
+                    val: bmi ? `${bmi}` : w && h ? "—" : "Not set",
                     unit: bmiCat || "",
                     color: bmiColor,
+                    dim: !bmi,
                   },
                   {
                     name: "Blood group",
-                    val: profile?.blood_group || "—",
+                    val: profile?.blood_group || "Not set",
                     unit: "",
+                    dim: !profile?.blood_group,
                   },
-                ].map((v) => (
+                ];
+
+                return rows.map((v) => (
                   <div
                     key={v.name}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: "7px 10px",
+                      padding: "8px 10px",
                       background: "var(--bg-secondary)",
                       borderRadius: "6px",
                     }}
@@ -2714,24 +2571,250 @@ export default function DashboardPage() {
                       style={{
                         fontSize: "13px",
                         fontWeight: 500,
-                        color: (v as any).color || "var(--text-primary)",
+                        color: (v as any).dim
+                          ? "var(--text-muted)"
+                          : (v as any).color || "var(--text-primary)",
                       }}
                     >
                       {v.val}
-                      <span
-                        style={{
-                          fontSize: "10px",
-                          color: "var(--text-muted)",
-                          marginLeft: "2px",
-                        }}
-                      >
-                        {v.unit}
-                      </span>
+                      {!v.dim && v.unit && (
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            color: "var(--text-muted)",
+                            marginLeft: "2px",
+                          }}
+                        >
+                          {v.unit}
+                        </span>
+                      )}
                     </span>
                   </div>
                 ));
               })()}
             </div>
+          </div>
+        </div>
+
+        {/* ── Row 3: Ayurvedic Wellness (Dosha | Diet | Exercise) ─ */}
+        <div className="grid-3col" style={{ gap: "12px" }}>
+          {/* Dosha Card */}
+          {(() => {
+            const v = profile?.dosha_vata_score || 0;
+            const p = profile?.dosha_pitta_score || 0;
+            const k = profile?.dosha_kapha_score || 0;
+            const hasDosha = v > 0 || p > 0 || k > 0;
+            const doshaColors: Record<string, string> = {
+              vata: "#a78bfa",
+              pitta: "#f97316",
+              kapha: "#22c55e",
+            };
+            const total = v + p + k || 1;
+            return (
+              <div style={{ ...card, display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ ...cardHeader, marginBottom: 0 }}>
+                  <span style={cardTitle}>Ayurvedic Dosha</span>
+                  <button
+                    onClick={() => setShowAyurvedaModal(true)}
+                    style={{
+                      ...cardLink,
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      fontSize: 11,
+                    }}
+                  >
+                    {hasDosha ? "Retake" : "Take quiz"}
+                  </button>
+                </div>
+                {!hasDosha ? (
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "16px 0",
+                      gap: 8,
+                      textAlign: "center",
+                    }}
+                  >
+                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                      Your Prakriti (Ayurvedic constitution)
+                      <br />unlocks personalised diet, lifestyle, and herb recommendations.
+                    </div>
+                    <button
+                      onClick={() => setShowAyurvedaModal(true)}
+                      style={{
+                        fontSize: 12,
+                        color: "var(--accent)",
+                        fontWeight: 600,
+                        border: "1px solid var(--accent)",
+                        cursor: "pointer",
+                        background: "rgba(29,158,117,0.06)",
+                        padding: "6px 14px",
+                        borderRadius: 6,
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      Discover your Dosha
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {profile?.primary_dosha} Dominant
+                    </div>
+                    {[
+                      { label: "Vata", score: v, color: doshaColors.vata },
+                      { label: "Pitta", score: p, color: doshaColors.pitta },
+                      { label: "Kapha", score: k, color: doshaColors.kapha },
+                    ].map((d) => (
+                      <div key={d.label}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: 4,
+                          }}
+                        >
+                          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{d.label}</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: d.color }}>
+                            {Math.round((d.score / total) * 100)}%
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            height: 5,
+                            background: "var(--border)",
+                            borderRadius: 99,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${(d.score / total) * 100}%`,
+                              background: d.color,
+                              borderRadius: 99,
+                              transition: "width 0.6s ease",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Diet Card */}
+          <div style={card}>
+            <div style={{ ...cardHeader, marginBottom: 8 }}>
+              <span style={cardTitle}>Diet Today</span>
+              {insightLoading && insightTab === "diet" && (
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "var(--accent)",
+                    display: "inline-block",
+                    animation: "insightPulse 1.4s ease-in-out infinite",
+                  }}
+                />
+              )}
+            </div>
+            <div
+              style={{
+                background: "rgba(29, 158, 117, 0.04)",
+                border: "1px solid rgba(29, 158, 117, 0.15)",
+                borderLeft: "3px solid var(--accent)",
+                borderRadius: "8px",
+                padding: "12px 14px",
+                minHeight: 80,
+                fontSize: "12.5px",
+                color: "var(--insight-text)",
+                lineHeight: 1.65,
+              }}
+            >
+              {insightCache["diet"] || "Loading personalised diet recommendation..."}
+            </div>
+            <button
+              onClick={() => { setInsightTab("diet"); fetchInsightForTab("diet"); }}
+              style={{
+                marginTop: 10,
+                fontSize: 11,
+                color: "var(--accent)",
+                fontWeight: 500,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                fontFamily: "inherit",
+              }}
+            >
+              Refresh recommendation
+            </button>
+          </div>
+
+          {/* Exercise Card */}
+          <div style={card}>
+            <div style={{ ...cardHeader, marginBottom: 8 }}>
+              <span style={cardTitle}>Exercise Today</span>
+              {insightLoading && insightTab === "exercise" && (
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "var(--accent)",
+                    display: "inline-block",
+                    animation: "insightPulse 1.4s ease-in-out infinite",
+                  }}
+                />
+              )}
+            </div>
+            <div
+              style={{
+                background: "rgba(29, 158, 117, 0.04)",
+                border: "1px solid rgba(29, 158, 117, 0.15)",
+                borderLeft: "3px solid var(--accent)",
+                borderRadius: "8px",
+                padding: "12px 14px",
+                minHeight: 80,
+                fontSize: "12.5px",
+                color: "var(--insight-text)",
+                lineHeight: 1.65,
+              }}
+            >
+              {insightCache["exercise"] || "Loading personalised exercise plan..."}
+            </div>
+            <button
+              onClick={() => { setInsightTab("exercise"); fetchInsightForTab("exercise"); }}
+              style={{
+                marginTop: 10,
+                fontSize: 11,
+                color: "var(--accent)",
+                fontWeight: 500,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                fontFamily: "inherit",
+              }}
+            >
+              Refresh recommendation
+            </button>
           </div>
         </div>
 
@@ -2760,14 +2843,11 @@ export default function DashboardPage() {
                 <div
                   style={{
                     textAlign: "center",
-                    padding: "16px 0",
+                    padding: "20px 0",
                     color: "var(--text-muted)",
                   }}
                 >
-                  <div style={{ fontSize: "22px", marginBottom: "6px" }}>
-                    💊
-                  </div>
-                  <div style={{ fontSize: "12px" }}>No medicines added yet</div>
+                  <div style={{ fontSize: "12px", marginBottom: "6px", color: "var(--text-secondary)" }}>No medicines added yet</div>
                   <a
                     href="/medicines"
                     style={{
@@ -3077,14 +3157,11 @@ export default function DashboardPage() {
                   style={{
                     width: "100%",
                     textAlign: "center",
-                    padding: "12px 0",
+                    padding: "20px 0",
                     color: "var(--text-muted)",
                   }}
                 >
-                  <div style={{ fontSize: "20px", marginBottom: "4px" }}>
-                    🩺
-                  </div>
-                  <div style={{ fontSize: "12px" }}>No symptoms logged</div>
+                  <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No symptoms logged today</div>
                 </div>
               )}
               <button
@@ -3149,14 +3226,11 @@ export default function DashboardPage() {
                 <div
                   style={{
                     textAlign: "center",
-                    padding: "12px 0",
+                    padding: "20px 0",
                     color: "var(--text-muted)",
                   }}
                 >
-                  <div style={{ fontSize: "20px", marginBottom: "4px" }}>
-                    📓
-                  </div>
-                  <div style={{ fontSize: "12px" }}>No journal entries yet</div>
+                  <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No journal entries yet</div>
                 </div>
               ) : (
                 journals.map((j) => (
