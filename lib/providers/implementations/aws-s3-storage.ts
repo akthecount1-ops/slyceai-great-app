@@ -1,16 +1,5 @@
 /**
- * AWS S3 Storage Provider — STUB (Ready to Activate)
- * 
- * TO ACTIVATE:
- * 1. Fill in AWS credentials in .env.local
- * 2. In /lib/providers/registry.ts, replace:
- *    import { SupabaseStorageProvider } from './implementations/supabase-storage'
- *    export const storage: StorageProvider = new SupabaseStorageProvider()
- *    WITH:
- *    import { AWSS3StorageProvider } from './implementations/aws-s3-storage'
- *    export const storage: StorageProvider = new AWSS3StorageProvider()
- * 
- * Nothing else in the application needs to change.
+ * AWS S3 Storage Provider
  */
 
 import {
@@ -24,27 +13,37 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type { StorageProvider } from '../interfaces'
 
 export class AWSS3StorageProvider implements StorageProvider {
-  private client: S3Client
-  private bucket: string
+  private _client: S3Client | null = null
 
-  constructor() {
-    const region = process.env.AWS_REGION || 'ap-south-1'
-    const accessKeyId = process.env.AWS_ACCESS_KEY_ID
-    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
-    this.bucket = process.env.AWS_S3_BUCKET || ''
+  /** Lazy-initialize so the client is built at request time, not module load time */
+  private get client(): S3Client {
+    if (!this._client) {
+      const region = process.env.AWS_S3_REGION || process.env.AWS_REGION || 'ap-south-1'
+      const accessKeyId = process.env.AWS_ACCESS_KEY_ID
+      const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 
-    if (!accessKeyId || !secretAccessKey) {
-      throw new Error('AWS credentials not configured')
+      if (!accessKeyId || !secretAccessKey) {
+        throw new Error(
+          '[S3] AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in environment variables'
+        )
+      }
+
+      this._client = new S3Client({
+        region,
+        credentials: { accessKeyId, secretAccessKey },
+      })
     }
+    return this._client
+  }
 
-    this.client = new S3Client({
-      region,
-      credentials: { accessKeyId, secretAccessKey },
-    })
+  private get bucket(): string {
+    const b = process.env.AWS_S3_BUCKET
+    if (!b) throw new Error('[S3] AWS_S3_BUCKET is not set in environment variables')
+    return b
   }
 
   async upload(
-    _bucket: string, // bucket param ignored — uses env var bucket
+    _bucket: string, // ignored — uses env var bucket
     path: string,
     file: Buffer | Blob,
     options?: { contentType?: string }
@@ -62,7 +61,8 @@ export class AWSS3StorageProvider implements StorageProvider {
       })
     )
 
-    const url = `https://${this.bucket}.s3.${process.env.AWS_REGION || 'ap-south-1'}.amazonaws.com/${path}`
+    const region = process.env.AWS_S3_REGION || 'ap-south-1'
+    const url = `https://${this.bucket}.s3.${region}.amazonaws.com/${path}`
     return { path, url }
   }
 
@@ -94,3 +94,4 @@ export class AWSS3StorageProvider implements StorageProvider {
     }))
   }
 }
+

@@ -24,7 +24,7 @@ import type { AIProvider, AIMessage, AIUsageStats } from '../interfaces'
 const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-6'
 
 function createBedrockClient(): BedrockRuntimeClient {
-  const region = process.env.AWS_REGION || 'ap-south-1'
+  const region = process.env.AWS_BEDROCK_REGION || process.env.AWS_REGION || 'us-east-1'
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID
   const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
   const sessionToken = process.env.AWS_SESSION_TOKEN
@@ -52,7 +52,7 @@ export class BedrockAIProvider implements AIProvider {
   private region: string
 
   constructor() {
-    this.region = process.env.AWS_REGION || 'us-east-1'
+    this.region = process.env.AWS_BEDROCK_REGION || process.env.AWS_REGION || 'us-east-1'
     this.model = process.env.BEDROCK_MODEL_ID || DEFAULT_MODEL
     this.apiKey = process.env.BEDROCK_API_KEY || null
 

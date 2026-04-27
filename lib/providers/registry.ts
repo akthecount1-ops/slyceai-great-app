@@ -7,7 +7,7 @@
  */
 
 import { SupabaseDatabaseProvider } from './implementations/supabase-database'
-import { SupabaseStorageProvider } from './implementations/supabase-storage'
+import { AWSS3StorageProvider } from './implementations/aws-s3-storage'
 import { SupabaseAuthProvider } from './implementations/supabase-auth'
 import { ResendEmailProvider } from './implementations/resend-email'
 import { BedrockAIProvider } from './implementations/bedrock-ai'
@@ -21,12 +21,8 @@ import type {
 } from './interfaces'
 
 // ---- ACTIVE PROVIDERS ----
-// To swap back to OpenRouter:
-//   import { OpenRouterAIProvider } from './implementations/openrouter-ai'
-//   export const ai: AIProvider = new OpenRouterAIProvider()
-
 export const db: DatabaseProvider = new SupabaseDatabaseProvider()
-export const storage: StorageProvider = new SupabaseStorageProvider()
+export const storage: StorageProvider = new AWSS3StorageProvider()
 export const email: EmailProvider = new ResendEmailProvider()
-export const ai: AIProvider = new BedrockAIProvider() // AWS Bedrock — Claude Sonnet 4.5 (ap-south-1)
+export const ai: AIProvider = new BedrockAIProvider()
 export const auth: AuthProvider = new SupabaseAuthProvider()

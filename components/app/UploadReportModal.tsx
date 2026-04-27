@@ -2,20 +2,22 @@
 
 import React, { useState, useRef } from 'react'
 import AppModal from './AppModal'
-import { Upload, FileText, Check, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Upload, FileText, Check, X, AlertCircle } from 'lucide-react'
 
 interface UploadReportModalProps {
   onClose: () => void
+  onSuccess?: () => void
 }
 
-export default function UploadReportModal({ onClose }: UploadReportModalProps) {
+export default function UploadReportModal({ onClose, onSuccess }: UploadReportModalProps) {
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const router = useRouter()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null)
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0])
     }
@@ -24,38 +26,59 @@ export default function UploadReportModal({ onClose }: UploadReportModalProps) {
   const handleUpload = async () => {
     if (!file) return
     setUploading(true)
-    
-    // Simulate upload delay
-    setTimeout(() => {
+    setError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/documents/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const json = await res.json()
+
+      if (!res.ok) {
+        setError(json.error || 'Upload failed. Please try again.')
+        setUploading(false)
+        return
+      }
+
+      // Success
+      setDone(true)
+      setTimeout(() => {
+        onSuccess?.()
+        onClose()
+      }, 1200)
+
+    } catch (err) {
+      setError('Network error — please check your connection and try again.')
       setUploading(false)
-      onClose()
-      // Usually, reports are passed to the AI to analyze, so we redirect to chat
-      // We could pass the report name in URL, but for now just redirect
-      router.push('/chat')
-    }, 1200)
+    }
   }
 
   return (
     <AppModal title="Upload Report" subtitle="Upload lab results, prescriptions, or scans for AI analysis." onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          onChange={handleFileChange} 
-          accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
-          style={{ display: 'none' }} 
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
+          style={{ display: 'none' }}
         />
-        
+
         {!file ? (
-          <div 
+          <div
             onClick={() => fileInputRef.current?.click()}
-            style={{ 
-              border: '1.5px dashed var(--border)', 
-              borderRadius: '12px', 
+            style={{
+              border: '1.5px dashed var(--border)',
+              borderRadius: '12px',
               padding: '32px 20px',
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               gap: '12px',
               cursor: 'pointer',
               background: 'var(--bg-secondary)',
@@ -75,18 +98,18 @@ export default function UploadReportModal({ onClose }: UploadReportModalProps) {
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>Click to upload</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>PDF, JPG, PNG or DOC (max 10MB)</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>PDF, JPG, PNG or WebP (max 10MB)</div>
             </div>
           </div>
         ) : (
-          <div style={{ 
-            border: '1.5px solid var(--accent)', 
-            borderRadius: '12px', 
+          <div style={{
+            border: `1.5px solid ${done ? 'var(--accent)' : 'var(--border)'}`,
+            borderRadius: '12px',
             padding: '16px',
-            display: 'flex', 
-            alignItems: 'center', 
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'var(--badge-green-bg)'
+            background: done ? 'var(--badge-green-bg)' : 'var(--bg-secondary)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -98,21 +121,37 @@ export default function UploadReportModal({ onClose }: UploadReportModalProps) {
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                   {(file.size / 1024 / 1024).toFixed(2)} MB
+                  {done && <span style={{ marginLeft: 8, color: 'var(--accent)', fontWeight: 600 }}>✓ Uploaded to S3</span>}
                 </div>
               </div>
             </div>
-            <button 
-              onClick={() => setFile(null)} 
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}
-            >
-              <X size={16} />
-            </button>
+            {!uploading && !done && (
+              <button
+                onClick={() => setFile(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         )}
-        
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
-          <button 
-            onClick={onClose} 
+
+        {/* Error message */}
+        {error && (
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', gap: '8px',
+            padding: '10px 14px', borderRadius: '8px',
+            background: '#fef2f2', border: '1px solid #fecaca',
+            color: '#dc2626', fontSize: '13px'
+          }}>
+            <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px' }}>
+          <button
+            onClick={onClose}
             style={{
               padding: '10px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
               background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-secondary)',
@@ -121,18 +160,18 @@ export default function UploadReportModal({ onClose }: UploadReportModalProps) {
           >
             Cancel
           </button>
-          <button 
+          <button
             onClick={handleUpload}
-            disabled={uploading || !file}
+            disabled={uploading || !file || done}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
-              background: 'var(--accent)', border: 'none', color: 'var(--bg-card)',
-              cursor: uploading ? 'wait' : (!file) ? 'not-allowed' : 'pointer', 
-              fontFamily: 'inherit', opacity: (!file) ? 0.5 : 1, transition: 'opacity 0.15s'
+              background: done ? '#16a34a' : 'var(--accent)', border: 'none', color: 'var(--bg-card)',
+              cursor: (uploading || !file || done) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', opacity: (!file && !done) ? 0.5 : 1, transition: 'all 0.15s'
             }}
           >
-            {uploading ? 'Processing...' : <><Check size={14} /> Analyze Report</>}
+            {done ? <><Check size={14} /> Uploaded!</> : uploading ? 'Uploading to S3...' : <><Check size={14} /> Analyze Report</>}
           </button>
         </div>
       </div>

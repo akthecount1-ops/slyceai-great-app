@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { storage } from '@/lib/providers'
 
 const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
 
@@ -26,18 +26,12 @@ export async function POST(request: NextRequest) {
 
   const filePath = `${user.id}/${Date.now()}-${file.name.replace(/\s+/g, '_')}`
 
-  // Use service client for storage
-  const storageClient = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
-  const { error: storageError } = await storageClient.storage
-    .from('documents')
-    .upload(filePath, file, { contentType: file.type, upsert: false })
-
-  if (storageError) {
-    return NextResponse.json({ error: storageError.message }, { status: 500 })
+  try {
+    // Use the provider-agnostic storage utility
+    await storage.upload('documents', filePath, file, { contentType: file.type })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Storage upload failed'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 
   // Infer category from filename
@@ -60,3 +54,4 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ success: true, filePath })
 }
+

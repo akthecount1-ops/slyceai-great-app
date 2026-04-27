@@ -145,7 +145,9 @@ function crossCheckDrugInteractions(medications) {
  * getPatientFullProfile — primary function used by AI pipeline
  * Runs all queries in parallel for performance.
  */
-async function getPatientFullProfile(userId) {
+async function getPatientFullProfile(userId, supabaseClient) {
+  const client = supabaseClient || supabase;
+
   const [
     profileRes,
     vitalsRes,
@@ -154,12 +156,12 @@ async function getPatientFullProfile(userId) {
     docsRes,
     vitalsHistoryRes,
   ] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', userId).single(),
-    supabase.from('vitals').select('*').eq('user_id', userId).order('recorded_at', { ascending: false }).limit(1),
-    supabase.from('medicines').select('*').eq('user_id', userId).eq('is_active', true),
-    supabase.from('symptom_journal').select('*').eq('user_id', userId).order('journal_date', { ascending: false }).limit(5),
-    supabase.from('documents').select('filename, document_category, ai_analysis').eq('user_id', userId).order('created_at', { ascending: false }).limit(3),
-    supabase.from('vitals').select('bp_systolic,bp_diastolic,pulse,oxygen,blood_sugar,recorded_at').eq('user_id', userId).order('recorded_at', { ascending: false }).limit(7),
+    client.from('profiles').select('*').eq('id', userId).single(),
+    client.from('vitals').select('*').eq('user_id', userId).order('recorded_at', { ascending: false }).limit(1),
+    client.from('medicines').select('*').eq('user_id', userId).eq('is_active', true),
+    client.from('symptom_journal').select('*').eq('user_id', userId).order('journal_date', { ascending: false }).limit(5),
+    client.from('documents').select('filename, document_category, ai_analysis').eq('user_id', userId).order('created_at', { ascending: false }).limit(3),
+    client.from('vitals').select('bp_systolic,bp_diastolic,pulse,oxygen,blood_sugar,recorded_at').eq('user_id', userId).order('recorded_at', { ascending: false }).limit(7),
   ]);
 
   const profile = profileRes.data;

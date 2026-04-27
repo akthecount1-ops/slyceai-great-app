@@ -51,7 +51,12 @@ export default function DocumentsPage() {
     const formData = new FormData()
     formData.append('file', file)
     const res = await fetch('/api/documents/upload', { method: 'POST', body: formData })
-    if (res.ok) await load()
+    if (res.ok) {
+      await load()
+    } else {
+      const err = await res.json()
+      alert(`Upload failed: ${err.error || 'Unknown error'}`)
+    }
     setUploading(false)
   }
 
@@ -68,10 +73,26 @@ export default function DocumentsPage() {
 
   const handleDelete = async (docId: string, filePath: string) => {
     if (!confirm('Permanently remove this clinical document?')) return
-    await supabase.storage.from('documents').remove([filePath])
-    await supabase.from('documents').delete().eq('id', docId)
-    await load()
+
+    try {
+      const res = await fetch('/api/documents/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docId, filePath }),
+      })
+
+      if (res.ok) {
+        await load()
+      } else {
+        const err = await res.json()
+        alert(err.error || 'Failed to delete document')
+      }
+    } catch (err) {
+      console.error('Delete error:', err)
+      alert('Network error during deletion')
+    }
   }
+
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
