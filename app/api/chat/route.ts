@@ -134,7 +134,7 @@ function getVitalsStalenessNote(latestVitals: any, sessionId: string): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// WEB SEARCH  (Anthropic SDK, non-blocking)
+// WEB SEARCH  (Anthropic SDK, non-blocking) & KNOWLEDGE BASE SEARCH
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEARCH_TRIGGERS = [
@@ -147,6 +147,38 @@ const SEARCH_TRIGGERS = [
 function shouldSearch(message: string): boolean {
   const l = message.toLowerCase()
   return SEARCH_TRIGGERS.some(s => l.includes(s))
+}
+
+async function searchKnowledgeBase(message: string, supabase: any): Promise<string> {
+  try {
+    const lmsg = message.toLowerCase();
+    const words = lmsg.split(/\s+/).filter(w => w.length > 3);
+
+    // Quick search against kb_symptoms and kb_medicines
+    const matchTerms = words.join(' | ');
+    let contextParts = [];
+
+    // Search Medicines
+    const { data: meds } = await supabase
+      .from('kb_medicines')
+      .select('name, uses, side_effects_common, how_it_works, generic_name')
+      .textSearch('name', matchTerms, { config: 'english' })
+      .limit(3);
+
+    if (meds && meds.length > 0) {
+      contextParts.push('Medicine Info from DB: ' + meds.map((m: any) =>
+        `[${m.name} (${m.generic_name})]: ${m.how_it_works} Uses: ${m.uses.join(',')} SE: ${m.side_effects_common.join(',')}`
+      ).join('\n'));
+    }
+
+    if (contextParts.length > 0) {
+      console.log('[Chat] Internal KB search found items:', meds?.length || 0);
+      return '\n\nINTERNAL DATABASE KNOWLEDGE:\n' + contextParts.join('\n');
+    }
+  } catch (err) {
+    console.error('[Chat] Internal KB search err:', err);
+  }
+  return '';
 }
 
 async function performWebSearch(message: string, profile: any): Promise<string> {
@@ -504,10 +536,19 @@ export async function POST(request: NextRequest) {
   const stalenessNote = getVitalsStalenessNote(arogyaProfile?.latest_vitals, sessionId)
 
   let searchContext = ''
+
+  // 1. Internal knowledge base search
+  const kbContext = await searchKnowledgeBase(message, supabase);
+  if (kbContext) {
+    searchContext += kbContext;
+  }
+
+  // 2. Web search
   if (shouldSearch(message)) {
     console.log('[Chat] Web search triggered')
-    searchContext = await performWebSearch(message, arogyaProfile)
+    searchContext += await performWebSearch(message, arogyaProfile)
   }
+
 
   // ── STEP 4: Conversation history (last 15) ─────────────────────────────────
   const { data: history } = await supabase
